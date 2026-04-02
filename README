@@ -36,3 +36,109 @@ Configure for a modern gfortran system on Ubuntu using:
 
 F77=gfortran FFLAGS="-g -O2 -fallow-argument-mismatch" LIBS="-lgfortran -lm" CFLAGS="-g -O2 -std=gnu89" ./configure
 
+
+Implemented Chapter 8 Projects (April 2026)
+-------------------------------------------
+
+The following 8 projects from Chapter 8 ("Projects") in doc/algae.ps
+have been implemented in this tree, from easiest to most difficult:
+
+1) Complete fread/fwrite and add fseek/ftell
+         - Added missing binary read/write cases in fread/fwrite
+                 (including long, float/double, endian and ieee qualifiers).
+         - Added fseek(file; offset; whence) and ftell(file).
+
+2) printf/fprintf/sprintf with array arguments
+         - Vector and matrix arguments are expanded and consumed by
+                 scalar format specifiers.
+
+3) More robust complex atan/atanh
+         - Replaced naive formulas with numerically robust algorithms.
+
+4) Readline tab completion
+         - Symbol completion now includes variables, user functions,
+                 and builtins.
+
+5) Better help system
+         - New builtin help() and help("name") for builtin documentation.
+         - New docstring(fn; "text") for user-defined function docs.
+
+6) Builtin interface documentation and API header
+         - Added doc/BUILTIN_INTERFACE.md for developers.
+         - Added src/algae_api.h as a convenience API include.
+
+7) Symbolic debugger
+         - Added breakpoints and single-step controls:
+                 breakpoint, dbclear, dbstep, dbcont, dbstack, dbstatus.
+
+8) GTK+ interface
+         - Added src/gtk_gui.c and build target algae-gtk.
+
+
+Quick Usage
+-----------
+
+Build command-line interpreter:
+
+        make -C src algae
+
+Build GTK interface:
+
+        make -C src algae-gtk
+
+Run Algae normally:
+
+        ./src/algae
+
+Run without startup files (clean environment):
+
+        ./src/algae -S
+
+
+Feature Usage Examples (Algae code)
+-----------------------------------
+
+Binary I/O + file position:
+
+        fwrite("/tmp/data.bin"; [1.0, 2.0, 3.0]);
+        close("/tmp/data.bin");
+        x = fread("/tmp/data.bin"; 3);
+        fseek("/tmp/data.bin"; 8; "set");
+        y = fread("/tmp/data.bin"; 1);
+        p = ftell("/tmp/data.bin");
+        close("/tmp/data.bin");
+
+printf with arrays:
+
+        v = [10, 20, 30];
+        s = sprintf("%g %g %g"; v);
+        printf("%g %g %g\n"; v);
+
+Help and docstrings:
+
+        help();
+        help("sin");
+
+        f = function(x) { return x * x; };
+        docstring(f; "Square of x");
+
+Debugger:
+
+        breakpoint("my_script.A"; 42);
+        dbstatus();
+        dbstep();
+        dbcont();
+        dbclear();
+
+GTK frontend:
+
+        ./src/algae-gtk
+
+
+Notes
+-----
+
+- The startup tools now keep introductory text in variable help_text,
+        so the builtin help() function remains callable.
+- For developers adding new C builtins, see doc/BUILTIN_INTERFACE.md.
+
