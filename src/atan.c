@@ -27,23 +27,47 @@ static char bad_dims[] = "atan2: Array dimensions don't match.";
 COMPLEX
 atan_complex (COMPLEX z)
 {
+  /*
+   * Compute atan(z) = i/2 * log((i+z)/(i-z)) using a numerically
+   * robust decomposition that avoids overflow and cancellation.
+   *
+   * The real part is computed via atan2 and the imaginary part via
+   * log1p, following the approach of Hull, Fairgrieve & Tang (1997).
+   *
+   * atan(x+iy) = Re + i*Im where:
+   *   Re = atan2(2x, 1-x^2-y^2) / 2
+   *   Im = log1p(4y / ((1-y)^2 + x^2)) / 4   when |y| < 1
+   *      = log((x^2 + (1+y)^2) / (x^2 + (1-y)^2)) / 4   otherwise
+   */
+
   COMPLEX w;
+  double x = z.real;
+  double y = z.imag;
+  double x2 = x * x;
 
-  /* atan(z) = i*log((i+z)/(i-z))/2 */
-  /*         = i*log(-((x^2+y^2-1)+i*(2*x))/(x^2+y^2-2*y+1))/2 */
+  /* Real part */
+  {
+    double denom = 1.0 - x2 - y * y;
+    w.real = 0.5 * atan2 (2.0 * x, denom);
+  }
 
-  w.real = w.imag = -1.0 / (z.real * z.real + z.imag * z.imag
-			    - 2 * z.imag + 1.0);
+  /* Imaginary part - use different formulas depending on |y| */
+  if (fabs (y) < 0.5)
+    {
+      /* Use log1p for better accuracy near y=0 */
+      double omy = 1.0 - y;
+      double d = omy * omy + x2;
+      w.imag = 0.25 * log1p (4.0 * y / d);
+    }
+  else
+    {
+      /* General formula */
+      double num = x2 + (1.0 + y) * (1.0 + y);
+      double den = x2 + (1.0 - y) * (1.0 - y);
+      w.imag = 0.25 * log (num / den);
+    }
 
-  w.real *= z.real * z.real + z.imag * z.imag - 1.0;
-  w.imag *= 2 * z.real;
-
-  z = log_complex (w);
-
-  w.real = -0.5 * z.imag;
-  w.imag = 0.5 * z.real;
-
-  return (w);
+  return w;
 }
 
 ENTITY *

@@ -66,6 +66,99 @@ static char *algae_histfile;
 extern int PROTO (write_history, (char *));
 extern int PROTO (history_truncate_file, (char *, int));
 extern int PROTO (read_history, (char *));
+
+/* Readline completion support */
+extern char *PROTO (readline, (const char *));
+extern void PROTO (add_history, (const char *));
+extern char **PROTO (rl_completion_matches, (const char *, char *(*)(const char *, int)));
+extern char *PROTO (rl_filename_completion_function, (const char *, int));
+typedef char **rl_completion_func_t (const char *, int, int);
+extern rl_completion_func_t *rl_attempted_completion_function;
+extern int rl_attempted_completion_over;
+extern const char *rl_readline_name;
+
+/*
+ * Hash table traversal state for readline completion.
+ * We walk the symbol table looking for names matching
+ * the user's partial input.
+ */
+static int completion_hash_idx;
+static void *completion_hash_node;  /* really HASHNODE* but opaque here */
+
+/* These are defined in hash.c - we need direct access to the hash table */
+#define HASH_PRIME_COMPL 149
+typedef struct hash_compl {
+  struct hash_compl *link;
+  SYMTAB symtab;
+} HASHNODE_COMPL;
+extern HASHNODE_COMPL *algae_hash_table_for_completion[];
+
+static char *
+algae_symbol_generator (const char *text, int state)
+{
+  /*
+   * Generator function for readline completion.
+   * Returns matching symbol names one at a time.
+   */
+
+  static int len;
+  HASHNODE_COMPL *p;
+
+  if (!state)
+    {
+      completion_hash_idx = 0;
+      completion_hash_node = NULL;
+      len = strlen (text);
+    }
+
+  while (completion_hash_idx < HASH_PRIME_COMPL)
+    {
+      if (completion_hash_node == NULL)
+        {
+          p = algae_hash_table_for_completion[completion_hash_idx];
+          if (p == NULL)
+            {
+              completion_hash_idx++;
+              continue;
+            }
+          completion_hash_node = p;
+        }
+      else
+        p = (HASHNODE_COMPL *) completion_hash_node;
+
+      while (p)
+        {
+          if (p->symtab.scope == 0 &&
+              strncmp (p->symtab.name, text, len) == 0)
+            {
+              char *match = MALLOC (strlen (p->symtab.name) + 1);
+              strcpy (match, p->symtab.name);
+              completion_hash_node = p->link;
+              if (!completion_hash_node)
+                completion_hash_idx++;
+              return match;
+            }
+          p = p->link;
+        }
+      completion_hash_node = NULL;
+      completion_hash_idx++;
+    }
+
+  return NULL;
+}
+
+static char **
+algae_completion (const char *text, int start, int end)
+{
+  /*
+   * Custom completion function.
+   * Complete on Algae symbol names (variables, functions, builtins).
+   * Suppress default filename completion.
+   */
+
+  rl_attempted_completion_over = 1;  /* Don't fall back to filename completion */
+  return rl_completion_matches (text, algae_symbol_generator);
+}
 #endif
 
 int da_flag;
@@ -332,6 +425,10 @@ static void
 initialize_readline (void)
 {
   using_history ();
+
+  /* Set up context-based completion on Algae symbols. */
+  rl_readline_name = "algae";
+  rl_attempted_completion_function = algae_completion;
 
   /*
    * Read the history file.  Use the file named by the environment

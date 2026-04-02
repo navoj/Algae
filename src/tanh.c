@@ -53,21 +53,45 @@ atanh (double z)
 COMPLEX
 atanh_complex (COMPLEX z)
 {
+  /*
+   * Compute atanh(z) = log((1+z)/(1-z))/2 using a numerically
+   * robust decomposition that avoids overflow and cancellation.
+   *
+   * atanh(x+iy) = Re + i*Im where:
+   *   Re = log1p(4x / ((1-x)^2 + y^2)) / 4   when |x| < 0.5
+   *      = log((y^2 + (1+x)^2) / (y^2 + (1-x)^2)) / 4  otherwise
+   *   Im = atan2(2y, 1-x^2-y^2) / 2
+   *
+   * Note: atanh(z) = -i * atan(i*z), so the formula parallels atan_complex
+   * with x and y roles swapped.
+   */
+
   COMPLEX w;
+  double x = z.real;
+  double y = z.imag;
+  double y2 = y * y;
 
-  /* atanh(z) = log((1+z)/(1-z))/2 */
-  /* 	      = log(-((x^2+y^2-1)-i*(2*y))/(x^2+y^2-2*x+1)/2 */
+  /* Real part */
+  if (fabs (x) < 0.5)
+    {
+      /* Use log1p for better accuracy near x=0 */
+      double omx = 1.0 - x;
+      double d = omx * omx + y2;
+      w.real = 0.25 * log1p (4.0 * x / d);
+    }
+  else
+    {
+      /* General formula */
+      double num = y2 + (1.0 + x) * (1.0 + x);
+      double den = y2 + (1.0 - x) * (1.0 - x);
+      w.real = 0.25 * log (num / den);
+    }
 
-  w.real = w.imag = -1.0 / (z.real * z.real + z.imag * z.imag
-			    - 2 * z.real + 1.0);
-
-  w.real *= z.real * z.real + z.imag * z.imag - 1.0;
-  w.imag *= -2 * z.imag;
-
-  z = log_complex (w);
-
-  w.real = 0.5 * z.real;
-  w.imag = 0.5 * z.imag;
+  /* Imaginary part */
+  {
+    double denom = 1.0 - x * x - y2;
+    w.imag = 0.5 * atan2 (2.0 * y, denom);
+  }
 
   return w;
 }

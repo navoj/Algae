@@ -35,6 +35,7 @@ static char rcsid[] =
 #include "scalar.h"
 #include "real.h"
 #include "profile.h"
+#include "debug_algae.h"
 
 #if ENABLE_PROFILER
 extern int profiling;		/* on when profiling */
@@ -1517,6 +1518,11 @@ execute (INST *cdp, DATUM *fp, FUNCTION *current_function)
 
 	  curr_line_no = cdp++->op;
 	  PROF_UPDATE_LINE (curr_line_no);	/* for profiler */
+
+	  /* Check debugger breakpoints / stepping */
+	  if (debugger_enabled)
+	    debugger_check (curr_file, curr_line_no);
+
 	  break;
 
 	case OP_FILE:

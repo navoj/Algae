@@ -1,8 +1,17 @@
 
-help = ( "\n" +
+# The `help' builtin is now a C function.
+# Type `help()' to list all builtins, or `help("sin")' for details.
+#
+# This variable is kept for backward compatibility; typing `help_text'
+# will display this message.
+
+help_text = ( "\n" +
 "This is Algae, an interpreted language for numerical analysis.\n" +
 "\n" +
 "EXITING:   To exit Algae, type `exit()'.\n" +
+"\n" +
+"HELP:      Type `help()' to list all builtins, or `help(\"sin\")' for\n" +
+"           details on a specific function.\n" +
 "\n" +
 "INFO:      The manual is available on-line through the `info' function.  Type\n" +
 "           `info()' to view it or `info(\"abs\")', for example, to go to a\n" +

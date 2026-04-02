@@ -44,5 +44,9 @@ extern ENTITY * PROTO (bi_fread,
                        (int n, ENTITY *fname, ENTITY *length, ENTITY *type));
 extern ENTITY * PROTO (bi_fwrite,
                        (int n, ENTITY *fname, ENTITY *v, ENTITY *type));
+extern ENTITY * PROTO (bi_fseek,
+                       (int n, ENTITY *fname, ENTITY *offset, ENTITY *whence));
+extern ENTITY * PROTO (bi_ftell,
+                       (int n, ENTITY *fname));
 
 #endif /* FREAD_H */

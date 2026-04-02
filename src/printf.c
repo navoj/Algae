@@ -18,8 +18,11 @@ static char rcsid[] =
 #include "printf.h"
 #include "entity.h"
 #include "scalar.h"
+#include "vector.h"
+#include "matrix.h"
 #include "file_io.h"
 #include "cast.h"
+#include "dense.h"
 #include "vargs.h"
 
 static void PROTO (null_arg, (int cnt, char *who));
@@ -30,6 +33,132 @@ static void PROTO (bad_conversion,
 static char *PROTO (do_printf,
 		   (void *fp, char *format, unsigned int argcnt,
 		    ENTITY **ep));
+
+/*
+ * Expand array arguments to individual scalars for printf.
+ * If any ENTITY in ep[0..argcnt-1] is a vector or matrix,
+ * replace it with its individual elements as scalars.
+ * Returns the new ENTITY** array and updates *new_count.
+ * Caller must FREE the returned array if it differs from ep.
+ */
+static ENTITY **
+expand_array_args (ENTITY **ep, unsigned int argcnt, unsigned int *new_count)
+{
+  unsigned int i, total = 0;
+  int has_array = 0;
+  ENTITY **result;
+
+  /* First pass: count total scalar elements */
+  for (i = 0; i < argcnt; i++)
+    {
+      if (ep[i] == NULL)
+        { total++; continue; }
+      switch (ep[i]->class)
+        {
+        case vector:
+          total += ((VECTOR *)ep[i])->ne;
+          has_array = 1;
+          break;
+        case matrix:
+          {
+            MATRIX *m = (MATRIX *)ep[i];
+            total += m->nr * m->nc;
+            has_array = 1;
+          }
+          break;
+        default:
+          total++;
+          break;
+        }
+    }
+
+  if (!has_array)
+    {
+      *new_count = argcnt;
+      return ep;
+    }
+
+  result = MALLOC (total * sizeof (ENTITY *));
+  {
+    unsigned int j = 0;
+    for (i = 0; i < argcnt; i++)
+      {
+        if (ep[i] == NULL)
+          { result[j++] = NULL; continue; }
+        switch (ep[i]->class)
+          {
+          case vector:
+            {
+              VECTOR *v = (VECTOR *) dense_vector ((VECTOR *) ep[i]);
+              int k;
+              for (k = 0; k < v->ne; k++)
+                {
+                  switch (v->type)
+                    {
+                    case integer:
+                      result[j++] = int_to_scalar (v->a.integer[k]);
+                      break;
+                    case real:
+                      result[j++] = real_to_scalar (v->a.real[k]);
+                      break;
+                    case character:
+                      result[j++] = char_to_scalar (dup_char (v->a.character[k]));
+                      break;
+                    case complex:
+                      result[j++] = complex_to_scalar (v->a.complex[k]);
+                      break;
+                    default:
+                      result[j++] = NULL;
+                      break;
+                    }
+                }
+              delete_entity (ENT(v));
+              ep[i] = NULL;
+            }
+            break;
+          case matrix:
+            {
+              /* Flatten matrix elements (stored column-major in a) */
+              MATRIX *m = (MATRIX *) ep[i];
+              int nelm = m->nr * m->nc;
+              int k;
+              for (k = 0; k < nelm; k++)
+                {
+                  switch (m->type)
+                    {
+                    case integer:
+                      result[j++] = int_to_scalar (m->a.integer[k]);
+                      break;
+                    case real:
+                      result[j++] = real_to_scalar (m->a.real[k]);
+                      break;
+                    case character:
+                      result[j++] = char_to_scalar (dup_char (m->a.character[k]));
+                      break;
+                    case complex:
+                      result[j++] = complex_to_scalar (m->a.complex[k]);
+                      break;
+                    default:
+                      result[j++] = NULL;
+                      break;
+                    }
+                }
+              delete_entity (ep[i]);
+              ep[i] = NULL;
+            }
+            break;
+          default:
+            result[j++] = ep[i];
+            ep[i] = NULL;
+            break;
+          }
+      }
+    total = j;
+  }
+
+  *new_count = total;
+  return result;
+}
 
 #if NO_PROTOS
 typedef int (*PRINTER) ();
@@ -535,7 +664,12 @@ bi_fprintf (volatile int n, ENTITY ** volatile args)
     }
   END_EXCEPTION;
     
-  do_printf (stream, format, (unsigned int) (n-2), args+2);
+  {
+    unsigned int expanded_count = (unsigned int)(n-2);
+    ENTITY **expanded_args = expand_array_args (args+2, expanded_count, &expanded_count);
+    do_printf (stream, format, expanded_count, expanded_args);
+    if (expanded_args != args+2) FREE (expanded_args);
+  }
   return int_to_scalar(0);
 }
 
@@ -575,8 +709,13 @@ bi_sprintf (volatile int n, ENTITY ** volatile args)
     }
   END_EXCEPTION;
     
-  return char_to_scalar (do_printf (NULL, format, (unsigned int) (n-1),
-				    args+1));
+  {
+    unsigned int expanded_count = (unsigned int)(n-1);
+    ENTITY **expanded_args = expand_array_args (args+1, expanded_count, &expanded_count);
+    char *result = do_printf (NULL, format, expanded_count, expanded_args);
+    if (expanded_args != args+1) FREE (expanded_args);
+    return char_to_scalar (result);
+  }
 }
 
 ENTITY *
@@ -614,6 +753,11 @@ bi_printf (volatile int n, ENTITY ** volatile args)
     }
   END_EXCEPTION;
 
-  do_printf (stdout, format, (unsigned int) (n-1), args+1);
+  {
+    unsigned int expanded_count = (unsigned int)(n-1);
+    ENTITY **expanded_args = expand_array_args (args+1, expanded_count, &expanded_count);
+    do_printf (stdout, format, expanded_count, expanded_args);
+    if (expanded_args != args+1) FREE (expanded_args);
+  }
   return int_to_scalar(0);
 }

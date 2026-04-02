@@ -45,6 +45,20 @@ HASHNODE;
 
 static HASHNODE *hash_table[HASH_PRIME];
 
+/*
+ * Expose the hash table for readline completion.
+ * The init.c completion code uses this to enumerate symbols.
+ */
+HASHNODE *algae_hash_table_for_completion[HASH_PRIME];
+
+static void
+update_completion_table (void)
+{
+  int i;
+  for (i = 0; i < HASH_PRIME; i++)
+    algae_hash_table_for_completion[i] = hash_table[i];
+}
+
 /* insert --
    puts a name in the symbol table that is
    guaranteed not to already be in the table.
@@ -65,6 +79,7 @@ insert (char *name)
   p->symtab.scope = 0;
   p->link = hash_table[h];
   hash_table[h] = p;
+  update_completion_table ();
   return &p->symtab;
 }
 
@@ -148,6 +163,7 @@ find (char *name, int create_flag)
 found:
   p->link = hash_table[h];
   hash_table[h] = p;
+  update_completion_table ();
 
   return &p->symtab;
 }

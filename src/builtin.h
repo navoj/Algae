@@ -47,6 +47,7 @@ extern ENTITY *bi_atof (ENTITY *p);
 extern ENTITY *bi_backsub (ENTITY *a, ENTITY *b);
 extern ENTITY *bi_band (ENTITY *p);
 extern ENTITY *bi_bdiag (ENTITY *a, ENTITY *nbr, ENTITY *nbc);
+extern ENTITY *bi_breakpoint (int n, ENTITY *file, ENTITY *line_arg);
 extern ENTITY *bi_btrans (ENTITY *a, ENTITY *nbr, ENTITY *nbc);
 extern ENTITY *bi_builtin (ENTITY *obj, ENTITY *sym);
 extern ENTITY *bi_cd (int n, ENTITY *path);
@@ -60,10 +61,16 @@ extern ENTITY *bi_conjugate (ENTITY *p);
 extern ENTITY *bi_cram (ENTITY *shape, ENTITY *v);
 extern ENTITY *bi_cos (ENTITY *p);
 extern ENTITY *bi_cosh (ENTITY *p);
+extern ENTITY *bi_dbclear (int n, ENTITY *file, ENTITY *line_arg);
+extern ENTITY *bi_dbcont (void);
+extern ENTITY *bi_dbstack (void);
+extern ENTITY *bi_dbstatus (void);
+extern ENTITY *bi_dbstep (int n, ENTITY *mode);
 extern ENTITY *dense_entity (ENTITY *ip);
 extern ENTITY *bi_diag (ENTITY *p);
 extern ENTITY *bi_dice (ENTITY *s);
 extern ENTITY *bi_digits (int n, ENTITY *prec);
+extern ENTITY *bi_docstring (ENTITY *fn, ENTITY *text);
 extern ENTITY *bi_eig (int n, ENTITY *a, ENTITY *b, ENTITY *c);
 extern ENTITY *bi_equilibrate (ENTITY *p);
 extern ENTITY *bi_erf (ENTITY *p);
@@ -86,6 +93,8 @@ extern ENTITY *bi_floor (ENTITY *p);
 extern ENTITY *bi_form (ENTITY *shape, ENTITY *v);
 extern ENTITY *bi_fprintf (int n, ENTITY **args);
 extern ENTITY *bi_fread (int n, ENTITY *fname, ENTITY *length, ENTITY *type);
+extern ENTITY *bi_fseek (int n, ENTITY *fname, ENTITY *offset, ENTITY *whence);
+extern ENTITY *bi_ftell (int n, ENTITY *fname);
 extern ENTITY *bi_full (ENTITY *p);
 extern ENTITY *bi_fwrite (int n, ENTITY *fname, ENTITY *v, ENTITY *type);
 extern ENTITY *bi_get (int n, ENTITY *fname);
@@ -93,6 +102,7 @@ extern ENTITY *bi_getdyn (int n, ENTITY *fp);
 extern ENTITY *bi_getenv (ENTITY *name);
 extern ENTITY *bi_getmat (int n, ENTITY *fname);
 extern ENTITY *bi_gpskca (int n, ENTITY *p, ENTITY *b);
+extern ENTITY *bi_help (int n, ENTITY *name);
 extern ENTITY *bi_hermitian (ENTITY *p);
 extern ENTITY *bi_ifft (int n, ENTITY *p, ENTITY *d);
 #if HAVE_FFTW
@@ -181,6 +191,7 @@ builtin_init_data[] =
   {"backsub", {2, 2, 0, BI_CAST(bi_backsub)}},
   {"band", {1, 1, 0, BI_CAST(bi_band)}},
   {"bdiag", {3, 3, 0, BI_CAST(bi_bdiag)}},
+  {"breakpoint", {1, 2, 0, BI_CAST(bi_breakpoint)}},
   {"btrans", {3, 3, 0, BI_CAST(bi_btrans)}},
   {"builtin", {2, 2, 0, BI_CAST(bi_builtin)}},
   {"cd", {0, 1, 01, BI_CAST(bi_cd)}},
@@ -194,10 +205,16 @@ builtin_init_data[] =
   {"cram", {2, 2, 01, BI_CAST(bi_cram)}},
   {"cos", {1, 1, 0, BI_CAST(bi_cos)}},
   {"cosh", {1, 1, 0, BI_CAST(bi_cosh)}},
+  {"dbclear", {0, 2, 03, BI_CAST(bi_dbclear)}},
+  {"dbcont", {0, 0, 0, BI_CAST(bi_dbcont)}},
+  {"dbstack", {0, 0, 0, BI_CAST(bi_dbstack)}},
+  {"dbstatus", {0, 0, 0, BI_CAST(bi_dbstatus)}},
+  {"dbstep", {0, 1, 01, BI_CAST(bi_dbstep)}},
   {"dense", {1, 1, 0, BI_CAST(dense_entity)}},
   {"diag", {1, 1, 0, BI_CAST(bi_diag)}},
   {"dice", {1, 1, 0, BI_CAST(bi_dice)}},
   {"digits", {0, 1, 01, BI_CAST(bi_digits)}},
+  {"docstring", {2, 2, 0, BI_CAST(bi_docstring)}},
   {"eig", {1, 3, 06, BI_CAST(bi_eig)}},
   {"equilibrate", {1, 1, 0, BI_CAST(bi_equilibrate)}},
   {"erf", {1, 1, 0, BI_CAST(bi_erf)}},
@@ -226,6 +243,8 @@ builtin_init_data[] =
   {"form", {2, 2, 01, BI_CAST(bi_form)}},
   {"fprintf", {2, 99, ~(unsigned) 0, BI_CAST(bi_fprintf)}},
   {"fread", {0, 3, 07, BI_CAST(bi_fread)}},
+  {"fseek", {2, 3, 04, BI_CAST(bi_fseek)}},
+  {"ftell", {0, 1, 01, BI_CAST(bi_ftell)}},
   {"full", {1, 1, 0, BI_CAST(bi_full)}},
   {"fwrite", {0, 3, 05, BI_CAST(bi_fwrite)}},
   {"get", {0, 1, 0, BI_CAST(bi_get)}},
@@ -233,6 +252,7 @@ builtin_init_data[] =
   {"getenv", {1, 1, 0, BI_CAST(bi_getenv)}},
   {"getmat", {0, 1, 01, BI_CAST(bi_getmat)}},
   {"gpskca", {1, 2, 02, BI_CAST(bi_gpskca)}},
+  {"help", {0, 1, 01, BI_CAST(bi_help)}},
   {"hermitian", {1, 1, 0, BI_CAST(bi_hermitian)}},
 #if HAVE_FFTW
 #if USE_BOTH_FFT

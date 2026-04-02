@@ -24,7 +24,57 @@ static char rcsid[] =
 
 static char *invalid_type_msg = "%s: Invalid type specification.";
 static char *invalid_msg = "%s: Invalid %s combination (%s and %s).";
-static char *detour_msg = "Sorry, can't do this type yet.";
+
+/* Byte-swapping helpers for endian conversion */
+static void
+swap_bytes_2 (void *p, int n)
+{
+  unsigned char *b = (unsigned char *) p;
+  int i;
+  for (i = 0; i < 2*n; i += 2)
+    {
+      unsigned char t = b[i];
+      b[i] = b[i+1];
+      b[i+1] = t;
+    }
+}
+
+static void
+swap_bytes_4 (void *p, int n)
+{
+  unsigned char *b = (unsigned char *) p;
+  int i;
+  for (i = 0; i < 4*n; i += 4)
+    {
+      unsigned char t;
+      t = b[i]; b[i] = b[i+3]; b[i+3] = t;
+      t = b[i+1]; b[i+1] = b[i+2]; b[i+2] = t;
+    }
+}
+
+static void
+swap_bytes_8 (void *p, int n)
+{
+  unsigned char *b = (unsigned char *) p;
+  int i;
+  for (i = 0; i < 8*n; i += 8)
+    {
+      unsigned char t;
+      t = b[i]; b[i] = b[i+7]; b[i+7] = t;
+      t = b[i+1]; b[i+1] = b[i+6]; b[i+6] = t;
+      t = b[i+2]; b[i+2] = b[i+5]; b[i+5] = t;
+      t = b[i+3]; b[i+3] = b[i+4]; b[i+4] = t;
+    }
+}
+
+static int
+need_swap (DATA_TYPE endian)
+{
+  /* Return true if we need to byte-swap */
+  if (endian == dt_default) return 0;
+  return (endian == dt_big && !WORDS_BIGENDIAN)
+      || (endian == dt_little && WORDS_BIGENDIAN);
+}
 
 static void PROTO (parse_types,
 		   (struct data_type *dt, TABLE *type, char *caller));
@@ -399,8 +449,48 @@ fread_entity (FILE *stream, struct data_type *dt, int len)
 
       if (dt->size == dt_long)
         {
-          detour (detour_msg);
-          raise_exception();
+          /* Read long integers */
+          if (dt->endian == dt_default
+              || dt->endian == dt_big && WORDS_BIGENDIAN
+              || dt->endian == dt_little && !WORDS_BIGENDIAN)
+            {
+              CONVERT_BINARY (long, int, integer);
+            }
+          else
+            {
+              if (len)
+                {
+                  long *b = E_MALLOC (len, integer);
+                  n = fread (b, sizeof (long), len, stream);
+                  if (n < len)
+                    {
+                      if (!feof (stream))
+                        {
+                          fail (read_fail_msg, strerror (errno));
+                          clearerr (stream);
+                          FREE (b);
+                          raise_exception ();
+                        }
+                      clearerr (stream);
+                      len = n;
+                      if (n)
+                        b = REALLOC (b, len * sizeof (int));
+                      else
+                        { FREE (b); b = NULL; }
+                    }
+                  if (n)
+                    {
+                      if (sizeof(long) == 8)
+                        swap_bytes_8 (b, n);
+                      else
+                        swap_bytes_4 (b, n);
+                    }
+                  v = (VECTOR *) gift_wrap_vector (len, integer, b);
+                  for (i=len-1; i>=0; i--) v->a.integer[i] = (int) b[i];
+                } else
+                  v = (VECTOR *) form_vector (0, integer, dense);
+            }
+          break;
         }
           
       if (dt->size == dt_short)
@@ -472,15 +562,52 @@ fread_entity (FILE *stream, struct data_type *dt, int len)
           raise_exception();
         }
 
-      if (dt->size != dt_default ||
-	  dt->endian != dt_default ||
-	  dt->ieee != dt_default)
-        {
-          detour (detour_msg);
-          raise_exception();
-        }
+      {
+        int do_swap = need_swap (dt->endian);
+        int use_ieee = (dt->ieee == dt_ieee);
+        int fsize = use_ieee ? 4 : sizeof (float);
 
-      CONVERT_BINARY (float, double, real);
+        if (dt->size == dt_long)
+          {
+            /* "long float" means double-precision */
+            READ_BINARY (double, real);
+            if (do_swap) swap_bytes_8 (v->a.real, len);
+          }
+        else
+          {
+            CONVERT_BINARY (float, double, real);
+            if (do_swap) swap_bytes_4 ((float *)v->a.real - len, len);
+            /* Note: CONVERT_BINARY already expanded float->double in-place */
+            if (do_swap && sizeof(float) == fsize)
+              {
+                /* re-read with swap */
+                delete_vector (v);
+                if (len)
+                  {
+                    float *b = MALLOC (len * sizeof (float));
+                    n = fread (b, sizeof (float), len, stream);
+                    if (n < len)
+                      {
+                        if (!feof (stream))
+                          {
+                            fail (read_fail_msg, strerror (errno));
+                            clearerr (stream);
+                            FREE (b);
+                            raise_exception ();
+                          }
+                        clearerr (stream);
+                        len = n;
+                      }
+                    swap_bytes_4 (b, len);
+                    v = (VECTOR *) form_vector (len, real, dense);
+                    for (i=0; i<len; i++) v->a.real[i] = (double) b[i];
+                    FREE (b);
+                  }
+                else
+                  v = (VECTOR *) form_vector (0, real, dense);
+              }
+          }
+      }
 
 #if HAVE_ISNAN
       for (i=0; i<len; i++)
@@ -502,15 +629,9 @@ fread_entity (FILE *stream, struct data_type *dt, int len)
           raise_exception();
         }
 
-      if (dt->size != dt_default ||
-	  dt->endian != dt_default ||
-	  dt->ieee != dt_default)
-        {
-          detour (detour_msg);
-          raise_exception();
-        }
-
       READ_BINARY (double, real);
+      if (need_swap (dt->endian))
+        swap_bytes_8 (v->a.real, len);
 
 #if HAVE_ISNAN
       for (i=0; i<len; i++)
@@ -526,7 +647,7 @@ fread_entity (FILE *stream, struct data_type *dt, int len)
 
     default:
 
-      detour (detour_msg);
+      fail (invalid_type_msg, "fread");
       raise_exception ();
     }
 
@@ -653,13 +774,38 @@ fwrite_entity (FILE *stream, struct data_type *dt, VECTOR *v)
           raise_exception ();
         }
 
-      if (dt->size == dt_long || dt->endian != dt_default)
+      if (dt->size == dt_long)
         {
-          detour (detour_msg);
-          raise_exception();
+          /* Write long integers */
+          v = (VECTOR *) dup_vector ((VECTOR *) cast_vector (EAT (v), integer));
+          {
+            int *ip = v->a.integer;
+            long *lp = MALLOC (v->ne * sizeof (long));
+            for (i=0; i<v->ne; i++) lp[i] = (long) ip[i];
+            if (need_swap (dt->endian))
+              {
+                if (sizeof(long) == 8)
+                  swap_bytes_8 (lp, v->ne);
+                else
+                  swap_bytes_4 (lp, v->ne);
+              }
+            WRITE_BINARY (lp, sizeof (long));
+            FREE (lp);
+          }
+          break;
         }
 
       v = (VECTOR *) cast_vector (EAT (v), integer);
+
+      if (dt->endian != dt_default && dt->size != dt_short)
+        {
+          /* Write native ints with byte swapping */
+          v = (VECTOR *) dup_vector (EAT (v));
+          if (need_swap (dt->endian))
+            swap_bytes_4 (v->a.integer, v->ne);
+          WRITE_BINARY (v->a.integer, sizeof (int));
+          break;
+        }
 
       if (dt->size == dt_short)
 	{
@@ -687,22 +833,23 @@ fwrite_entity (FILE *stream, struct data_type *dt, VECTOR *v)
           raise_exception();
         }
 
-      if (dt->size != dt_default ||
-	  dt->endian != dt_default ||
-	  dt->ieee != dt_default)
-        {
-          detour (detour_msg);
-          raise_exception();
-        }
-
       v = (VECTOR *) dup_vector ((VECTOR *) cast_vector (EAT (v), real));
 
-      {
-        float *f = (float *) v->a.real;
-        for (i=0; i<v->ne; i++) f[i] = v->a.real[i];
-      }
-      
-      WRITE_BINARY (v->a.real, sizeof (float));
+      if (dt->size == dt_long)
+        {
+          /* "long float" means write as double */
+          if (need_swap (dt->endian))
+            swap_bytes_8 (v->a.real, v->ne);
+          WRITE_BINARY (v->a.real, sizeof (double));
+        }
+      else
+        {
+          float *f = (float *) v->a.real;
+          for (i=0; i<v->ne; i++) f[i] = (float) v->a.real[i];
+          if (need_swap (dt->endian))
+            swap_bytes_4 (f, v->ne);
+          WRITE_BINARY (f, sizeof (float));
+        }
 
       break;
 
@@ -714,24 +861,145 @@ fwrite_entity (FILE *stream, struct data_type *dt, VECTOR *v)
           raise_exception();
         }
 
-      if (dt->size != dt_default ||
-	  dt->endian != dt_default ||
-	  dt->ieee != dt_default)
-        {
-          detour (detour_msg);
-          raise_exception();
-        }
-
       v = (VECTOR *) cast_vector (EAT (v), real);
+      if (need_swap (dt->endian))
+        {
+          v = (VECTOR *) dup_vector (EAT (v));
+          swap_bytes_8 (v->a.real, v->ne);
+        }
       WRITE_BINARY (v->a.real, sizeof (REAL));
 
       break;
 
     default:
 
-      detour (detour_msg);
+      fail (invalid_type_msg, "fwrite");
       raise_exception ();
     }
 
   delete_vector (v);
+}
+
+ENTITY *
+bi_fseek (int n, ENTITY *fname, ENTITY *offset, ENTITY *whence_arg)
+{
+  /*
+   * Seek within an open file.
+   *
+   * fname:  file name (required)
+   * offset: byte offset (required, integer)
+   * whence_arg: "set", "cur", or "end" (optional, default "set")
+   */
+
+  long off;
+  int whence = SEEK_SET;
+  FILE *stream;
+
+  WITH_HANDLING
+    {
+      if (!fname)
+        {
+          fail ("fseek: File name is required.");
+          raise_exception ();
+        }
+
+      /* Find the file -- try input first, then output */
+      {
+        char *name = entity_to_string (EAT (fname));
+        stream = find_file (dup_char (name), FILE_INPUT);
+        if (!stream)
+          {
+            stream = find_file (dup_char (name), FILE_OUTPUT);
+          }
+        FREE_CHAR (name);
+      }
+
+      if (!stream)
+        {
+          fail ("fseek: Can't find file.");
+          raise_exception ();
+        }
+
+      off = (long) entity_to_int (EAT (offset));
+
+      if (whence_arg)
+        {
+          char *ws;
+          whence_arg = (ENTITY *) scalar_entity (EAT (whence_arg));
+          if (((SCALAR *)whence_arg)->type != character)
+            {
+              fail ("fseek: Third argument must be \"set\", \"cur\", or \"end\".");
+              raise_exception ();
+            }
+          ws = ((SCALAR *)whence_arg)->v.character;
+          if (strcmp (ws, "set") == 0)
+            whence = SEEK_SET;
+          else if (strcmp (ws, "cur") == 0)
+            whence = SEEK_CUR;
+          else if (strcmp (ws, "end") == 0)
+            whence = SEEK_END;
+          else
+            {
+              fail ("fseek: Third argument must be \"set\", \"cur\", or \"end\".");
+              raise_exception ();
+            }
+          delete_entity (whence_arg);
+          whence_arg = NULL;
+        }
+
+      if (fseek (stream, off, whence))
+        {
+          fail ("fseek: Seek failed (%s).", strerror (errno));
+          raise_exception ();
+        }
+    }
+  ON_EXCEPTION
+    {
+      delete_entity (fname);
+      delete_entity (offset);
+      delete_entity (whence_arg);
+    }
+  END_EXCEPTION;
+
+  return int_to_scalar ((int) ftell (stream));
+}
+
+ENTITY *
+bi_ftell (int n, ENTITY *fname)
+{
+  /*
+   * Return the current position in an open file.
+   */
+
+  FILE *stream;
+
+  WITH_HANDLING
+    {
+      if (!fname)
+        {
+          fail ("ftell: File name is required.");
+          raise_exception ();
+        }
+
+      {
+        char *name = entity_to_string (EAT (fname));
+        stream = find_file (dup_char (name), FILE_INPUT);
+        if (!stream)
+          stream = find_file (dup_char (name), FILE_OUTPUT);
+        FREE_CHAR (name);
+      }
+
+      if (!stream)
+        {
+          fail ("ftell: Can't find file.");
+          raise_exception ();
+        }
+    }
+  ON_EXCEPTION
+    {
+      delete_entity (fname);
+    }
+  END_EXCEPTION;
+
+  return int_to_scalar ((int) ftell (stream));
 }
