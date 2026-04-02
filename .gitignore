@@ -1,0 +1,8 @@
+*.o
+*.a
+src/algae
+algae.A
+config.log
+config.status
+config.h
+knr2ansi.py
