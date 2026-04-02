@@ -1,0 +1,7 @@
+
+# Returns an identity matrix.
+
+ident = function( n )
+{
+    return diag( fill( scalar (n); 1.0 ) );
+};

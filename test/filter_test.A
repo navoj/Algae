@@ -1,0 +1,23 @@
+
+# This file tests Algae's filter function.
+
+printf( "Starting the filter test...\n" );
+
+assert = function( t ) {
+    if ( !test(t) ) {
+        printf( "...failed.\a\n" );
+        exception();
+    }
+};
+
+a = sin (1:100);
+b = cos (1:100);
+x = tan (1:1000);
+f = filter (b; a; x);
+assert (abs (f.y[1] - 1.0) < 1e-8);
+assert (abs (f.y[21] + 3.639426642400711) < 1e-8);
+assert (abs (f.y[1000] + 52.25581495272066) < 1e-8);
+assert (abs (f.y[1000] - f.z[1]) < 1e-8);
+assert (abs (f.z[100] + 29.93883500113289) < 1e-8);
+
+printf( "...passed.\n" );

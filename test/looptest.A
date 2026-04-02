@@ -1,0 +1,17 @@
+
+printf( "Starting the loop test...\n" );
+
+f = function( k ) {
+    if ( k == 1 ) { return 1; }
+    for ( i in 1:k-1 ) {
+        k += f( i );
+    }
+    return k;
+};
+
+if ( f(3) == 7 & f(4) == 15 ) {
+    printf( "...passed.\n" );
+else
+    printf( "...failed.\a\n" );
+    exception();
+}

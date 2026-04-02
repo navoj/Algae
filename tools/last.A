@@ -1,0 +1,13 @@
+
+# This function returns the index of the last "true" element in `v'.
+# If none are found, it returns 0.
+
+last = function( v )
+{
+    v = find( 0; !v[] );
+    if ( v.ne == 0 ) {
+        return 0;
+    else
+        return v[v.ne];
+    }
+};

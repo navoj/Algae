@@ -1,0 +1,8 @@
+
+# This simple function returns a vector of indices of the nonzero
+# elements of the input vector.
+
+pick = function (x)
+{
+  return find (1; x != 0);
+};

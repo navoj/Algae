@@ -1,0 +1,483 @@
+				   
+# The `plot', `splot', `replot', and `unplot' functions constitute
+# Algae's interface to the gnuplot plotting package.  Use `plot' for
+# plotting lines in two or three dimensions; `splot' for plotting
+# surfaces.  Two and three dimensional plots may not be mixed in a
+# single plot window.
+
+# `plot' and `splot' take up to 3 arguments.  If either or both of
+# the first two arguments are (or can be converted to) character
+# vectors, then their elements are sent, each on a separate line, to
+# gnuplot as commands.  For example, `plot("set term X11")' causes
+# gnuplot to generate X11 output.  If all 3 arguments are NULL the
+# open and active plot windows are printed and the active window
+# number is returned.
+
+# If more than one argument is given and the last one is an integer
+# scalar, then it is taken to be the identifier of the plot window.
+# If not specified then window 1 is used by default.  Entering a
+# different number will open another plot window.  If the specified
+# window is already open it will be overwritten.
+
+# If either or both of the first two arguments to `plot' or `splot'
+# are not integer or character scalars, they are taken to be data for
+# plotting.  If a table is given, then the members are plotted each
+# with a different line and point type.  If any member is itself a
+# table, then the curves described by its members are plotted with
+# the same line and point type.
+
+# If `plot' is given a vector or a matrix with 2 columns, a two
+# dimensional line is plotted (vector elements vs. labels; column 2
+# vs. column 1).  If `plot' is given a matrix with 3 columns, the set
+# of triplets is taken to be x,y,z data points and a line is plotted
+# in 3 dimensions.
+
+# The input to `splot' is a matrix of z values.  Corresponding values
+# of x and y are taken from the matrix rids and cids, respectively.
+# A surface is drawn through the matrix of points.
+
+# If a vector (`plot') or matrix (`splot') does not have labels, then
+# the row/col indices are used instead.
+
+# `replot' takes up to 2 arguments.  If the first argument is
+# character data, it is passed to gnuplot as commands (as described
+# above).  The second argument (or first if no gnuplot commands are
+# given) is the integer scalar plot window identifier.  If not
+# given, the previous one is used.  Both arguments are optional.
+
+# The lone argument to `unplot' is a scalar or vector containing the
+# identifier(s) of the plot windows to be terminated.  If omitted, the 
+# previous plot window is closed.  Optionally, the string "all" may
+# be given, in which case all plot windows are closed.
+
+
+plot = function( a; b; c ) {
+
+    return plot.static.top( plot.static.plot;
+                            a; b; c );
+};
+
+splot = function( a; b; c ) {
+
+    return plot.static.top( plot.static.splot;
+                            a; b; c );
+};
+
+plot.static = {};
+
+plot.static.pvec = fill( 0; 0 );
+plot.static.pvec.eid = fill( 0; 0 );
+plot.static.tfile = fill(0;"");
+plot.static.tfile.eid = fill(0;"");
+
+plot.static.top = function( plotter; a; b; c ) {
+
+    local( cmds; data; pipe; win_kill );
+
+    if (a == NULL & b == NULL & c == NULL) {
+       a = plot.static.pvec;
+       return a[ reverse( isort( a.eid ) ) ];
+    elseif (a == NULL)
+       message("run time error: NULL passed as 1st argument.");
+       exception();
+    }
+
+    cmds = "";
+    data={};
+    win_kill = 0;
+
+    if (a.type == "character") {
+       cmds = a;
+    elseif ( class(a) == ("matrix","vector") )
+       data.y_1 = a;
+    elseif ( class(a) == "table" )
+       data = a;
+    else
+       message("run time error: 1st argument invalid data type.");
+       exception()
+    }
+
+    if (b != NULL) {
+       if (b.type == "character") {
+          if ( cmds ) {cmds += ";";}
+          cmds += b;
+       elseif ( class(b) == ("matrix","vector") )
+          if ( data.y_1 ) {data.y_2 = b; else data.y_1 = b;}
+       elseif ( class(b) == "table" )
+          data += b;
+       elseif (class(b) == "scalar"  &  c == NULL)
+          pipe = integer(b);
+       else
+          message("run time error: 2nd argument invalid data type.");
+          exception()
+       }
+       if ( c != NULL ) {pipe = integer(c);}
+    else
+       if ( c != NULL ) {
+          message("run time error: Embedded NULL argument.");
+          exception();
+       }
+    }
+
+    if ( data ) {win_kill = 1;}
+
+    pipe = plot.static.p_mgr(pipe; win_kill);
+
+    return plotter( cmds; data; pipe );
+
+};
+
+plot.static.plot = function( cmds; data; pipe )
+{
+    # The `cmds' argument contains character strings that are sent
+    # directly to gnuplot as commands.  It should be (or be
+    # convertible to) a vector; each element is sent to gnuplot as a
+    # separate line.
+
+    # The `data' argument contains the data to be plotted.  If `data'
+    # is a vector (or can be converted to one), then its elements
+    # contain the ordinates.  If it also has numeric labels, they are
+    # used for the abscissae.  If `data' is a matrix with 2 columns,
+    # column 2 is plotted against column 1.  If `data' is a table,
+    # each member is treated like the single vector or matrix
+    # described above, and gives one curve of a multi-curve plot.
+
+    # The `pipe' argument specifies the integer scalar plot window
+    # identifier.  If it's NULL, the previous window is closed and
+    # then used.  The identifier is returned by this function.
+
+    local( tr_tmpfile; tmpfile; c; width; d; p; name; plt; t; nm );
+
+    for ( c in vector( cmds ) ) { fprintf( pipe; "%s\n"; c ); }
+
+    if ( data != NULL ) {
+
+        plt = "";
+
+        if ( members(data).ne > 0 ) {
+
+	    p = "";
+    
+	    for ( name in members( data ) ) {
+
+	      tmpfile = tmp_file();
+
+              # Use tr(1) to remove "[" and "]" characters.  Because
+              # handling of these characters varies incompatibly
+              # between implementations, we have to use their ASCII
+              # values.
+
+	      tr_tmpfile = sprintf( "!%s -d '\\133\\135' > %s";
+				    $programs.tr; tmpfile );
+
+	      t = data.(name);
+              if ( class( t ) != "table" ) {
+		t = {};
+		t.(name) = data.(name);
+	      }
+
+              for ( nm in members( t ) ) {
+    
+                if (class(t.(nm)) == "vector" ) {
+		   d = t.(nm);
+		   if ( d.eid != NULL ) {
+                      d.eid.eid = NULL;
+		      d = [ d.eid; d ]';
+		   else
+		      d = [ 1:d.ne; d ]';
+		   }
+                   if (!test(plt)) {
+		      plt = "plot";
+		   elseif (plt != "plot")
+		      message("run time error: Cannot mix 2-D and 3-D plots.");
+		      exception();
+		   }
+
+		elseif (class(t.(nm)) == "matrix" & t.(nm).nc == 2)
+		   d = t.(nm);
+                   if (!test(plt)) {
+		      plt = "plot";
+		   elseif (plt != "plot")
+		      message("run time error: Cannot mix 2-D and 3-D plots.");
+		      exception();
+		   }
+
+		elseif (class(t.(nm)) == "matrix" & t.(nm).nc == 3)
+		   d = t.(nm);
+                   if (!test(plt)) {
+		      plt = "splot";
+		   elseif (plt != "splot")
+		      message("run time error: Cannot mix 2-D and 3-D plots.");
+		      exception();
+		   }
+
+		else
+		   message("run time error: Invalid data for plotting.");
+		   exception();
+		}
+    
+		if ( d.type == ( "complex", "character" ) ) {
+		    message( "run time error: Invalid type for plotting." );
+		    exception();
+		}
+    
+    		width = $term_width;
+    		$term_width = 0;
+
+		print( dense( d ); tr_tmpfile );
+		fprintf( tr_tmpfile; "\n" );
+
+                $term_width = width;
+              }
+
+	      if ( p != "" ) { p += ", "; }
+              if (plt == "plot") {
+	         p += sprintf( "'%s' title '%s'";
+	      	      tmpfile; name );
+	      else
+	         p += sprintf( "'%s' title '%s'";
+                        tmpfile; name );
+	      }
+    	      
+	      close( tr_tmpfile );
+    	      
+	      plot.static.tfile = plot.static.tfile, tmpfile;
+	      plot.static.tfile.eid[plot.static.tfile.ne] = pipe;
+
+	    }
+    
+	    if (plt == "splot") {fprintf( pipe; "set parametric\n" );}
+	    fprintf( pipe; "%s %s\n"; plt; p );
+
+        }
+    }
+
+    return plot.static.pvec[ imax( plot.static.pvec.eid ) ];
+
+};
+
+replot = function( cmds; pipe ) {
+
+    # The `cmds' vector contains character strings that are sent
+    # directly to gnuplot as commands.
+
+    # The `pipe' argument specifies the integer scalar plot window
+    # identifier.  If it's NULL, the previous window is closed and
+    # then used.  The identifier is returned by this function.
+
+    local( c );
+
+    if (cmds != NULL) {
+       cmds = vector (cmds);
+       if (cmds.type != "character") {
+          if (pipe != NULL) {
+             message("run time error: gnuplot commands must be type character, not %s."; cmds.type );
+             exception();
+          else
+             pipe = integer (scalar (cmds));
+             cmds = NULL;
+          }
+       }
+    }
+
+    if (pipe == NULL) {
+       pipe = plot.static.pvec[ imax( plot.static.pvec.eid) ];
+    }
+
+    if ( ! find( pipe; plot.static.pvec ).ne ) {
+        message( "run time error: Plot %d is not open."; pipe );
+        exception();
+    }
+
+    pipe = plot.static.p_mgr(pipe; 0);
+    
+    for ( c in vector( cmds ) ) { fprintf( pipe; "%s\n"; c ); }
+
+    fprintf( pipe; "replot\n" );
+
+    return plot.static.pvec[ imax( plot.static.pvec.eid ) ];
+
+};
+
+
+unplot = function(pipe)
+{
+    # The `pipe' argument specifies the integer scalar plot window
+    # identifier(s).  If it's NULL, the previous window is closed.
+    # If equal to "all", all windows are closed.
+
+    local(i; j; plist; p; l; v);
+
+    if ( pipe != NULL ) {
+	if ( pipe[1].type == "character" ) {
+	    if ( pipe == "all" ) { pipe = plot.static.pvec; }
+	}
+    }
+
+    if ( plot.static.pvec.ne == 0 ) {
+       message("Warning: No plot to close.");
+       return fill( 0; 0 );
+    }
+
+    if (pipe == NULL) {
+       pipe = plot.static.pvec[ imax( plot.static.pvec.eid ) ];
+    }
+
+#  remove specified plot window from the list as well as any
+#  temporary files associated with it.
+
+    v = integer(vector());
+    plist = vector(pipe);
+    for (pipe in plist) {
+       i = find(pipe;plot.static.pvec);
+       if ( i ) {
+          v = v,pipe;
+          p = sprintf("!%s # %d"; $programs.gnuplot; pipe);
+          close(p);
+          plot.static.pvec = plot.static.pvec[lose(i;1:plot.static.pvec.ne)];
+          l = find(p;plot.static.tfile.eid);
+          if ( l ) {
+             for (j in l) {
+                close(plot.static.tfile[j]);
+                system(sprintf("/bin/rm -f %s";plot.static.tfile[j]));
+             }
+             plot.static.tfile = plot.static.tfile[lose(l;1:plot.static.tfile.ne)];
+          }
+       else
+          message( "warning: Plot %d is not open."; pipe );
+       }
+    }
+    if (v.ne == 1) {return v[1]; else return v;}
+
+};
+
+plot.static.splot = function( cmds; data; pipe )
+{
+    # The `cmds' argument contains a vector of character strings that
+    # are sent directly to gnuplot as commands.  If not a vector it
+    # should be convertible to a vector.  Each element in the vector is
+    # sent to gnuplot as a separate line; e.g. "set data style lines",
+    # "set title 'Sample'", "set nokey", etc.
+
+    # The `data' argument contains the data to be plotted.  If `data'
+    # is a matrix, the matrix values are z (elevation) values of a
+    # surface.  The corresponding x and y values are taken from the
+    # matrix row and column labels, respectively.  If no labels
+    # exist, the row/column indices are used instead.  If `data' is a
+    # table, each member is treated like the single matrix described
+    # above, and gives one curve of a multi-curve surface plot.
+
+    # The `pipe' argument specifies the integer scalar plot window
+    # identifier.  If it's NULL, the previous window is closed and
+    # then used.  The identifier is returned by this function.
+
+    local( tmpfile; c; d; p; name; i; j; t; nm );
+
+    for ( c in vector( cmds ) ) { fprintf( pipe; "%s\n"; c ); }
+
+    if ( data != NULL ) {
+
+        p = "";
+
+        for ( name in members( data ) ) {
+
+          tmpfile = tmp_file();
+
+          t = data.(name);
+	  if ( class( t ) != "table" ) {
+	    t = {};
+	    t.(name) = data.(name);
+	  }
+
+	  for ( nm in members( t ) ) {
+
+            d = matrix( t.(nm) );
+            if (d.rid == NULL) {d.rid = 1:d.nr;}
+            if (d.cid == NULL) {d.cid = 1:d.nc;}
+
+            if ( d.type == ( "complex", "character" ) ) {
+                message( "run time error: Invalid matrix type for plotting." );
+                exception();
+            }
+
+	    for (j in 1:d.nc) {
+               for (i in 1:d.nr) {
+                  fprintf(tmpfile;" %g   %g   %g\n";d.rid[i];d.cid[j];d[i;j]);
+               }
+               fprintf(tmpfile;"\n");
+            }
+	    fprintf( tmpfile; "\n" );
+
+	  }
+
+          if ( p != "" ) { p += ", "; }
+          p += sprintf( "'%s'  title '%s'"; tmpfile; name );
+	  
+          plot.static.tfile = plot.static.tfile, tmpfile;
+          plot.static.tfile.eid[plot.static.tfile.ne] = pipe;
+	  
+          close( tmpfile );
+
+        }
+
+        fprintf( pipe; "set parametric\n" );
+        fprintf( pipe; "splot %s\n"; p );
+
+    }
+
+    return plot.static.pvec[ imax( plot.static.pvec.eid ) ];
+
+};
+
+
+plot.static.p_mgr = function(pipe; kill)
+{
+    # This function is used to keep track of active and inactive plot
+    # windows and temporary files.
+
+    # The `pipe' argument specifies the integer scalar plot window
+    # identifier.  If it's NULL, the previous window is closed and
+    # then used.  The name of the gnuplot process, which includes the
+    # identifier is returned by this function.
+
+    # the `kill' argument indicates whether a plot window will be
+    # overwritten (kill=1) or added to (kill=0).
+
+    local(i;l;p);
+
+    if ( plot.static.pvec.ne == 0 ) {
+       if (pipe == NULL) {
+          plot.static.pvec = vector(1);
+          plot.static.pvec.eid = vector(1);
+       }
+    }
+
+    if (pipe == NULL) {
+       pipe = plot.static.pvec[ imax( plot.static.pvec.eid ) ];
+       if ( kill ) {close(sprintf("!%s # %d"; $programs.gnuplot; pipe));}
+
+    elseif ( i = find(pipe;plot.static.pvec) )
+       i = scalar(i);
+       plot.static.pvec.eid[i] = max(plot.static.pvec.eid)+1;
+
+    else
+       plot.static.pvec = plot.static.pvec,pipe;
+       plot.static.pvec.eid[plot.static.pvec.ne] = max(plot.static.pvec.eid)+1;
+
+    }
+
+# keep track of temporary files; delete if no longer required
+
+    p = sprintf("!%s # %d"; $programs.gnuplot; pipe);
+    l = find(p;plot.static.tfile.eid);
+    if (test(l) & kill) {
+       for (i in l) {
+          close(plot.static.tfile[i]);
+          system(sprintf("/bin/rm -f %s";plot.static.tfile[i]));
+       }
+       plot.static.tfile = plot.static.tfile[lose(l;1:plot.static.tfile.ne)];
+    }
+
+    return p;
+
+};

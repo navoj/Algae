@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Some systems have broken linkers that don't return a failure exit
+# status when there are unresolved symbols in the link.  This script
+# attempts to recognize errors by scanning stderr.
+
+( $* 3>&1 1>&2 2>&3 | \
+  awk '/[Ee]rror|ERROR|[Uu]nresolved|[Ff]atal/ {err=1}
+       /File .* cannot be found/ {err=1}
+       /Unsatisfied external references/ {err=1}
+       {print}
+       END {exit err}' ) 3>&1 1>&2 2>&3

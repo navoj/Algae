@@ -1,0 +1,201 @@
+/* @configure_input@ */
+
+/*
+   lapack.h -- Interface for LAPACK routines.
+
+   Copyright (C) 1994-97  K. Scott Hunziker.
+   Copyright (C) 1990-94  The Boeing Company.
+
+   See the file COPYING for license, warranty, and permission details.
+ */
+
+/* $Id: lapack.h.in,v 1.6 2001/10/12 00:36:11 ksh Exp $ */
+
+#ifndef LAPACK_H
+#define LAPACK_H	1
+
+#include "algae.h"
+
+#if !NO_FORTRAN_DEFS
+#define DGEEQU	dgeequ@FTN_SUFFIX@
+#define DPOEQU	dpoequ@FTN_SUFFIX@
+#define DGESV	dgesv@FTN_SUFFIX@
+#define RGESVD	rgesvd@FTN_SUFFIX@
+#define DGETRF	dgetrf@FTN_SUFFIX@
+#define RGETRS	rgetrs@FTN_SUFFIX@
+#define XGETRS	xgetrs@FTN_SUFFIX@
+#define RGEEV	rgeev@FTN_SUFFIX@
+#define RGGEV	rggev@FTN_SUFFIX@
+#define XGGEV	xggev@FTN_SUFFIX@
+#define RPOSV	rposv@FTN_SUFFIX@
+#define RPOTRF	rpotrf@FTN_SUFFIX@
+#define RPOTRS	rpotrs@FTN_SUFFIX@
+#define XPOTRS	xpotrs@FTN_SUFFIX@
+#define RSYEV	rsyev@FTN_SUFFIX@
+#define RSYGV	rsygv@FTN_SUFFIX@
+#define RSYSV	rsysv@FTN_SUFFIX@
+#define RSYTRF	rsytrf@FTN_SUFFIX@
+#define XSYTRF	xsytrf@FTN_SUFFIX@
+#define XHETRF	xhetrf@FTN_SUFFIX@
+#define RSYTRS	rsytrs@FTN_SUFFIX@
+#define XSYTRS	xsytrs@FTN_SUFFIX@
+#define XHETRS	xhetrs@FTN_SUFFIX@
+#define ZGEEQU	zgeequ@FTN_SUFFIX@
+#define ZPOEQU	zpoequ@FTN_SUFFIX@
+#define XGEEV	xgeev@FTN_SUFFIX@
+#define XGESVD	xgesvd@FTN_SUFFIX@
+#define ZGETRF	zgetrf@FTN_SUFFIX@
+#define XHEEV	xheev@FTN_SUFFIX@
+#define XHEGV	xhegv@FTN_SUFFIX@
+#define XHESV	xhesv@FTN_SUFFIX@
+#define XPOSV	xposv@FTN_SUFFIX@
+#define XSYCON	xsycon@FTN_SUFFIX@
+#define XGECON	xgecon@FTN_SUFFIX@
+#define XHECON	xhecon@FTN_SUFFIX@
+#define XSYSV	xsysv@FTN_SUFFIX@
+#define ZGESV	zgesv@FTN_SUFFIX@
+#define RPOCON	rpocon@FTN_SUFFIX@
+#define XPOTRF	xpotrf@FTN_SUFFIX@
+#define XPOCON	xpocon@FTN_SUFFIX@
+#define RSYCON	rsycon@FTN_SUFFIX@
+#define RGECON	rgecon@FTN_SUFFIX@
+#define RSBEV	rsbev@FTN_SUFFIX@
+#define XHBEV	xhbev@FTN_SUFFIX@
+#define RGELS	rgels@FTN_SUFFIX@
+#define XGELS	xgels@FTN_SUFFIX@
+#endif
+
+void PROTO (DGEEQU, (int *m, int *n, REAL *a, int *lda,
+		     REAL *r, REAL *c,
+		     REAL *rowcnd, REAL *colcnd, REAL *amax, int *info));
+void PROTO (DPOEQU, (int *n, REAL *a, int *lda,
+		     REAL *s, REAL *scond, REAL *amax, int *info));
+void PROTO (RGECON, (int *inorm, int *n, REAL * a, int *lda,
+		     REAL * anorm, REAL * rcond,
+		     REAL * work, int *iwork, int *info));
+void PROTO (DGESV, (int *n, int *nrhs, REAL * a, int *lda,
+		    int *ipiv, REAL * b, int *ldb, int *info));
+void PROTO (RGESVD, (int *ijobu, int *ijobvt, int *m, int *n, REAL * a,
+		     int *lda, REAL * s, REAL * u, int *ldu, REAL * vt,
+		     int *ldvt, REAL * work, int *lwork, int *info));
+void PROTO (DGETRF, (int *m, int *n, REAL * a, int *lda,
+		     int *ipiv, int *info));
+void PROTO (RGETRS, (int *itrans, int *n, int *nrhs, REAL * a, int *lda,
+		     int *ipiv, REAL * b, int *ldb, int *info));
+
+void PROTO (RGEEV, (int *icmpvl, int *icmpvr, int *n, REAL * a,
+		    int *lda, REAL * wr, REAL * wi,
+		    REAL * vl, int *ldvl, REAL * vr, int *ldvr,
+		    REAL * work, int *lwork, int *info));
+void PROTO (RGGEV, (int *ijobvl, int *ijobvr, int *n,
+		    REAL * a, int *lda, REAL * b, int *ldb,
+		    REAL * alphar, REAL * alphai, REAL * beta,
+		    REAL * vl, int *ldvl, REAL * vr, int *ldvr,
+		    REAL * work, int *lwork, int *info));
+void PROTO (XGGEV, (int *ijobvl, int *ijobvr, int *n,
+		    COMPLEX * a, int *lda, COMPLEX * b, int *ldb,
+		    COMPLEX * alpha, COMPLEX * beta,
+		    COMPLEX * vl, int *ldvl, COMPLEX * vr, int *ldvr,
+		    COMPLEX * work, int *lwork, REAL *rwork, int *info));
+void PROTO (RPOCON, (int *iuplo, int *n, REAL * a, int *lda, REAL * anorm,
+		     REAL * rcond, REAL * work, int *iwork, int *info));
+void PROTO (RPOSV, (int *iuplo, int *n, int *nrhs, REAL * a, int *lda,
+		    REAL * b, int *ldb, int *info));
+void PROTO (RPOTRF, (int *iuplo, int *n, REAL * a, int *lda, int *info));
+void PROTO (RPOTRS, (int *iuplo, int *n, int *nrhs, REAL * a, int *lda,
+		     REAL * b, int *ldb, int *info));
+void PROTO (XPOTRS, (int *iuplo, int *n, int *nrhs, REAL * a, int *lda,
+		     REAL * b, int *ldb, int *info));
+void PROTO (RSYCON, (int *iuplo, int *n, REAL * a, int *lda, int *ipiv,
+		     REAL * anorm, REAL * rcond, REAL * work, int *iwork,
+		     int *info));
+void PROTO (RSYEV, (int *icompa, int *iuplo, int *n, REAL * a, int *lda,
+		    REAL * w, REAL * work, int *lwork, int *info));
+void PROTO (RSYGV, (int *itype, int *ijobz, int *iuplo, int *n,
+		    REAL * a, int *lda, REAL * b, int *ldb,
+		    REAL * w, REAL * work, int *lwork, int *info));
+void PROTO (XHEGV, (int *itype, int *ijobz, int *iuplo, int *n,
+		    COMPLEX * a, int *lda, COMPLEX * b, int *ldb,
+		    REAL *w, COMPLEX *work, int *lwork, REAL *rwork,
+		    int *info));
+void PROTO (RSYSV, (int *iuplo, int *n, int *nrhs, REAL * a,
+		    int *lda, int *ipiv, REAL * b,
+		    int *ldb, REAL * work, int *lwork, int *info));
+void PROTO (RSYTRF, (int *iuplo, int *n, REAL * a, int *lda, int *ipiv,
+		     REAL * work, int *lwork, int *info));
+void PROTO (RSYTRS, (int *iuplo, int *n, int *nrhs, REAL * a, int *lda,
+		     int *ipiv, REAL * b, int *ldb, int *info));
+
+void PROTO (ZGEEQU, (int *m, int *n, COMPLEX *a, int *lda,
+		     REAL *r, REAL *c,
+		     REAL *rowcnd, REAL *colcnd, REAL *amax, int *info));
+void PROTO (ZPOEQU, (int *n, COMPLEX *a, int *lda,
+		     REAL *s, REAL *scond, REAL *amax, int *info));
+void PROTO (XGEEV, (int *ijobvl, int *ijobvr, int *n, COMPLEX * a, int *lda,
+		    COMPLEX * w, COMPLEX * vl, int *ldvl, COMPLEX * vr,
+		    int *ldvr, COMPLEX * work, int *lwork, REAL * rwork,
+		    int *info));
+void PROTO (XGESVD, (int *ijobu, int *ijobvt, int *m, int *n, COMPLEX * a,
+		     int *lda, REAL * s, COMPLEX * u, int *ldu, COMPLEX * vt,
+		     int *ldvt, COMPLEX * work, int *lwork, REAL * rwork,
+		     int *info));
+void PROTO (XHEEV, (int *ijobz, int *iuplo, int *n, COMPLEX * a, int *lda,
+		    REAL * w, COMPLEX * work, int *lwork, REAL * rwork,
+		    int *info));
+void PROTO (XHESV, (int *iuplo, int *n, int *nrhs, COMPLEX * a,
+		    int *lda, int *ipiv, COMPLEX * b,
+		    int *ldb, COMPLEX * work, int *lwork, int *info));
+void PROTO (XPOCON, (int *iuplo, int *n, COMPLEX * a, int *lda, REAL * anorm,
+		     REAL * rcond, COMPLEX * work, REAL * rwork, int *info));
+void PROTO (XPOSV, (int *iuplo, int *n, int *nrhs, COMPLEX * a, int *lda,
+		    COMPLEX * b, int *ldb, int *info));
+void PROTO (XPOTRF, (int *iuplo, int *n, COMPLEX * a, int *lda, int *info));
+void PROTO (XSYSV, (int *iuplo, int *n, int *nrhs, COMPLEX * a,
+		    int *lda, int *ipiv, COMPLEX * b,
+		    int *ldb, COMPLEX * work, int *lwork, int *info));
+
+void PROTO (ZGESV, (int *n, int *nrhs, COMPLEX * a, int *lda, int *ipiv,
+		    COMPLEX * b, int *ldb, int *info));
+
+void PROTO (RSBEV, (int *ijobz, int *iuplo, int *n, int *kd, REAL * ab,
+		    int *ldab, REAL * w, REAL * z, int *ldz, REAL * work,
+		    int *info));
+void PROTO (XHBEV, (int *ijobz, int *iuplo, int *n, int *kd, COMPLEX * ab,
+		 int *ldab, REAL * w, COMPLEX * z, int *ldz, COMPLEX * work,
+		    REAL * rwork, int *info));
+
+void PROTO (XGECON, (int *inorm, int *n, REAL * a, int *lda,
+		     REAL * anorm, REAL * rcond,
+		     REAL * work, int *rwork, int *info));
+
+void PROTO (XGETRS, (int *itrans, int *n, int *nrhs, REAL * a, int *lda,
+		     int *ipiv, REAL * b, int *ldb, int *info));
+
+void PROTO (XSYCON, (int *iuplo, int *n, REAL * a, int *lda, int *ipiv,
+		     REAL * anorm, REAL * rcond, REAL * work,
+		     int *info));
+void PROTO (XHECON, (int *iuplo, int *n, REAL * a, int *lda, int *ipiv,
+		     REAL * anorm, REAL * rcond, REAL * work,
+		     int *info));
+
+void PROTO (XSYTRF, (int *iuplo, int *n, REAL * a, int *lda, int *ipiv,
+		     REAL * work, int *lwork, int *info));
+void PROTO (XHETRF, (int *iuplo, int *n, REAL * a, int *lda, int *ipiv,
+		     REAL * work, int *lwork, int *info));
+
+void PROTO (XSYTRS, (int *iuplo, int *n, int *nrhs, REAL * a, int *lda,
+		     int *ipiv, REAL * b, int *ldb, int *info));
+void PROTO (XHETRS, (int *iuplo, int *n, int *nrhs, REAL * a, int *lda,
+		     int *ipiv, REAL * b, int *ldb, int *info));
+
+void PROTO (ZGETRF, (int *m, int *n, REAL * a, int *lda,
+		     int *ipiv, int *info));
+
+void PROTO (RGELS, (int *itrans, int *m, int *n, int *nrhs, REAL *a,
+		    int *lda, REAL *b, int *ldb, void *work,
+		    int *lwork, int *info));
+void PROTO (XGELS, (int *itrans, int *m, int *n, int *nrhs, COMPLEX *a,
+		    int *lda, COMPLEX *b, int *ldb, void *work,
+		    int *lwork, int *info));
+
+#endif /* LAPACK_H */

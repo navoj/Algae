@@ -1,0 +1,50 @@
+
+# This function shifts the elements of an array `x'.  The arg `s' is a
+# vector -- each of its elements specifies the shift distance for the
+# corresponding dimension of `x'.  A positive shift is down or right; a
+# negative shift is up or left.  If unspecified, the shift distance is
+# zero (meaning no shift).  If `x' is a table, the function is applied
+# to each of its members.
+
+circshift = function (x; s)
+{
+  local (c; ir; ic; nr; nc; sr; sc; y; m);
+
+  s = fill (2; vector (s), 0, 0);
+
+  c = class (x);
+  if (c == "matrix")
+  {
+    nr = x.nr;
+    sr = -s[1]%nr;
+    if (sr < 0) { sr = nr + sr; }
+    ir = integer ((seq(nr)-1+sr) % nr + 1);
+
+    nc = x.nc;
+    sc = -s[2]%nc;
+    if (sc < 0) { sc = nc + sc; }
+    ic = integer ((seq(nc)-1+sc) % nc + 1);
+
+    y = x[ir;ic];
+
+  elseif (c == "vector")
+
+    nc = x.ne;
+    sc = -s[1]%nc;
+    if (sc < 0) { sc = nc + sc; }
+    ic = integer ((seq(nc)-1+sc) % nc + 1);
+
+    y = x[ic];
+
+  elseif (c == "table")
+
+    y = x;
+    for (m in members (y)) { y.(m) = self (y.(m); s); }
+
+  else
+
+    y = self (vector (x); s);
+  }
+
+  return y;
+};

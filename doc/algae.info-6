@@ -1,0 +1,1132 @@
+This is algae.info, produced by makeinfo version 4.3 from algae.texinfo.
+
+INFO-DIR-SECTION Programming Languages
+START-INFO-DIR-ENTRY
+* algae: (algae).		Another Matrix Programming Language
+END-INFO-DIR-ENTRY
+
+
+File: algae.info,  Node: prof,  Next: show,  Prev: info,  Up: Miscellaneous
+
+ - Function: prof ( infile; outfile; threshold )
+     The `prof' function reads an `algae.out' file produced by Algae's
+     execution profiler (the `-p' option), and summarizes it by file
+     and by line number.  The INFILE argument specifies the file name.
+     OUTFILE specifies the output file; if it's NULL, stdout is used.
+
+     The THRESHOLD argument may be used to truncate the summary
+     listings.  The truncation occurs after enough entries have been
+     printed to account for THRESHOLD percent of the total number of
+     hits.  If THRESHOLD is NULL, no truncation is performed.
+
+     Below is an example of `prof' output, obtained with the command
+     `prof("algae.out";;50);'.
+
+          Algae execution profile listing.
+          
+          628 total hits
+          
+          --- by file ---
+          
+                hits   % hits    cum %   file
+                 201    32.01    32.01   lqrtest.A
+                 127    20.22    52.23   /usr/local/lib/algae/ode.A
+          
+          --- by line ---
+          
+                hits   % hits    cum %   line   file
+                 130    20.70    20.70     88   lqrtest.A
+                  42     6.69    27.39      1   /usr/local/lib/algae/plot.A
+                  40     6.37    33.76     38   lqrtest.A
+                  21     3.34    37.10      1   /usr/local/lib/algae/ode.A
+                  17     2.71    39.81     44   /usr/local/lib/algae/ode.A
+                  15     2.39    42.20     42   /usr/local/lib/algae/ode.A
+                  15     2.39    44.59     41   /usr/local/lib/algae/ode.A
+                  14     2.23    46.82      1   /usr/local/lib/algae/ode4.A
+                  12     1.91    48.73      1   /usr/local/lib/algae/spline.A
+                  10     1.59    50.32      1   lqrtest.A
+
+     First, notice that the number of hits counted in this example was
+     only 628.  Four digits of precision in the statistics are clearly
+     unjustifed with such a small sample.  The first column reports the
+     number of profiler hits counted toward each particular file or
+     line number.  The second column restates that as a percentage of
+     the total number of hits.  The third column gives the cumulative
+     percentage.
+
+     All profiler hits that occur while Algae is parsing a file are
+     counted toward its first line.  This is normally insignificant
+     compared to execution, but it explains why line 1 shows up so
+     often in the "by line" report in the example above.
+
+     No files are closed in `prof'.  Normally, this means that you must
+     close them yourself if `prof' is to be called more than once.
+
+
+File: algae.info,  Node: show,  Next: split,  Prev: prof,  Up: Miscellaneous
+
+ - Function: show ( e )
+     This function prints information about the entity E and its
+     members.
+
+
+File: algae.info,  Node: split,  Next: string,  Prev: show,  Up: Miscellaneous
+
+ - Function: split ( s; w )
+     The `split' function takes a character scalar argument S, splits
+     it into tokens, and returns the tokens in a character vector.
+     Each token is delimited by one or more characters from W.  For
+     example, `split("/bin:/usr/bin";":")' returns the vector
+
+          (  "/bin"    , "/usr/bin" )
+
+     If W is NULL, the string `" \t\n"' is used.  Thus `split("This is
+     a test.")' returns the vector
+
+          (  "This" , "is"   , "a"    , "test." )
+
+
+File: algae.info,  Node: string,  Next: substr,  Prev: split,  Up: Miscellaneous
+
+ - Function: string ( e )
+     The `string' function converts its argument E to character type.
+     If E is NULL, a zero-length character scalar is returned.  For
+     example, `string(1/(1:3))' returns the vector
+
+          (  "1"       , "0.5"     , "0.333333" )
+
+     Currently, the output format cannot be changed.
+
+
+File: algae.info,  Node: substr,  Next: test,  Prev: string,  Up: Miscellaneous
+
+ - Function: substr ( c; start; length )
+     The `substr' function returns the substring of the character string
+     C, beginning at index START, with length LENGTH.  The integer
+     START must be greater than zero; if it exceeds the length of C,
+     then a zero-length string is returned.  If LENGTH is NULL, then
+     all of the remaining characters of C are returned; otherwise,
+     LENGTH must not be negative.
+
+     See also `dice', `split', and `string'.
+
+
+File: algae.info,  Node: test,  Next: time,  Prev: substr,  Up: Miscellaneous
+
+ - Function: test ( e )
+     The `test' function evaluates the "truth" of E in the same way
+     that Algae's `if' statement would, returning 1 for true and 0 for
+     false.  The following entities are false:
+
+        * NULL.
+
+        * Numeric arrays in which every element is zero.
+
+        * Character arrays in which every element is `""'.
+
+        * Vectors and matrices with no elements.
+
+        * Tables with no members.
+
+     All others are true.  Notice that if E is an array (`scalar',
+     `vector', or `matrix'), then `test' returns true if any element of
+     E is nonzero (or has nonzero length, for character type).
+
+     An example of the use of `test' is Algae's `equal' function, which
+     is written as
+
+          equal = function( a; b ) { return !test( a != b ); }
+
+     If `a' and `b' are both matrices, then `a!=b' returns a matrix
+     that is all zeros only if every element pair is equal.  In that
+     case, `test' returns 0 and `!' changes that to 1.
+
+     See also `equal' and `all'.
+
+
+File: algae.info,  Node: time,  Next: tolower,  Prev: test,  Up: Miscellaneous
+
+ - Function: time ( )
+     The `time' function returns the number of seconds of user time that
+     the current process has used.  On most machines, its precision is
+     not much more than 1/10 of a second.
+
+
+File: algae.info,  Node: tolower,  Next: toupper,  Prev: time,  Up: Miscellaneous
+
+ - Function: tolower ( s )
+     The `tolower' function converts strings to lower case.  Every
+     letter is converted as appropriate for the current locale.  The
+     argument S may be a character scalar, vector, or matrix.
+
+     See also `toupper'.
+
+
+File: algae.info,  Node: toupper,  Next: what,  Prev: tolower,  Up: Miscellaneous
+
+ - Function: toupper ( s )
+     The `toupper' function converts strings to upper case.  Every
+     letter is converted as appropriate for the current locale.  The
+     argument S may be a character scalar, vector, or matrix.
+
+     See also `tolower'.
+
+
+File: algae.info,  Node: what,  Next: who,  Prev: toupper,  Up: Miscellaneous
+
+ - Function: what ( )
+     The `what' function returns a table containing all of the global
+     functions.  See also `who'.
+
+
+File: algae.info,  Node: who,  Prev: what,  Up: Miscellaneous
+
+ - Function: who ( opt )
+     The `who' function returns a table containing all global variables
+     that are neither functions nor NULL.  Variables with names that
+     begin with `$' are excluded, unless the optional argument OPT
+     equals `"$"'.  See also `what'.
+
+
+File: algae.info,  Node: Running Algae,  Next: Projects,  Prev: Standard Functions,  Up: Top
+
+Running Algae
+*************
+
+   The Algae interpreter assembles your Algae statements into its own
+opcodes and then executes them.  When you are working interactively, it
+does this one statement (or one block of statements) at a time.  When
+its input comes from a file, the entire file is assembled before
+execution of it begins.
+
+* Menu:
+
+* Startup Files::
+* Command Line::
+* Errors::
+* Prompt::
+* Signals::
+
+
+File: algae.info,  Node: Startup Files,  Next: Command Line,  Prev: Running Algae,  Up: Running Algae
+
+Startup Files
+=============
+
+   When Algae begins execution, it normally tries to read and execute
+two startup files.  The first one it tries is the file in which it
+expects some of its standard functions to be defined.  A default name
+for this file is given when Algae is compiled--usually it's something
+like `/usr/local/lib/algae/4.3.6/algae.A'.  That name can be overridden
+with an environment variable called `ALGAE_RC0'.
+
+   Without this file, some of Algae's standard functions will be
+missing.  For this reason, Algae will emit an error message and quit if
+it can't find the file.  (That is, unless the `-S' option is specified
+on the command line.)
+
+   After Algae reads its standard functions, it looks for the file
+`.algae' in your home directory and executes it if it's there.  This
+file's name can be overridden with the `ALGAE_RC1' environment
+variable.  Execution of this file is inhibited by the `-s' command line
+option.  No startup files at all are read if the `-S' option is given.
+
+
+File: algae.info,  Node: Command Line,  Next: Errors,  Prev: Startup Files,  Up: Running Algae
+
+The Command Line
+================
+
+   Algae supports command line arguments to request various actions.
+Arguments starting with `-' are "options".  Other arguments specify
+files to execute.
+
+   Option flags always begin with a hyphen.  Algae supports both
+traditional single-letter options and mnemonic long option names.  Long
+option names are indicated with `--' instead of `-'.  Abbreviations for
+option names are allowed as long as they are unique.
+
+   Options which change Algae's behavior take effect before any files
+are executed.  The order of the arguments is unimportant, with the
+following two exceptions:
+  1. Any input scripts given (with the `-e' or `--script' option) are
+     executed in the order that they appear on the command line.  This
+     occurs after the startup files are executed and before any other
+     files are executed.
+
+  2. Any input files named on the command line are executed in the
+     order in which they appear.
+
+   Below is a list of options accepted by Algae.  Both the short and
+long option names are indicated.
+
+`-D'
+`--disassemble'
+     This option turns on the disassembler, which prints Algae's
+     opcodes to stderr in a form like assembly language.  You'll
+     probably want to combine this with the `-S' option; otherwise,
+     you'll get more than 800 lines of opcodes from the standard
+     functions.
+
+`-d I'
+`--debug I'
+     This option sets the debug level to I, where I is an integer.  It
+     is normally of use only for debugging the Algae implementation.
+
+`-e COMMANDS'
+`--script COMMANDS'
+     This option allows you to provide a script for Algae to execute
+     from the command line, rather than from a file or from standard
+     input.  Such a script is executed after any startup files but
+     before any other files are executed.  Any number of `-e' (or
+     `--script') options may be given, and the specified scripts are
+     executed in the order in which they appear on the command line.
+
+`-h'
+`--help'
+     Print a brief description of the command line arguments.
+
+`-i'
+`--interactive'
+     This option causes Algae to use interactive mode when reading from
+     the standard input device "stdin".  Without this option, Algae
+     uses interactive mode only when its input appears to be from a
+     terminal.  In interactive mode, input is parsed a line at a time
+     and exceptions do not cause Algae to exit.
+
+`-n'
+`--nowhite'
+     This option changes the way that scalars are displayed.  The
+     printing statements (that is, statements that are terminated by
+     either a newline or a `?' character) normally precede the scalar's
+     value with a tab, and follow it with a newline.  With this option
+     set, neither the tab nor the newline is printed.  (For character
+     scalars, the quotation marks are also omitted.)  This option
+     affects the printing statements only, and has no effect on the
+     functions like `printf'.
+
+`-p'
+`--profile'
+     This option enables execution profiling--a means for determining
+     the execution time characteristics of your Algae program.  When
+     profiling is enabled, the profiler periodically interrupts Algae
+     and records the line that is currently being executed.  When Algae
+     exits, it records this data in the file `algae.out' in the current
+     directory.
+
+     Use the `prof' function to read the `algae.out' file and summarize
+     it by file and by line number.
+
+     You may wish to use the `strip' function in conjunction with
+     profiling.  Since `strip' removes the line and file information
+     from a function, any time spent in a call to that function gets
+     charged to the line from which it was called.
+
+     We've encountered several systems on which operating system bugs
+     prevent the execution profiler from working correctly.  These
+     include a DECstation and a Titan, both with MIPS architectures.
+     If you have such a system, then Algae should have been installed
+     with the execution profiler disabled.  In that case, you'll get an
+     error message if you try to use the `-p' option.
+
+`-R'
+`--restrict'
+     This option causes Algae to run in restricted mode.  The `system'
+     function is disabled, as are "pipes" (i.e., file names that begin
+     with the `!' character).
+
+     Restricted mode should be used whenever you deal with untrusted
+     Algae code.  Without it, a malicious provider of such code could
+     cause major damage.
+
+`-r'
+`--noreadline'
+     If the GNU Readline facility is available, Algae normally uses it
+     for interactive command line editing and history.  The `-r' option
+     forces Algae to skip Readline processing.  Readline's editing
+     commands are similar to emacs: `C-f' forward, `C-b' backward,
+     `C-p' up, and `C-n' down.  You can change to `vi' style by typing
+     `M-C-j'.
+
+`-S'
+`--nostartup'
+     If this option is given, none of Algae's startup files are read.
+     This means that many of the standard functions will be unavailable.
+
+`-s'
+`--norc'
+     This option skips reading the user's startup file.
+
+`-V'
+`--version'
+     This option prints version and date information.
+
+`-x'
+`--nostdin'
+     This option causes Algae not to read stdin by default when no file
+     names are given on the command line.
+
+   Any file names given on the command line are executed as input to
+Algae.  If no file names are given (and the `-x' option is not present),
+input comes from stdin.  You can specify stdin explicitly with a single
+hyphen, so a command line like
+
+     algae init.A -
+
+has Algae execute `init.A' first and then read from standard input.
+
+
+File: algae.info,  Node: Errors,  Next: Prompt,  Prev: Command Line,  Up: Running Algae
+
+Errors
+======
+
+   Several types of errors may be encountered when running Algae.  The
+two most common are "parse" errors and "run time" errors.  Parse errors
+occur while Algae is parsing its input statements.  Run time errors
+occur while Algae is executing its code.  In both cases, Algae prints a
+file name and line number associated with the error.
+
+
+File: algae.info,  Node: Prompt,  Next: Signals,  Prev: Errors,  Up: Running Algae
+
+The algae Prompt
+================
+
+   When executing interactively, Algae displays the primary prompt when
+it is ready to read a command, and the secondary prompt when it needs
+more input to complete a command.  You can customize the prompt simply
+by assigning a character vector to the global variable `$prompt'.  Its
+first two elements specify the primary and secondary prompts.  By
+default, `$prompt' is `( "> ", " " )'.  Assigning something other than
+a character vector to `$prompt' is not an error--Algae just won't give
+you a prompt.  (Wouldn't it be fun to accept a function?  Hmm, maybe
+someday.)
+
+   If the GNU Readline facility is available (that is, linked with
+Algae during installation), Algae normally uses it for interactive
+command line editing and history.  Readline's editing commands are
+similar to emacs: `C-f' forward, `C-b' backward, `C-p' up, and `C-n'
+down.  You can change to `vi' style by typing `M-C-j'.  The `-r'
+command line option forces Algae to skip Readline processing.
+
+
+File: algae.info,  Node: Signals,  Prev: Prompt,  Up: Running Algae
+
+Signals
+=======
+
+   If Algae receives an interrupt signal (because you pressed a `C-c'
+on the keyboard, for example), it stops what it's doing and returns to
+the prompt.  (If it isn't running interactively, it simply exits.)  On
+Unix systems, you can also use the `kill' command to send a signal to a
+process.
+
+   The implementation of interrupt signal handling in Algae is
+necessarily a compromise.  We want it to respond promptly, but not at
+the expense of our performance.  As a result, it sometimes happens that
+Algae does not respond promptly to an interrupt signal.  (If you find a
+case like this; please report it.  Sometimes it's the result of an
+oversight.)
+
+   Sending Algae a quit signal causes an immediate, clean exit.  There
+are various other signals which will cause Algae to terminate, but this
+is the one to use if you want your files closed properly, etc.
+
+
+File: algae.info,  Node: Projects,  Next: Bugs,  Prev: Running Algae,  Up: Top
+
+Projects
+********
+
+   Below is a list of improvements that we'd like to make to Algae.
+These items run the gamut from specific changes that would take only an
+hour or so to implement to vague, half-baked ideas that might take
+months.  The items are in no particular order--we haven't identified
+priorities on most of them.  We'd be very happy to have some help.
+
+   * The `atan' and `atanh' functions need improvement for complex
+     arguments.  They are based on simple formulas, but better
+     algorithms are available that are faster, more accurate, and less
+     prone to overflow.
+
+   * In the old days, getting Readline to do context-based completion
+     (as on variable names) was nearly impossible.  This may have
+     changed - we ought to take a new look at it.
+
+   * The `printf' and related functions should be given additional
+     capabilities to accept array arguments.
+
+   * I'm interested in exploring a better arrangement for the help
+     system.  Users should be able to tie in documentation for their
+     own code.
+
+   * With the `builtin' function, Algae has dynamic linking capability.
+     To make this useful, though, we have to document the interface
+     and reorganize the header files.
+
+   * Wouldn't a GTK+ (http://www.gtk.org/) interface be nice?
+
+   * We need to complete the `fread' and `fwrite' implementation, and
+     we'll probably want an `fseek' function as well.
+
+   * Symbolic debugging of Algae code would be very helpful.
+
+
+
+File: algae.info,  Node: Bugs,  Next: Concept Index,  Prev: Projects,  Up: Top
+
+Bugs
+****
+
+   Your bug reports play an essential role in making Algae reliable.
+By reporting a bug, you may or may not get a timely solution to your
+problem.  Either way, bug reports help us to make the next version of
+Algae better.  In addition, your comments or criticisms on Algae or the
+Algae language are also welcomed.
+
+   The Algae interpreter is incomplete.  There are several operations
+that it should be able to perform but that have not yet been
+implemented.  These cases elicit a "detour" message from Algae.  Since
+they're not bugs, you don't need to tell us about them.  Still,
+complaining about them might get them fixed.
+
+* Menu:
+
+* Reporting Bugs::
+* Reported Bugs::
+
+
+File: algae.info,  Node: Reporting Bugs,  Next: Reported Bugs,  Prev: Bugs,  Up: Bugs
+
+Reporting Bugs
+==============
+
+   In order for a bug report to serve its purpose, you must include the
+information we need to fix it.  As the GNU people say, "report all the
+facts".  But never mind Joe Friday--the more information the better.
+It usually doesn't pay to explore the "envelope" of the bug; that is,
+changes to the input that affect it.  Providing a simple example is the
+best way to get a bug fixed.
+
+   You should include the following information with your bug report:
+
+   * The version of Algae.  You can get this by running it with the
+     `-V' option.
+
+   * A complete input file that will reproduce the bug.  A single
+     statement is generally not sufficient.
+
+   * The type of machine you are using, and the operating system name
+     and version number.
+
+   * A description of what behavior you observe that you believe is
+     incorrect.
+
+   Send bug reports to:
+
+     ksh@sideslip.org
+
+or, as a last resort, mail them to:
+
+     Algae Bugs
+     Attn: Scott Hunziker
+     The Boeing Company
+     P.O. Box 3707, MC 8K-26
+     Seattle, WA  98124-2207
+
+
+File: algae.info,  Node: Reported Bugs,  Prev: Reporting Bugs,  Up: Bugs
+
+Reported Bugs
+=============
+
+   Below is a list of bugs that are known to exist in the current
+version of Algae and are waiting to be fixed.
+
+1
+     Recurse deep enough, and Algae dumps core.  For example, the
+     expression
+
+          function () { return self(); } ()
+
+     will not return gracefully.  (I just tried it, and I had to reboot
+     my machine!)  It usually takes more than 500 levels of recursion
+     to hit this bug, though, so you'll probably only encounter it with
+     runaway functions.
+
+16
+     We have problems when a parse error occurs in a recursive call to
+     the parser.  Local variables created in the recursive call are
+     left in an invalid state.  This happens, for example, if you call
+     the `source' function from an interactive session and encounter a
+     parse error in the process.
+
+22
+     Every time Algae parses a file, it leaks the memory in which the
+     name of that file is stored.  The names are kept around because
+     user functions refer to them.  Instead, we should arrange for the
+     names to be stored with each user function so that they get
+     deleted when the function is deleted.
+
+23
+     When Algae reads a binary file that contains a user function, it
+     allocates memory for every string constant in that function.  If
+     you then delete that function, this memory is leaked.
+
+24
+     We use the texi2html program to make Algae's HTML documentation
+     from the texinfo source.  Among its numerous deficiencies, it
+     sometimes splits an anchor from the text with which it is supposed
+     to be associated.  For example (from algae-3.5.0), the anchor for
+     the section named "Running Algae" is put at the bottom of the file
+     `algae_6.html' instead of at the top of `algae_7.html' where it
+     belongs.  For this reason, the Algae `info' function may not take
+     you to the right place in the document.
+
+
+File: algae.info,  Node: Concept Index,  Next: Function Index,  Prev: Bugs,  Up: Top
+
+Concept Index
+*************
+
+   If you can't find what you're looking for here, please send us a bug
+report.  We'll try to include an entry for it in the next release of
+this manual.
+
+* Menu:
+
+* ! (not operator) <1>:                  Not.
+* ! (not operator):                      Primer.
+* != (inequality operator) <1>:          Relation.
+* != (inequality operator):              Primer.
+* " (quote character):                   Data.
+* # (begin comment):                     Statements.
+* $$:                                    Variable Names.
+* % (modulus operator):                  Multiplication.
+* %= (assignment operator):              Assign.
+* & (and operator) <1>:                  And.
+* & (and operator):                      Primer.
+* && (and operator) <1>:                 Short And.
+* && (and operator):                     Primer.
+* ' (conjugate transpose operator):      Transpose.
+* () function calls:                     Call.
+* * (multiplication operator):           Multiplication.
+* *= (assignment operator):              Assign.
+* + (addition operator):                 Addition.
+* + (affirmation operator):              Negation.
+* += (assignment operator):              Assign.
+* , (append operator) <1>:               Append.
+* , (append operator):                   Primer.
+* - (negation operator):                 Negation.
+* - (subtraction operator):              Addition.
+* -= (assignment operator):              Assign.
+* . (member reference operator):         Member.
+* / (division operator):                 Multiplication.
+* /= (assignment operator):              Assign.
+* : (vector generation operator) <1>:    Generate.
+* : (vector generation operator):        Primer.
+* ; (statement terminator) <1>:          Statements.
+* ; (statement terminator):              Primer.
+* < (less than operator) <1>:            Relation.
+* < (less than operator):                Primer.
+* <= (less or equal operator) <1>:       Relation.
+* <= (less or equal operator):           Primer.
+* = (assignment operator):               Assign.
+* == (equality operator) <1>:            Relation.
+* == (equality operator):                Primer.
+* > (greater than operator) <1>:         Relation.
+* > (greater than operator):             Primer.
+* >= (greater or equal operator) <1>:    Relation.
+* >= (greater or equal operator):        Primer.
+* ? (statement terminator) <1>:          Statements.
+* ? (statement terminator):              Primer.
+* @ (element-by-element multiplication operator): Multiplication.
+* @= (assignment operator):              Assign.
+* [ ] (element reference):               Element.
+* \ (backslash character):               Data.
+* ^ (power operator):                    Power.
+* Absolute file name:                    src.
+* Absolute value:                        abs.
+* Addition operator:                     Addition.
+* Affirmation operator:                  Negation.
+* algae.out <1>:                         Command Line.
+* algae.out:                             prof.
+* ALGAE_SRC_PATH environment variable:   src.
+* And operator <1>:                      Short And.
+* And operator <2>:                      And.
+* And operator:                          Primer.
+* Apostrophe:                            Transpose.
+* Append operator <1>:                   Append.
+* Append operator:                       Primer.
+* Arc cosine:                            acos.
+* Arc cosine hyperbolic:                 acosh.
+* Arc sine:                              asin.
+* Arc sine hyperbolic:                   asinh.
+* Arc tangent:                           atan.
+* Arc tangent hyperbolic:                atanh.
+* Argument:                              arg.
+* Arguments of functions <1>:            Functions.
+* Arguments of functions <2>:            Call.
+* Arguments of functions:                Primer.
+* Arguments, command line:               Command Line.
+* Arnoldi method:                        iram.
+* ARPACK:                                iram.
+* Arrays:                                Data.
+* Assignment operators:                  Assign.
+* Assignments:                           Expressions.
+* Associativity of operators:            Operators.
+* Automatic class conversion <1>:        Operators.
+* Automatic class conversion:            Primer.
+* Automatic type conversion:             Operators.
+* Autosrc functions:                     autosrc.
+* Back substitution:                     backsub.
+* Backslash character:                   Data.
+* Bandwidth:                             band.
+* Bandwidth reduction:                   gpskca.
+* BCSLIB-EXT <1>:                        factor.
+* BCSLIB-EXT <2>:                        chol.
+* BCSLIB-EXT:                            backsub.
+* Beep:                                  Predefined Variables.
+* Beginning execution:                   Startup Files.
+* Binary input:                          fread.
+* Binary output:                         fwrite.
+* Block diagonal:                        bdiag.
+* Block transpose:                       btrans.
+* Boeing Computer Services <1>:          factor.
+* Boeing Computer Services <2>:          chol.
+* Boeing Computer Services:              backsub.
+* Braces:                                Primer.
+* Brackets:                              Element.
+* break statement:                       Primer.
+* Brennan, Mike:                         About Algae.
+* Bugs:                                  Bugs.
+* Builtin functions:                     Primer.
+* Call by value:                         Primer.
+* Calling functions:                     Call.
+* Case <1>:                              toupper.
+* Case:                                  tolower.
+* Case of variable names:                Variable Names.
+* catch:                                 Primer.
+* Catenation, string:                    Addition.
+* Ceiling:                               ceil.
+* Change directory:                      cd.
+* Character constants:                   Data.
+* Character strings <1>:                 substr.
+* Character strings:                     string.
+* Character type <1>:                    Data.
+* Character type:                        Primer.
+* Cholesky factorization:                chol.
+* Circular shift:                        circshift.
+* Circumflex:                            Power.
+* Class conversions <1>:                 Operators.
+* Class conversions:                     Primer.
+* Class of entities <1>:                 Data.
+* Class of entities <2>:                 Entities.
+* Class of entities:                     Primer.
+* Closing a file:                        close.
+* Colon <1>:                             Generate.
+* Colon:                                 Primer.
+* Comma <1>:                             Append.
+* Comma:                                 Primer.
+* Command line arguments:                Command Line.
+* Comments:                              Statements.
+* Complement:                            complement.
+* Complex conjugate:                     conj.
+* Complex type <1>:                      Data.
+* Complex type:                          Primer.
+* Concatenation, string:                 Addition.
+* Condition number:                      equilibrate.
+* Conjugate transpose operator:          Transpose.
+* Conjugate, complex:                    conj.
+* Constants:                             Data.
+* continue statement:                    Primer.
+* Control-flow statements:               Primer.
+* Conversions between classes:           Operators.
+* Conversions between types:             Operators.
+* Converting between classes:            Primer.
+* Cosine:                                cos.
+* Creating new members:                  Primer.
+* Cubic splines:                         spline.
+* Data types:                            Data.
+* Debug level:                           Command Line.
+* Defining functions <1>:                Functions.
+* Defining functions:                    Primer.
+* Defining variables:                    Variables.
+* Deleting entities:                     Primer.
+* Dense storage:                         dense.
+* Detours:                               Bugs.
+* Diagonal of a matrix:                  diag.
+* Digital filter:                        filter.
+* Digits to print <1>:                   digits.
+* Digits to print:                       Predefined Variables.
+* Digits, significant:                   Statements.
+* Directory, changing:                   cd.
+* Disassembler:                          Command Line.
+* Division operator:                     Multiplication.
+* Dot operator <1>:                      Member.
+* Dot operator <2>:                      Entities.
+* Dot operator:                          Primer.
+* Double quotes:                         Data.
+* Dynamic linking:                       builtin.
+* Efficiency of loops:                   Primer.
+* Efficient matrix products:             mult.
+* Eigenvalues and eigenvectors <1>:      iram.
+* Eigenvalues and eigenvectors:          eig.
+* Element numbering in matrices:         Primer.
+* Element numbering in vectors:          Primer.
+* Element references:                    Element.
+* Emacs:                                 Command Line.
+* End of file:                           Reading Numbers.
+* Entities <1>:                          Data.
+* Entities <2>:                          Entities.
+* Entities:                              Primer.
+* Entity members <1>:                    Entities.
+* Entity members:                        Primer.
+* Environment variables:                 getenv.
+* Equality operators:                    Primer.
+* Equilibration:                         equilibrate.
+* Error function <1>:                    erfc.
+* Error function:                        erf.
+* Error messages <1>:                    Errors.
+* Error messages:                        message.
+* Escape sequences:                      Data.
+* Evaluation <1>:                        exec.
+* Evaluation:                            eval.
+* Evaluation of variables:               Evaluation.
+* Exceptions:                            exception.
+* exceptions:                            Primer.
+* Exclamation mark <1>:                  fprintf.
+* Exclamation mark:                      Not.
+* Execution profiling <1>:               Command Line.
+* Execution profiling:                   prof.
+* Exiting:                               exit.
+* Exponential:                           exp.
+* Expressions <1>:                       Expressions.
+* Expressions:                           Language.
+* Factors, prime:                        primef.
+* False:                                 Primer.
+* Features:                              provide.
+* FFTW:                                  fft.
+* File closing:                          close.
+* File searching:                        src.
+* Files on the command line:             Command Line.
+* Floor:                                 floor.
+* for statement:                         Primer.
+* Format for printing:                   digits.
+* Format, real or complex number:        Statements.
+* Formatted output <1>:                  printf.
+* Formatted output:                      fprintf.
+* Forward substitution:                  backsub.
+* Fourier transform:                     fft.
+* Full storage:                          full.
+* Function calls:                        Call.
+* Function expressions:                  Functions.
+* Functions <1>:                         Data.
+* Functions <2>:                         Functions.
+* Functions:                             Primer.
+* Future of Algae:                       Projects.
+* Generate operator <1>:                 Generate.
+* Generate operator:                     Primer.
+* Generating vectors:                    Primer.
+* Gibbs-King:                            gpskca.
+* Gibbs-Poole-Stockmeyer:                gpskca.
+* Global scope:                          Primer.
+* Global symbol table:                   Variable Names.
+* Global variables:                      Variable Names.
+* Greatest common divisor:               gcd.
+* grep:                                  grep.
+* Hunziker, Jennifer:                    About Algae.
+* Hunziker, Scott:                       About Algae.
+* Hyperbolic arc cosine:                 acosh.
+* Hyperbolic arc sine:                   asinh.
+* Hyperbolic arc tangent:                atanh.
+* Hyperbolic cosine:                     cosh.
+* Hyperbolic sine:                       sinh.
+* Hyperbolic tangent:                    tanh.
+* Identity matrix:                       ident.
+* if statement:                          Primer.
+* Imaginary value:                       imag.
+* in keyword:                            Primer.
+* Initial value problems:                ode4.
+* Input filters <1>:                     Command Line.
+* Input filters <2>:                     src.
+* Input filters:                         fprintf.
+* Input, binary:                         fread.
+* Input, character:                      read.
+* Input, numeric:                        readnum.
+* Integer power program:                 Powers.
+* Integer type <1>:                      Data.
+* Integer type:                          Primer.
+* Integration:                           trapz.
+* Interactive mode <1>:                  Command Line.
+* Interactive mode:                      Primer.
+* Interpolation:                         spline.
+* Interpreter:                           Running Algae.
+* Interrupt signal:                      Signals.
+* Interrupting loops:                    Primer.
+* Intersection:                          intersection.
+* Inverse cosine:                        acos.
+* Inverse fourier transform:             ifft.
+* Inverse hyperbolic cosine:             acosh.
+* Inverse hyperbolic sine:               asinh.
+* Inverse hyperbolic tangent:            atanh.
+* Inverse tangent:                       atan.
+* Inverse, matrix:                       inv.
+* Killing Algae:                         Signals.
+* Known bugs:                            Reported Bugs.
+* Labels in submatrix expressions:       Primer.
+* Labels in subvector expressions:       Primer.
+* Lanczos method:                        iram.
+* LAPACK:                                backsub.
+* Least common multiple:                 lcm.
+* Least squares:                         leastsq.
+* Length of variable names:              Variable Names.
+* Lewis, John:                           gpskca.
+* Linear equations <1>:                  solve.
+* Linear equations:                      backsub.
+* Linear spacing:                        linspace.
+* Linking, dynamic:                      builtin.
+* local statement <1>:                   Scope.
+* local statement:                       Primer.
+* Logarithm:                             log.
+* Logarithmic spacing:                   logspace.
+* Logical operators:                     Primer.
+* Loops:                                 Primer.
+* Lower case:                            tolower.
+* Lower triangle:                        tril.
+* Magic squares:                         magic.
+* Magnitude:                             abs.
+* Matching labels:                       Primer.
+* MATLAB <1>:                            putmat.
+* MATLAB <2>:                            getmat.
+* MATLAB <3>:                            Data.
+* MATLAB:                                About Algae.
+* Matrices <1>:                          Data.
+* Matrices:                              Primer.
+* Matrix constants:                      Data.
+* Matrix factorization <1>:              factor.
+* Matrix factorization:                  chol.
+* Matrix inverse:                        inv.
+* Matrix labels:                         Primer.
+* Matrix multiplication:                 mult.
+* Matrix norm:                           norm.
+* Matrix products:                       mult.
+* Matrix, diagonal:                      diag.
+* Maximum <1>:                           max.
+* Maximum:                               imax.
+* Member names:                          Member.
+* Member references:                     Member.
+* Members:                               Primer.
+* Members of entities:                   Entities.
+* Members of matrices:                   Data.
+* Members of scalars:                    Data.
+* Members of vectors:                    Data.
+* Messages, error:                       Errors.
+* Minimum <1>:                           min.
+* Minimum:                               imin.
+* Minus sign:                            Negation.
+* Modulus operator:                      Multiplication.
+* Monte Carlo integration:               monte.
+* Multiplication operators:              Multiplication.
+* Names of members:                      Member.
+* Names of variables:                    Variable Names.
+* Negation operator:                     Negation.
+* Newline <1>:                           Statements.
+* Newline:                               Primer.
+* Nonlinear equations:                   brent.
+* Norm:                                  norm.
+* Not operator <1>:                      Not.
+* Not operator:                          Primer.
+* NULL:                                  Primer.
+* Number reading program:                Reading Numbers.
+* Numeric constants:                     Data.
+* Numerical integration:                 trapz.
+* Operations on functions:               Primer.
+* Operations on NULL:                    Primer.
+* Operations on tables:                  Primer.
+* Operators:                             Operators.
+* Operators, associativity:              Operators.
+* Operators, precedence:                 Operators.
+* Options on the command line:           Command Line.
+* Or operator <1>:                       Short Or.
+* Or operator <2>:                       Or.
+* Or operator:                           Primer.
+* Ordinary differential equations:       ode4.
+* Output filters <1>:                    Command Line.
+* Output filters <2>:                    src.
+* Output filters:                        fprintf.
+* Output, binary:                        fwrite.
+* Output, formatted <1>:                 printf.
+* Output, formatted:                     fprintf.
+* Overdetermined systems:                leastsq.
+* Parentheses:                           Call.
+* Passing arguments by value:            Primer.
+* Path lists:                            get_path.
+* Phase:                                 arg.
+* PID:                                   Predefined Variables.
+* Pipes <1>:                             Command Line.
+* Pipes <2>:                             src.
+* Pipes:                                 fprintf.
+* Plus sign:                             Negation.
+* Polynomial roots:                      roots.
+* Power operator:                        Power.
+* Precedence of operators:               Operators.
+* Predefined members:                    Primer.
+* Predefined variables:                  Predefined Variables.
+* Prime factors:                         primef.
+* Prime numbers:                         primes.
+* Print format:                          digits.
+* Printing formatted output <1>:         printf.
+* Printing formatted output:             fprintf.
+* Profile:                               band.
+* Profile reduction:                     gpskca.
+* Profiling <1>:                         Command Line.
+* Profiling:                             prof.
+* Program, integer powers:               Powers.
+* Program, number reading:               Reading Numbers.
+* Program, temperature conversions:      Temperatures.
+* Projects:                              Projects.
+* Prompt <1>:                            Prompt.
+* Prompt:                                Predefined Variables.
+* Question mark <1>:                     Statements.
+* Question mark:                         Primer.
+* Quit signal:                           Signals.
+* Quote character:                       Data.
+* raise an exception:                    Primer.
+* Random numbers <1>:                    srand.
+* Random numbers <2>:                    randn.
+* Random numbers:                        rand.
+* Reading entities:                      get.
+* Reading numbers:                       readnum.
+* Reading text:                          read.
+* Readline facility:                     Command Line.
+* Real type <1>:                         Data.
+* Real type:                             Primer.
+* Real value:                            real.
+* Recursion:                             Primer.
+* Reduction, bandwidth:                  gpskca.
+* Reduction, profile:                    gpskca.
+* Referencing elements:                  Element.
+* Referencing members:                   Member.
+* Regular expressions:                   grep.
+* Relational operators <1>:              Relation.
+* Relational operators:                  Primer.
+* Relative file name:                    src.
+* Reported bugs:                         Reported Bugs.
+* Reporting bugs:                        Reporting Bugs.
+* Restricted execution:                  Command Line.
+* return statement:                      Primer.
+* Root finding:                          brent.
+* Roots of a polynomial:                 roots.
+* Rounding:                              round.
+* Runge-Kutta:                           ode4.
+* Scalar constants:                      Data.
+* Scalars:                               Data.
+* Scope of variables <1>:                Scope.
+* Scope of variables:                    Primer.
+* Searching:                             grep.
+* self:                                  Primer.
+* Semicolon <1>:                         Statements.
+* Semicolon:                             Primer.
+* Separating arguments:                  Primer.
+* Sets:                                  set.
+* Shared objects:                        builtin.
+* Shift, circular:                       circshift.
+* Short And:                             Short And.
+* Short Or:                              Short Or.
+* SIGINT:                                Signals.
+* Sign:                                  sign.
+* Signals:                               Signals.
+* Significant digits:                    Statements.
+* Signum:                                sign.
+* SIGQUIT:                               Signals.
+* Sine:                                  sin.
+* Singular value decomposition:          svd.
+* Solving linear equations <1>:          solve.
+* Solving linear equations:              backsub.
+* Solving nonlinear equations:           brent.
+* Sorting vectors <1>:                   sort.
+* Sorting vectors:                       isort.
+* Source files:                          src.
+* Sparse storage:                        sparse.
+* Spline interpolation:                  spline.
+* Splitting into tokens:                 split.
+* Square root:                           sqrt.
+* Standard functions:                    Standard Functions.
+* Standard input:                        Command Line.
+* Starting algae:                        Primer.
+* Startup files:                         Startup Files.
+* Statement terminators <1>:             Statements.
+* Statement terminators:                 Primer.
+* Statements <1>:                        Statements.
+* Statements <2>:                        Language.
+* Statements:                            Primer.
+* Statements for control-flow:           Primer.
+* stderr:                                message.
+* stdin:                                 Command Line.
+* String concatenation:                  Addition.
+* Strings <1>:                           string.
+* Strings <2>:                           Data.
+* Strings:                               Primer.
+* Submatrix expressions:                 Primer.
+* Subspace iteration:                    ssi.
+* Substrings:                            substr.
+* Subtraction operator:                  Addition.
+* Subvector assignment:                  Primer.
+* Subvector expressions:                 Primer.
+* SuperLU:                               backsub.
+* Symbol table:                          Variable Names.
+* Tables <1>:                            Data.
+* Tables:                                Primer.
+* Tangent:                               tan.
+* Temperature conversion program:        Temperatures.
+* Temporary files:                       tmp_file.
+* Terminal, width:                       Predefined Variables.
+* Terminating Algae:                     exit.
+* Terminating statements <1>:            Statements.
+* Terminating statements:                Primer.
+* Testing for equality:                  Primer.
+* Tokens, splitting:                     split.
+* Transpose operator:                    Transpose.
+* Trapezoidal integration:               trapz.
+* Triangle <1>:                          triu.
+* Triangle:                              tril.
+* True:                                  Primer.
+* try:                                   Primer.
+* Type conversions:                      Operators.
+* Types <1>:                             Data.
+* Types:                                 Primer.
+* Unary minus operator:                  Negation.
+* Unary plus operator:                   Negation.
+* Underdetermined systems:               leastsq.
+* Union of two sets:                     union.
+* Upper case:                            toupper.
+* Upper triangle:                        triu.
+* User functions:                        Primer.
+* Variable evaluation:                   Evaluation.
+* Variable names:                        Variable Names.
+* Variables <1>:                         Variables.
+* Variables:                             Primer.
+* Variables, environment:                getenv.
+* Variables, predefined:                 Predefined Variables.
+* Variables, scope:                      Scope.
+* Vector constants:                      Data.
+* Vector generation <1>:                 Generate.
+* Vector generation:                     Primer.
+* Vector labels:                         Primer.
+* Vector norm:                           norm.
+* Vectors <1>:                           Data.
+* Vectors:                               Primer.
+* veil statement:                        Scope.
+* Version:                               Command Line.
+* vi:                                    Command Line.
+* while statement:                       Primer.
+* Width of terminal:                     Predefined Variables.
+* Wrapping lines:                        Predefined Variables.
+* Writing entities:                      put.
+* | (or operator) <1>:                   Or.
+* | (or operator):                       Primer.
+* || (or operator) <1>:                  Short Or.
+* || (or operator):                      Primer.
+

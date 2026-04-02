@@ -1,0 +1,197 @@
+
+#  This Algae routine solves some linear equations.
+
+printf( "Starting the solve test...\n" );
+
+prt = 1;
+tol = 1.0E-11;
+ok = 1;
+
+# Next test fails (probably dumps core) if using Ultrix's broken BLAS.
+
+a=symmetric(rand(50,50)+sqrt(-1)*rand(50,50));
+b=rand(50,3);
+x=solve(a;b);
+if ( prt ) { norm( a*x-b; "inf" )? }
+ok = ( ok & norm( a*x-b; "inf" ) < tol );
+
+srand(789);
+A = symmetric( rand(100,100) + diag( (rand(100)+1)*100 ) );
+A[1;2] = A[1;2];	# This just forces it to have general symmetry.
+b = rand(100,3);
+
+x = solve( A; b );
+if ( prt ) { norm( A*x-b; "inf" )? }
+ok = ( ok & norm( A*x-b; "inf" ) < tol );
+
+bb = b + sqrt(-1)*(b/10);
+xx = solve( A; bb );
+if ( prt ) { norm( A*xx-bb; "inf" )? }
+ok = ( ok & norm( A*xx-bb; "inf" ) < tol );
+
+xx = solve( symmetric(A); b );
+if ( prt ) { norm( A*xx-b; "inf" )? }
+ok = ( ok & norm( A*xx-b; "inf" ) < tol );
+ok = ( ok & norm( x-xx; "inf" ) < tol );
+
+xxx = solve( symmetric(A); b; {pos} );
+if ( prt ) { norm( A*xxx-b; "inf" )? }
+ok = ( ok & norm( A*xxx-b; "inf" ) < tol );
+ok = ( ok & norm( x-xxx; "inf" ) < tol );
+
+i=sqrt(-1);
+A[1;2]=A[1;2]+0*i;	# Force A to be complex.
+
+y = solve( A; b );
+if ( prt ) { norm( A*y-b; "inf" )? }
+ok = ( ok & norm( A*y-b; "inf" ) < tol );
+ok = ( ok & norm( x-y; "inf" ) < tol );
+
+yy = solve( hermitian(A); b );
+if ( prt ) { norm( A*yy-b; "inf" )? }
+ok = ( ok & norm( A*yy-b; "inf" ) < tol );
+ok = ( ok & norm( x-yy; "inf" ) < tol );
+
+yyy = solve( hermitian(A); b; {pos} );
+if ( prt ) { norm( A*yyy-b; "inf" )? }
+ok = ( ok & norm( A*yyy-b; "inf" ) < tol );
+ok = ( ok & norm( x-yyy; "inf" ) < tol );
+
+a = magic( 55 ); b = magic( 55 );
+f = factor( a );
+q = solve( f; b );
+ok = ( ok & norm( q - diag( fill( q.nr; 1 ) ); "inf" ) < 1e-10 );
+
+n = 500; s = 23; t = 29;
+a = zero(n,n);
+a[ 1:n:n/s; 1:n:n/t ] = fill( s,t; 1/magic(max(s,t)) );
+b = 1/(n:1);
+
+A = a + ident(n);
+x = solve( A; b );
+if ( prt ) { norm( A*x-b )? }
+ok = ok & norm( A*x-b ) < tol;
+
+A += 0*sqrt(-1);
+xx = solve( A; b );
+if ( prt ) { norm( A*xx-b )? }
+ok = ok & norm( A*xx-b ) < tol;
+ok = ok & norm( x-xx ) < tol;
+
+A += sqrt(-1)*a;
+xx = solve( A; b );
+if ( prt ) { norm( A*xx-b )? }
+ok = ok & norm( A*xx-b ) < tol;
+
+AA = symmetric(A);
+xx = solve( AA; b );
+if ( prt ) { norm( AA*xx-b )? }
+ok = ok & norm( AA*xx-b ) < tol;
+
+AA = real(AA);
+xx = solve( AA; b );
+if ( prt ) { norm( AA*xx-b )? }
+ok = ok & norm( AA*xx-b ) < tol;
+
+AA = hermitian(A);
+xx = solve( AA; b );
+if ( prt ) { norm( AA*xx-b )? }
+ok = ok & norm( AA*xx-b ) < tol;
+
+# exercise the sparse code
+
+srand (42);
+
+n = 101;
+rid = 1:n; cid = -rid;
+A = label (surprise (n; n; "real"; .02; "general"); rid; cid) + ident (n);
+b = surprise (n; 4; "real"; .2);
+f = factor (A);
+x = backsub (f; b);
+ok = ok & norm (A*x-b) < tol;
+ok = ok & equal (x.rid; cid);
+
+n = 77;
+rid = 1:n; cid = -rid;
+A = label (surprise (n; n; "real"; .02; "general"); rid; cid) + ident (n);
+b = vector (surprise (n; 1; "real"; .8));
+f = factor (A);
+x = backsub (f; b);
+ok = ok & norm (A*x-b) < tol;
+ok = ok & equal (x.eid; cid);
+
+n = 89;
+rid = 1:n; cid = -rid;
+A = label (surprise (n; n; "real"; .05; "general"); rid; cid) + ident (n);
+b = surprise (n; 4; "real"; .2);
+f = factor (A);
+x = backsub (f; b);
+ok = ok & norm (A*x-b) < tol;
+
+n = 215;
+rid = 1:n; cid = -rid;
+A = label (surprise (n; n; "real"; .02; "general"); rid; cid) + ident (n);
+b = surprise (n; 4; "real"; .2);
+f = factor (A);
+x = backsub (f; b);
+ok = ok & norm (A*x-b) < tol;
+
+n = 82;
+rid = 1:n; cid = -rid;
+A = label (surprise (n; n; "real"; .04; "symmetric"); rid; cid) + ident (n);
+b = surprise (n; 4; "real"; .2);
+f = factor (A);
+x = backsub (f; b);
+ok = ok & norm (A*x-b) < tol;
+ok = ok & equal (x.rid; cid);
+
+n = 82;
+A = surprise (n; n; "real"; 1; "symmetric"; "diagonal");
+b = surprise (n; 1; "real"; .2);
+f = factor (A);
+x = backsub (f; b);
+ok = ok & norm (A*x-b) < tol;
+
+n = 120;
+A = surprise (n; n; "real"; .09; "symmetric"; "positive_definite");
+b = vector (surprise (n; 1; "real"; .2));
+f = factor (A);
+x = backsub (f; b);
+ok = ok & norm (A*x-b) < tol;
+
+n = 165;
+rid = 1:n; cid = -rid;
+A = label (surprise (n; n; "complex"; .02; "general"); rid; cid) + ident (n);
+b = surprise (n; 1; "real"; 1);
+f = factor (A);
+x = backsub (f; b);
+ok = ok & norm (A*x-b) < tol;
+ok = ok & equal (x.rid; cid);
+
+n = 130;
+A = surprise (n; n; "complex"; .02; "general") + diag (seq (n));
+b = surprise (n; 1; "complex"; 1);
+f = factor (A);
+x = backsub (f; b);
+ok = ok & norm (A*x-b) < tol;
+
+n = 132;
+A = surprise (n; n; "complex"; .02; "symmetric") + diag (seq (n));
+b = A;
+f = factor (A);
+x = backsub (f; b);
+ok = ok & norm (x*A-b; "inf") < tol;
+
+n = 157;
+A = surprise (n; n; "complex"; .02; "hermitian"; "positive_definite");
+b = surprise (n; 2; "real"; 1);
+f = factor (A);
+x = backsub (f; b);
+ok = ok & norm (A*x-b) < tol;
+
+if ( ok ) {
+    printf( "...passed.\n" );
+  else
+    printf( "...failed.\a\n" );
+    exception();
+}

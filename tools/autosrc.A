@@ -1,0 +1,66 @@
+
+# Defines a function called NAME that is sourced automatically from
+# FILE when called.  If FILE is NULL, it defaults to NAME.
+
+autosrc = function (name; file)
+{
+  if (name == NULL)
+  {
+    message ("run time error: NULL passed as 1st argument.");
+    exception ();
+  }
+
+  if (file == NULL) { file = name; }
+  return source (sprintf (self.code; name; name; file; name));
+};
+
+autosrc.src = function (name; file; a; b; c; d; e; f; g; h; i; j)
+{
+  local (old);
+
+  old = $$.(name);
+  if (src (file) != 0)
+  {
+    message ("run time error: Can't autosrc file \"%s\"."; name);
+    exception ();
+  }
+  if (old == $$.(name))
+  {
+    message( "run time error: Function \"%s\" not assigned in file \"%s\".";
+             name; file );
+    exception();
+  }
+
+  # What an eyesore!  Wouldn't it be nice to have variable length
+  # argument lists in Algae?
+
+  if     ( j != NULL ) {
+    return $$.(name)( a; b; c; d; e; f; g; h; i; j );
+  elseif ( i != NULL )
+    return $$.(name)( a; b; c; d; e; f; g; h; i );
+  elseif ( h != NULL )
+    return $$.(name)( a; b; c; d; e; f; g; h );
+  elseif ( g != NULL )
+    return $$.(name)( a; b; c; d; e; f; g );
+  elseif ( f != NULL )
+    return $$.(name)( a; b; c; d; e; f );
+  elseif ( e != NULL )
+    return $$.(name)( a; b; c; d; e );
+  elseif ( d != NULL )
+    return $$.(name)( a; b; c; d );
+  elseif ( c != NULL )
+    return $$.(name)( a; b; c );
+  elseif ( b != NULL )
+    return $$.(name)( a; b );
+  elseif ( a != NULL )
+    return $$.(name)( a );
+  else
+    return $$.(name)();
+  }
+};
+
+autosrc.code = ( "!echo '$$.(\"%s\") = " +
+  "function( a; b; c; d; e; f; g; h; i; j )\n" +
+  "{ return autosrc.src( \"%s\"; \"%s\"; a; b; c; d; e; f; g; h; i; j ); };'"
+);
+

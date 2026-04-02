@@ -1,0 +1,26 @@
+
+# This function returns the "shape" (that is, the dimensions) of the
+# entity `x'.  If `x' is a scalar, it returns NULL.  If `x' is a
+# vector, it returns a scalar having the length of `x' as its value.
+# If `x' is a matrix, it returns a vector having the number of rows
+# and the number of columns as its first and second elements,
+# respectively.  If `x' has any other class, an exception is raised.
+
+shape = function (x)
+{
+  return self.(class(x)) (x);
+};
+
+( shape.table =
+  shape.("function") =
+  shape.("NULL") = strip (
+    function (x)
+    {
+      message ("run time error:  Invalid %s argument for shape."; class (x));
+      exception ();
+    })
+);
+
+shape.scalar = function (x) { return NULL; };
+shape.vector = function (x) { return x.ne; };
+shape.matrix = function (x) { return x.nr, x.nc; };

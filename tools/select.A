@@ -1,0 +1,20 @@
+
+#  This function selects one element at random from the given vector.
+#  The result is a scalar.  The argument vector must have at least one
+#  element.
+
+select = function (x)
+{
+  local (n);
+
+  x = vector (x);
+  n = x.ne;
+
+  if (!n)
+  {
+    message ("run time error: Can't select from zero length vector.");
+    exception ();
+  }
+
+  return x [floor (rand()*n) + 1];
+};

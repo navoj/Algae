@@ -1,0 +1,22 @@
+
+# Here's a start in testing our string handling functions.
+
+printf( "Starting the string tests...\n" );
+
+assert = function( t )
+{
+  if ( !t )
+    {
+      printf ("...failed.\a\n");
+      exception ();
+    }
+};
+
+s = "Now is the time for all good men to come to the aid of their country.";
+assert (substr (s; 1; 15) == "Now is the time");
+assert (substr (s; 99) == substr (s; 99; 99));
+assert (substr (s; 25; 0) == "");
+assert (substr (s; 10; 10) == sum (dice (s)[10:19]));
+
+printf ("...passed.\n");
+

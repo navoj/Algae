@@ -1,0 +1,30 @@
+#---------------------------------------------------------------------
+# This file is a Makefile (or its template) for the installed tools
+# directory of Algae.  It compiles Algae's standard user functions
+# so that Algae can simply load them at startup.  In the process, it
+# calls `strip' on each of them.
+#
+# This is intended to be run at installation time.  That way, the
+# resulting binary file is stored in the native format.
+#---------------------------------------------------------------------
+
+tools.algae:
+	@BINARY@ -Sxe ' \
+	  if ($$directories == NULL) { $$directories = {html="../doc"}; } \
+	  t = $$$$; \
+>>> sources here <<<
+	  tt = $$$$ - t; \
+	  for (f in members (tt)) \
+	  { \
+	    if (class (tt.(f)) == "function") {tt.(f) = strip (tt.(f));} \
+	    if (substr (f; 1; 1) == "$$") \
+	    { \
+	      if (f != "$$features") \
+	      { \
+	     	q = {}; \
+	     	q.(f) = NULL; \
+	     	tt -= q; \
+	      } \
+	    } \
+	  }; \
+	  put (tt);' > $@ || ( rm -f $@ ; false )

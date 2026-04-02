@@ -1,0 +1,109 @@
+
+# This function reads the output from algae's execution profiler,
+# sorting and summarizing it both by file and by line number.  The
+# name of the input file is `infile' and the name of the output file
+# is `outfile'.  If `threshold' is specified, the summaries are
+# truncated at that cumulative percentage.
+
+prof = function( infile; outfile; threshold )
+{
+    local( str; fn; t; v; m; hits; total; cum );
+
+    # default threshold is 100%
+
+    if ( threshold == NULL ) { threshold = 100.0; }
+
+    fprintf( outfile; "Algae execution profile listing.\n\n" );
+
+    t = {};
+
+    # read the file, saving line stats in vectors with file names
+
+    while ( str = read( infile ) )
+    {
+	if ( dice(str)[1] != "\t" )
+	{
+	    # line doesn't start with TAB, must be file name
+
+	    t.(str) = fill( 0; 0 );
+	    t.(str).eid = fill( 0; 0 );
+	    fn = str;
+
+	else
+
+	    # line number, hit count
+
+	    str = split( str );
+	    v = vector( integer( atof( str[2] ) ) );
+	    v.eid = integer( atof( str[1] ) );
+	    t.(fn) = t.(fn), v;
+	}
+    }
+
+    for ( fn in members( t ) )
+    {
+	if ( t.(fn).ne == 0 )
+	{
+	    m = {};
+	    m.(fn) = NULL;
+	    t -= m;
+	}
+    }
+
+    hits = fill( members(t).ne; 0 );
+    hits.eid = members(t);
+
+    for ( fn in members( t ) )
+    {
+	t.(fn) = sort( t.(fn) )[t.(fn).ne:1];
+	hits[fn] = sum( t.(fn) );
+    }
+
+    hits = sort( hits )[hits.ne:1];
+    total = sum( hits );
+
+    fprintf( outfile; "%d total hits\n\n"; total );
+    fprintf( outfile; "--- by file ---\n\n" );
+
+    fprintf( outfile; "%10s %8s %8s   %s\n"; "hits"; "% hits";
+	     "cum %"; "file" );
+
+    cum = 0;
+    for ( fn in seq( hits.ne ) )
+    {
+	cum += 100*hits[fn]/total;
+
+        fprintf( outfile; "%10d %8.2f %8.2f   %s\n"; hits[fn];
+		 100*hits[fn]/total; cum; hits.eid[fn] );
+
+	if ( cum > threshold ) { break };
+    }
+
+    fprintf( outfile; "\n--- by line ---\n\n" );
+
+    hits = fill( 0; 0 );
+
+    for ( m in members(t) )
+    {
+	v = t.(m);
+	v.eid.eid = fill( v.ne; m );
+	hits = hits, v;
+    }
+
+    hits = sort( hits )[hits.ne:1];
+
+    fprintf( outfile; "%10s %8s %8s   %s   %s\n"; "hits"; "% hits";
+	     "cum %"; "line"; "file" );
+
+    cum = 0;
+    for ( fn in seq( hits.ne ) )
+    {
+	cum += 100*hits[fn]/total;
+
+	fprintf( outfile; "%10d %8.2f %8.2f %6d   %s\n"; hits[fn];
+		 100*hits[fn]/total; cum; hits.eid[fn]; hits.eid.eid[fn] );
+
+	if ( cum > threshold ) { break };
+    }
+
+};

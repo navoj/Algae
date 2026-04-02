@@ -1,0 +1,71 @@
+
+# Copyright (C) 1994-2003  K. Scott Hunziker.
+# Copyright (C) 1990-1994  The Boeing Company.
+
+# See the file COPYING for license, warranty, and permission details.
+
+# rc0.  Generated from rc0.in by configure.
+
+# This file is intended to be read by Algae on startup, setting any
+# system-wide defaults and directing it to read its standard user
+# functions.
+
+#####################################################################
+
+# Set path names to some programs Algae might need.
+
+$programs = {
+
+  # Here's where to find the documentation browsers.  Algae uses an
+  # HTML browser (netscape, mosaic, or lynx) if it can, otherwise it
+  # uses Info.  If any of these programs are unwanted or unavailable,
+  # just set them to a zero-length string.
+
+  xhtml = "";	# An X-based HTML browser (like netscape or mosaic).
+  html = "";	# A character-based HTML browser (like lynx).
+  info = "/usr/bin/info";	# A texinfo browser (like info).
+
+  # We try to work around info's deficiencies with xterm.
+
+  xterm = "/usr/bin/xterm";
+
+  # gnuplot is our plotting package.
+
+  gnuplot = "/usr/bin/gnuplot";
+
+  # Other tools.
+
+  awk = "gawk";	# This must be a "new" awk (mawk, gawk, or nawk).
+  ls = "/usr/bin/ls";
+  tr = "/usr/bin/tr";
+  sed = "/usr/bin/sed";
+
+};
+
+# Take a guess at width if terminal is "dumb".
+
+if (getenv ("TERM") == "dumb") { $term_width = 79; }
+
+# Directories we might need.
+
+$directories = {
+
+  info = "/home/jtrujil1/share/info";
+  html = "/home/jtrujil1/share/algae/4.3.6/html";
+  lib = "/home/jtrujil1/lib";
+
+};
+
+# Read the standard user functions.
+
+source ("/home/jtrujil1/share/algae/4.3.6/tools/load.A");
+load ("/home/jtrujil1/share/algae/4.3.6/tools/tools.algae");
+
+# Set the source path.
+
+$src_path = get_path ("ALGAE_SRC_PATH"; "~/algae:/home/jtrujil1/share/algae/site/A");
+
+# Set the temporary directory.
+
+tmp_file.TMPDIR = string (getenv ("TMPDIR"));
+if (tmp_file.TMPDIR == "") { tmp_file.TMPDIR = "/tmp"; }

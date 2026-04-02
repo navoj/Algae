@@ -1,0 +1,1129 @@
+
+			  Algae Release Notes
+
+
+Copyright (C) 1994-2004  K. Scott Hunziker.
+Copyright (C) 1990-1994  The Boeing Company.
+
+See the file COPYING for license, warranty, and permission details.
+
+Version 4.3.6 (February 22, 2004)
+
+  * Fixed a label handling error in the `set' function that was
+    introduced in version 4.3.1.  Also cleaned up and documented
+    label handling in `complement', `intersection', and `union'.
+
+Version 4.3.5 (February 11, 2004)
+
+  * Added support for short int endian conversions in `fread'.  This
+    was a quick fix -- we really need to go through that code (and
+    `fwrite') to clean it up and support a variety of missing cases.
+
+Version 4.3.4 (December 16, 2003)
+
+  * Fixed disassemble bug causing wipeout on `veil' statement.
+
+  * Now use --enable-debug instead of --with-debug in configure.
+    (It was and has been broken since version 4.3.0.)
+
+Version 4.3.3 (December 9, 2003)
+
+  * By default, use Doug Lea's dlmalloc package in place of the
+    C library's malloc.  On some systems, dlmalloc is far superior.
+    For example, Algae's timing suite runs 2.5 times faster with
+    dlmalloc than with the AIX 5.1 malloc routines.  (On Linux,
+    dlmalloc is the default anyway.)
+
+  * Replaced code for `magic' with faster code from Octave.
+
+  * Supplied some missing prototypes that caused trouble.
+
+  * Quit installing header files.  Not sure how or why that got
+    started, but if you have installed previous versions of Algae,
+    you may have junk left around in /usr/src/algae.
+
+Version 4.3.2 (November 29, 2003)
+
+  * Ouch!  Fixed a nasty bug in `filter'.
+
+Version 4.3.1 (November 24, 2003)
+
+  * Several efficiency improvements, some pretty dramatic.
+
+  * Short ints supported in `fread' and `fwrite'.
+
+  * New functions `erf', `erfc', `gcd', `lcm', `primef', `primes', and
+    `trapz'.
+
+Version 4.3.0 (October 4, 2003)
+
+  * Enable linking to fftw (http://www.fftw.org/) for high-performance
+    Fourier transforms.
+
+  * The `fft' and `ifft' functions now handle matrices.  By default
+    they transform each column, but that can be changed with an option.
+
+  * The `max' and `min' (and `imax' and `imin') functions now handle
+    matrix and table arguments.  Note:  The old versions converted
+    matrix arguments to vectors, if possible; the new versions may
+    give different results in those cases.
+
+  * The new `circshift' function performs circular shifts of arrays.
+
+  * Minor code changes to support Mac OS X.
+
+  * Fixed several potential buffer overrun problems.
+
+  * Included latest (3 June 2003) SuperLU updates.
+
+  * Included current ARPACK patches.
+
+Version 4.2.1 (August 6, 2003)
+
+  * Added the `$digits' global variable.
+
+Version 4.2.0 (August 5, 2003)
+
+  * New `veil' statement allows temporary changes to global variables.
+
+Version 4.1.4 (August 2, 2003)
+
+  * Improved configuration for floating point exception handling.
+
+  * Added numerous "volatile" qualifiers, to protect against longjmp
+    problems with optimized gcc.
+
+  * Fix `select' function for zero-length vectors.
+
+Version 4.1.3 (May 16, 2003)
+
+  * Configure checks for "malloc.h".
+
+  * Fixed configure to work with autoconf-2.57.
+
+Version 4.1.2 (March 19, 2003)
+
+  * Minor installation improvements.
+
+Version 4.1.1 (February 9, 2003)
+
+  * Fixed compile-time problems involving inverse hyperbolic trig.
+
+Version 4.1.0 (January 7, 2003)
+
+  * Changed the installation directories to be in line with the FHS.
+
+  * Added `mult' function for efficient matrix products.
+
+Version 4.0.3 (December 5, 2002)
+
+  * Minor installation improvements, including RPM fix for RedHat 8.0.
+
+Version 4.0.2 (September 30, 2002)
+
+  * Fixed FORTRAN mangling for NPSOL.
+
+Version 4.0.1 (September 21, 2002)
+
+  * Restored optional linking to NPSOL.
+
+Version 4.0.0 (September 15, 2002)
+
+  * Added reserved keywords "try" and "catch".
+
+  * New try/catch mechanism for control of exception handling.
+
+Version 3.7.3 (July 31, 2002)
+
+  * The `iram' (ARPACK) function is now functional and documented.
+
+  * Fixed memory leaks in `solve' and `svd'.
+
+  * Fixed a few missing headers that were causing compile problems on
+    some machines.
+
+Version 3.7.2 (May 12, 2002)
+
+  * Builtin `tril' and `triu' functions -- sparse arrays stay sparse.
+
+  * Latest ARPACK patches applied.
+
+Version 3.7.1 (May 6, 2002)
+
+  * Fixed integer overflow problems in `band' and `cram'.
+
+  * Good start at ARPACK, but not yet documented.
+
+Version 3.7.0 (April 24, 2002)
+
+  * Incorporated the SuperLU package for solving sparse linear
+    systems.  Previously, sparse systems were converted to dense and
+    solved with LAPACK (unless configured with BCSLIB-EXT).
+
+  * Included sparse capability for `equilibrate' from SuperLU.
+
+  * Included support for memory allocation debugging with dmalloc.
+
+  * Fixed label handling errors in `solve.c'.
+
+Version 3.6.2 (November 1, 2001)
+
+  * Minor installation improvements.
+
+Version 3.6.1 (October 26, 2001)
+
+  * Improved the logical operations to do a much better job at
+    maintaining sparsity.
+
+  * New standard function `select'.
+
+  * Various other minor improvements.
+
+Version 3.6.0 (October 11, 2001)
+
+  * Changes to the matrix bandwidth minimization code.  The old `band'
+    function is now called `gpskca' and can do either profile or
+    bandwidth minimization of symmetric or hermitian matrices.  Matrix
+    statistics are computed by the new `band' function.
+
+  * New standard functions `linspace' and `logspace'.
+
+  * New standard function `equilibrate' computes scale factors to
+    improve the condition of a matrix.  However, sparse code has not
+    yet been included.
+
+  * Fixed several deficiencies in the `transform' function.
+
+  * Removed old get_ascii and put_ascii functions.  I doubt if anyone
+    has used these in the last decade.  To read and write matrices in
+    text files, use the algae MatrixMarket package.
+
+Version 3.5.2 (September 19, 2001)
+
+  * Fixed several errors with hermitian symmetry.
+
+  * Another shot at AIX configuration.
+
+Version 3.5.1 (September 14, 2001)
+
+  * Configuration accommodations for AIX.
+
+  * Fixed mishandling of sparse matrix multiplication case where
+    non-zero factors give a zero result.
+
+Version 3.5.0 (August 31, 2001)
+
+  * Added "short-circuit" logical operators && and ||.
+
+  * Added the `cram' builtin function -- it's the same as `form'
+    except the output array is sparse when that makes sense.
+
+  * Added the `product' user function -- product of array elements.
+
+  * Added `mksparse' and `exsparse' functions for converting matrices
+    to and from coordinate form.
+
+  * Switched to LAPACK's DGGEV now that DGEGV is deprecated.  Also use
+    the new workspace size query feature in LAPACK, rather than
+    working it out ourselves.
+
+  * Use LAPACK's ZHEGV and ZGGEV for complex generalized eigenvalue
+    problems. 
+
+  * Use floating point exception support from glibc 2.2 on Linux.
+
+  * Improved accuracy and behavior for complex arguments in functions
+    `log', `asin', and `acos'.
+
+  * Added inverse hyperbolic trig functions `asinh', `acosh', and `atanh'.
+
+  * Various minor bug fixes.
+
+Version 3.4.0 (May 1, 1998)
+
+  * New assignment operators:  `*=', `/=', `@=', and `%='.
+
+Version 3.3.6 (April 1, 1998)
+
+  * Various configuration improvements.
+
+  * New `bliss' function ends want and effects world peace.
+
+Version 3.3.5 (March 3, 1998)
+
+  * Modified configure for hpux 10.  (Eventually, users are going to
+    tire of the gratuitous changes we see with every new version of hpux.)
+
+  * Improved `umin' function; now it can pass parameters to the
+    objective function.
+
+Version 3.3.4 (October 21, 1997)
+
+  * Fixed a bug introduced in 3.3.3, involving `provide' and `require'.
+
+Version 3.3.3 (October 18, 1997)
+
+  * Standard user functions are now pre-compiled.  This makes startup
+    much faster.
+
+  * Minor installation fixes.
+
+Version 3.3.2 (October 5, 1997)
+
+  * New `-x' command line option causes algae not to read stdin by
+    default when no file names are given on the command line.
+
+Version 3.3.1 (September 25, 1997)
+
+  * New `-R' command line option causes restricted execution -- no
+    process creation is allowed.  This disables the `system' function
+    as well as pipes.  Use this mode when executing untrusted Algae
+    code.
+
+  * New `-n' command line option changes the way that scalars are
+    displayed in printing statements.
+
+Version 3.3.0 (September 2, 1997)
+
+  * Better support for "site" files.  The `src' and `require'
+    functions now look in ~/algae and /usr/local/lib/algae/site/A
+    (by default), unless overridden by the ALGAE_SRC_PATH environment
+    variable.
+
+  * Includes "spec" file for Red Hat Package Manager (RPM).
+
+  * Added the `sign' and `pick' functions.
+
+Version 3.2.9 (August 4, 1997)
+
+  * Improved `info' capability.
+
+Version 3.2.8 (July 28, 1997)
+
+  * Improved EOF handling in `fread'.
+
+  * Fixed error in printing zero-length vectors.
+
+Version 3.2.7 (July 24, 1997)
+
+  * Plugged memory leak in `eig'.
+
+  * Labels on character arrays were being dropped when the arrays were
+    added with scalars.
+
+  * Work around texi2html bug dealing with function references in HTML
+    documentation.
+
+Version 3.2.6 (June 25, 1997)
+
+  * Faster `get' and `put'.
+
+  * New `char' function.
+
+Version 3.2.5 (May 13, 1997)
+
+  * Fixed serious bug in "improved" sorting.
+
+Version 3.2.4 (May 9, 1997)
+
+  * Improved sorting.
+
+Version 3.2.3 (May 2, 1997)
+
+  * Immediate, clean exit on SIGQUIT.
+
+Version 3.2.2 (April 25, 1997)
+
+  * Fixed installation problems involving f2c.
+
+Version 3.2.1 (March 28, 1997)
+
+  * Float capability in `fread' and `fwrite'.
+
+  * Various bug fixes.
+
+Version 3.2.0 (February 21, 1997)
+
+  * Name changed to "algae"!
+
+Version 3.1.7 (January 18, 1997)
+
+  * `atof' now handles arrays.
+
+  * Minor bug fixes.
+
+Version 3.1.6 (December 12, 1996)
+
+  * Fixed terminal width initialization bug.
+
+Version 3.1.5 (November 2, 1996)
+
+  * Added `arg' function.
+
+Version 3.1.4 (October 22, 1996)
+
+  * Added new `tolower' and `toupper' string functions.
+
+Version 3.1.3 (October 19, 1996)
+
+  * Supply our own BLAS and LAPACK code.
+
+Version 3.1.2 (October 15, 1996)
+
+  * File "examples/numbers.A" now has functions for both cardinal and
+    ordinal numbers.
+
+Version 3.1.1 (October 3, 1996)
+
+  * Merge changes to stable version through 3.0.9.
+
+Version 3.0.9 (October 1, 1996)
+
+  * Bug in -e command line option prevented multiple occurrences.
+
+Version 3.0.8 (September 30, 1996)
+
+  * Documentation and installation improvements.
+
+Version 3.0.7 (September 13, 1996)
+
+  * Removed some minor misfeatures.
+
+Version 3.1.0 (August 29, 1996)
+
+  * Added the `leastsq' function.
+
+Version 3.0.6 (August 29, 1996)
+
+  * Link to libUfor on DEC Alpha.
+
+  * Fixed minor bugs in `seq', `eig', and the code that converts
+    matrices into vectors.
+
+Version 3.0.5 (June 27, 1996)
+
+  * Keep a history file in "~/.alki_history".  The name may be
+    overridden by the ALKI_HISTFILE environment variable.
+
+  * Fixed profiler bug in counting line number hits.
+
+Version 3.0.4 (June 6, 1996)
+
+  * Work around linux problems with dynamically linked Fortran.
+
+  * Various other minor improvements.
+
+Version 3.0.3 (May 28, 1996)
+
+  * User functions now report global variable references.
+
+  * Bug fixes.
+
+Version 3.0.2 (May 21, 1996)
+
+  * Configuration support for Cray TS.
+
+Version 3.0.1 (May 15, 1996)
+Version 3.0.0 (May 9, 1996)
+
+  * Syntax change!  The product operator was "#" and is now "@".
+    Comments now begin with a single "#".  This change is not backward
+    compatible, and it is possible for old files to run but give
+    incorrect results.  Please use the "alki2to3" utility (included)
+    to convert your old files to the new syntax.
+
+  * Changed the scaling for `fft' and `ifft'.  Previously, both scaled
+    by `1/sqrt(n)'.  Although the symmetry of this is appealing, it's
+    also unconventional and thus confusing.  The new approach is to
+    scale only `ifft', and that by `1/n'.  (There's also a slight
+    increase in efficiency.)
+
+  * Significantly improved the efficiency of "randn".
+
+  * Some "improvements" in autoconf-2.9 required work-arounds.
+
+  * More than the usual number of bug fixes and improvements.
+
+Version 2.5.4 (February 15, 1996)
+
+  * Deal with moving targets like linux (new fpe defaults), hpux (it
+    gets worse with every version), and cray (T90 machines).
+
+Version 2.5.3 (January 28, 1996)
+Version 2.5.2 (December 19, 1995)
+
+  * Support for Linux returns!
+
+  * Bug fixes and installation improvements.
+
+Version 2.5.1 (December 13, 1995)
+
+  * Finally, support for the IBM RS6000.  (I finally found a machine
+    that wasn't a total mess.)
+
+  * Installation improvements.
+
+Version 2.5.0 (December 10, 1995)
+
+  * Added new `exec' function.  Besides the additional capability, it
+    finally allows an efficient implementation of `eval'.
+
+  * Added the '-e' command line option for providing scripts.
+
+  * Various installation improvements.
+
+Version 2.4.2 (November 20, 1995)
+
+  * Added new `substr' builtin function.
+
+  * Fixed sloppy signal handling.  Profiling is the most obvious
+    beneficiary.
+
+  * Fixed memory leaks in scanner.
+
+Version 2.4.1 (November 5, 1995)
+
+  * Improvements for "binary" installation.
+
+Version 2.4.0 (October 14, 1995)
+
+  * Added `fread' and `fwrite' functions for binary i/o.
+
+  * Removed the old `ode' Runge-Kutta integrator.  Use `ode4' instead.
+
+Version 2.3.4 (September 8, 1995)
+
+  * Fixed minor problems introduced in 2.3.3.
+
+Version 2.3.3 (August 24, 1995)
+
+  * Work around a (backwards incompatible) change in gnuplot scanf.
+
+Version 2.3.2 (August 23, 1995)
+
+  * Had trouble reading large binary files in old format.
+
+  * Enable profiler by default.
+
+Version 2.3.1 (August 15, 1995)
+
+  * Fixed obscure bug with `self'.
+
+  * Fixed bug in `atan2' -- array dimensions weren't checked.
+
+Version 2.3.0 (August 15, 1995)
+
+  * New `filter' function.
+
+Version 2.2.0 (August 2, 1995)
+
+  * A new binary file format is used by the `get' and `put' functions.
+    This new format enables a significant improvement -- reference
+    counts are now preserved within the file so that needless
+    duplication of data is avoided.
+
+  * Fixed bug (noticed only on Solaris 2.x) caused by neglecting to
+    clear i/o errors on interrupted calls.
+
+Version 2.1.3 (July 29, 1995)
+Version 2.1.2 (July 26, 1995)
+
+Version 2.1.1 (July 21, 1995)
+
+  * Fixed installation problems.
+
+Version 2.1.0 (July 20, 1995)
+
+  * Finally completed implementation of `self'.  The `self' keyword is
+    an expression that returns the function in which it resides.
+
+  * The Alki documentation is now also provided in HTML form, and the
+    `info' function will use an appropriate browser if possible.
+
+Version 2.0.5 (June 15, 1995)
+
+  * Installation improvements.
+
+Version 2.0.1 (May 30, 1995)
+
+  * New `tril' and `triu' functions.
+
+  * Better installation.
+
+Version 2.0.0 (May 29, 1995)
+
+  * Name changed from AMPL (A Matrix Programming Language) to Alki.
+    I sure hated to change the name, but there's another AMPL out
+    there and it's been distributed widely.
+
+  * New standard functions include `eval' and `string'.
+
+  * Floating point exceptions handled properly on the Cray.
+
+  * Back-substitution no longer botches systems that have a real array
+    and a complex right-hand side.
+
+  * Configuration now done with GNU autoconf.
+
+  * Other fixes too numerous to mention.
+
+  * Now licensed under the GNU General Public License.
+
+Version 1.9.1 (January 17, 1995)
+
+  * Fixed memory leaks in element assignments to sparse arrays.
+
+  * Don't pass SIGINT to children.
+
+Version 1.9.0 (December 9, 1994)
+
+  * New home (buxom) for AMPL!
+
+  * Support for UnixWare.
+
+Version 1.8.1 (November 10, 1994)
+
+  * Now use getopt to parse command line options.
+
+  * Profiler now works on Solaris 2.3.
+
+  * Support for Cray Y-MP.  (No signals yet, though.)
+
+  * The usual tweaks.
+
+Version 1.8.0 (October 24, 1994)
+
+  * The factor and solve code is finally presentable.  Condition
+    numbers are always checked to identify ill-conditioned systems.
+    Sparse problems use the BCSLIB-EXT routines.
+
+  * Major improvements (like reliability, accuracy, and consistency)
+    to the complex math functions like square root and exponentiation.
+
+  * Catch errors (like "device full") in output routines.
+
+Version 1.7.2 (October 7, 1994)
+
+  * Fixed bugs in new table overloading code.
+
+Version 1.7.1 (September 13, 1994)
+
+  * Removed a few unintended global variables in standard functions.
+
+Version 1.7.0 (August 28, 1994)
+
+  * Most unary and binary operators are now overloaded to work on
+    tables.  For example, `t+1' adds 1 to each member of the table `t'.
+
+  * The new `builtin' function links to user's shared objects.  Now
+    you can provide your own C code, for example, and link to it at
+    run time.  Reorganization of header files and lots of documentation 
+    are still needed to make this fully functional.
+
+Version 1.6.2 (August 13, 1994)
+
+  * Fixed bug in sparse vector assignments introduced in version 1.5.0.
+
+Version 1.6.1 (July 22, 1994)
+
+  * Reduced some waste in error messages.
+
+  * The usual tweaks.
+
+Version 1.6.0 (July 7, 1994)
+
+  * New functions for maintaining source files, including `src',
+    `autosrc', `require', and `provide'.
+
+  * Hacked up a script called "atags" to make an Emacs TAGS file for
+    AMPL source files.
+
+Version 1.5.1 (July 5, 1994)
+
+  * New `getenv' function to get environment variables.
+
+  * Fixed bug with empty matrices in new assignment code.
+
+Version 1.5.0 (July 4, 1994)
+
+  * Major improvements in element assignment performance.  With sparse
+    operands, it may be 100 times faster or more.  When element
+    assignment is to a member (like "a.b[c]=d"), there is still much
+    room for improvment.
+
+  * New functionality for the `split' function -- delimiters may be
+    specified.
+
+  * Fixed bug in addition of zero-length character strings.
+
+  * Fixed dusty old bugs in `diag' involving character arrays.
+
+  * Extra members of arrays were sometimes lost in element assignments.
+
+Version 1.4.6 (May 24, 1994)
+
+  * Fixed inconsistent label behavior with zero row or column matrix
+    partitions.
+
+  * Other minor fiddling.
+
+Version 1.4.5 (May 4, 1994)
+
+  * Improved label handling for matrix appends.
+
+  * Fixed MATLAB I/O, I hope.
+
+Version 1.4.4 (May 3, 1994)
+
+  * Fixed bug in `diag' involving sparse matrices.
+
+  * An "escaped newline" may be followed by a comment.
+
+Version 1.4.3 (April 17, 1994)
+
+  * Support for Solaris 2.3.
+
+Version 1.4.2 (April 9, 1994)
+
+  * Improved logical operations on sparse vectors.  For example, `v&v'
+    is sparse if `v' is sparse.  Matrices still need this improvement.
+
+Version 1.4.1 (April 1, 1994)
+
+  * Minor installation fixes.
+
+Version 1.4.0 (March 25, 1994)
+
+  * AMPL can now be linked to the BCSLIB-EXT library for solving
+    sparse systems of equations.  (Sparse eigenvalue problems will
+    follow.)
+
+  * Finally, a man page.
+
+  * The code that decides whether to convert from sparse to dense
+    storage had the potential for integer overflow.
+
+  * The usual tweaks.
+
+Version 1.3.12 (March 15, 1994)
+
+  * Improvements (long overdue) in the logical functions.
+
+  * Fixed bug in which a diagonal matrix times a dense symmetric
+    matrix gave a symmetric (rather than general) result.
+
+Version 1.3.11 (March 11, 1994)
+
+  * Fixed bugs in `apply' dealing with sparse symmetric and sparse
+    hermitian matrices.  This affected functions ranging from `abs' to
+    `tanh'.  (I take it that these matrices aren't used much.)
+
+Version 1.3.10 (March 10, 1994)
+
+  * Fixed several symmetric/hermitian mixups for complex matrices.
+
+Version 1.3.9 (March 3, 1994)
+
+  * Fixed bug involving append operation with zero-length vectors.
+
+  * Removed the old Laguerre code.
+
+Version 1.3.8 (February 24, 1994)
+
+  * New `cd' function to change directory.
+
+  * Accommodate tkinfo alternative to standalone info.
+
+Version 1.3.7 (February 17, 1994)
+
+  * Full support for DEC alpha.
+
+Version 1.3.6 (February 16, 1994)
+
+  * New `umin' function for unconstrained minimization.
+
+  * The usual tweaks.
+
+Version 1.3.5 (January 16, 1994)
+
+  * Recent flex update required simple changes to scanner.
+
+  * Fixed label bug in `complement'.
+
+Version 1.3.4 (January 11, 1994)
+
+  * Added `randn' function for normally distributed random numbers.
+
+  * Don't convert integers and reals to complex in `hermitian'.
+
+  * Fixed error handling bug in `fill' and `form'.
+
+Version 1.3.3 (December 6, 1993)
+
+  * Fixed minor bug in inequality with character operands.
+
+Version 1.3.2 (December 6, 1993)
+
+  * Fixed error in Titan installation.
+
+Version 1.3.1 (November 23, 1993)
+
+  * Bug in `plot' and `splot' prevented using percent sign in titles
+    or labels.
+
+  * First cut at DEC alpha support.  No fpe traps yet.
+
+  * Added provision to specify Fortran name suffix.
+
+  * Minor improvements to the manual.
+
+  * Fixed bug in installation test for domain error reporting.
+
+  * Improved installation.
+
+Version 1.3.0 (November 5, 1993)
+
+  * Made a significant change to the DYNASTY I/O routines `getdyn' and
+    `putdyn'.  They now work with multiple matrices in a file.
+
+Version 1.2.4 (November 2, 1993)
+
+  * Caught the execution profiler in another flub.  Most previous
+    profiler results were at least slightly (and sometimes wildly)
+    inaccurate.
+
+Version 1.2.3 (October 29, 1993)
+
+  * Fixed some very serious bugs involving sparse, complex matrices.
+    Since functions like `diag' return sparse arrays, this should
+    concern anyone who uses complex matrices.
+
+  * Added the `label' function for assigning array labels.
+
+Version 1.2.2 (October 22, 1993)
+
+  * Added "scalar" elements in `fem'.  One day soon, I hope to make
+    `fem' suitable for general consumption (with documentation and
+    everything).
+
+  * Added the `diff' function for differences between array elements.
+
+Version 1.2.1 (October 14, 1993)
+
+  * Added the `sources' function for reading multiple files.
+
+  * Bend over backwards for the poor old Apollo.
+
+Version 1.2.0 (October 12, 1993)
+
+  * Read and write MATLAB binary files with `getmat' and `putmat'.
+
+Version 1.1.4 (September 29, 1993)
+
+  * Fixed faulty logic in execution profiler which sometimes resulted
+    in it being turned off at inappropriate times.
+
+  * The transpose operator knows not to bother transposing a symmetric
+    matrix, but it mustn't forget to swap the labels.
+
+Version 1.1.3 (September 24, 1993)
+
+  * The `#' operator was dropping labels.
+
+Version 1.1.2 (September 23, 1993)
+
+  * The new `prof' function summarizes output from the execution profiler.
+
+  * Provision is made for disabling the execution profiler when AMPL
+    is installed.
+
+  * The `fill' and `form' functions screwed up when they were supposed
+    to return scalars.
+
+Version 1.1.1 (September 15, 1993)
+
+  * Fixed bug in member assignments to copies of non-tables.  How
+    could this go so long without being noticed?
+
+Version 1.1.0 (September 15, 1993)
+
+  * Execution profiling (-p option) added.
+
+Version 1.0.2 (September 13, 1993)
+
+  * Fixed bug in `get' -- botched reading empty tables.
+
+Version 1.0.1 (September 7, 1993)
+
+  * Straightened out my confusion on left eigenvectors.
+
+  * Enable compiling for old LAPACK 1.0.
+
+Version 1.0.0 (September 6, 1993)
+
+  * The `eig' function can now handle real, nonsymmetric, generalized
+    eigenvalue problems.  Also, provision for calculating left
+    eigenvectors for nonsymmetric problems has been added.  The option
+    to skip computation of the right eigenvectors has been changed
+    from "novectors" to "no_right".
+
+  * The `+=' and `-=' operators now work with element references.
+    Expressions like `a[b]+=c' are now accepted.  This fixes bug #4.
+
+  * Assignments to the symbol table, like `$$.a=b' or `$$.(a)=b', are
+    now accepted.  This fixes bug #12, and opens up a whole new world
+    of hacking possibilities.
+
+  * Symbol table references like `$$.a' are now much more efficient.
+
+  * The parser now generates better code for expressions like `(a).b.c'.
+
+  * The `sum' function is new; it sums elements of an array.
+
+  * Fixed some serious density and symmetry bugs in `bdiag'.
+
+Version 0.6.4 (August 31, 1993)
+
+  * New `unlabel' function for removing labels.
+
+Version 0.6.3 (August 25, 1993)
+
+  * The `npsol' function no longer warns you when `inform' is nonzero --
+    you'll have to check it yourself.
+
+  * Minor changes and bug fixes in `plot', `splot', and `unplot'.
+
+  * Makefile improvements.
+
+Version 0.6.2 (August 24, 1993)
+
+  * Improvements to `plot' and `splot'.  Tables are no longer
+    "flattened"; instead, members of a table within a table are
+    given to gnuplot in the same file (which means they get the same
+    line and point type).
+
+  * New `seq' function for integer sequences.  Calling `seq(n)' is
+    like `1:n' except that it forces integer type and returns a
+    zero-length vector if `n' is less than 1.
+
+  * No longer use mktemp(1) in `error_tests' -- not always available.
+
+Version 0.6.1 (August 15, 1993)
+
+  * Restored the "all" option in `unplot'.  (It was in Don's version;
+    I don't know why I dropped it.)
+
+  * Fixed memory leak for nonexistent member references.
+
+Version 0.6.0 (August 5, 1993)
+
+  * Surface plots and improved handling of multiple plot processes,
+    courtesy of Don Morris.  The plotting functions are better, but
+    different.  The `unplot' function is new.
+
+  * Fixed parser bug which allowed vexpr's in "if" conditions but only
+    expr's in "elseif" conditions.
+
+  * Added the `reverse' function.
+
+  * Added regression tests for error handling.
+
+  * Improved maintainability of parser code.
+
+Version 0.5.6 (August 2, 1993)
+
+  * The parser occasionally lost track of its "continuing" state after
+    a call to `source'.  That's been fixed.
+
+  * No more local symbols in $$.
+
+Version 0.5.5 (July 26, 1993)
+
+  * Parser was missing OP_LINE's in a few places.
+
+Version 0.5.4 (July 25, 1993)
+
+  * Fixed bugs with handling of sparse character arrays.
+
+  * Fixed bug in subvector and submatrix assignments.  If the
+    reference count was more than one, members were lost.
+
+Version 0.5.3 (July 22, 1993)
+
+  * Fixed bug in `split'.
+
+Version 0.5.2 (July 21, 1993)
+
+  * Enhanced the `svd' function, providing options for the singular
+    vector computation.
+
+  * Fixed bug in `ident'.
+
+  * Improved makefiles.
+
+Version 0.5.1 (July 20, 1993)
+
+  * Fixed minor makefile problems.
+
+Version 0.5.0 (July 19, 1993)
+
+  * Added the `ident' function for identity matrices.
+
+  * No longer source "./.ampl" on startup.
+
+  * Code put under CVS control.
+
+Version 0.4.3 (July 14, 1993)
+
+  * Added the `grep' function.
+
+Version 0.4.2 (July 12, 1993)
+
+  * The `div' function (in "binop_scalar_integer") is undefined for
+    zero denominator -- must test before calling it.
+
+  * Added missing math error checking in "apply" and "exp".
+
+Version 0.4.1 (July 8, 1993)
+
+  * In "read_numbers", use atof instead of strtod, and fail instead of
+    warn on range errors.
+
+  * Enabled character labels in `putdyn'.
+
+  * Mike radically improved Scott's ugly parser code, cleaned up the
+    grammar, and fixed a bug with `while(1){break}'.
+
+Version 0.4.0 (July 5, 1993)
+
+  * Attempt to trap and handle floating point exceptions.  This has
+    been a real eye-opener for me -- I've tried four popular machines,
+    and not one of them works as its documentation says it should.
+
+  * Added `load()' and `save()' functions.
+
+  * Added `digits()' for user specification of print precision.
+
+  * Added `atan2()' function.
+
+  * Fixed NULL argument bug in `printf()'.
+
+  * Fixed many bugs involving vectors or matrices with 0 dimension.
+
+Version 0.3.0 (June 23, 1993)
+
+  * Added file and line number coding.  Both parse and run time error
+    messages give file name and line number.  The "message" function
+    provides the same capability to user functions.  New builtin
+    functions are "strip", "file", and "line".
+
+  * Changed the binary format used by the "get" and "put" functions.
+    Use the "old_get" function to read old files (and convert them --
+    "old_get" won't be there forever).  The new format is designed to
+    be compatible between machines.  This is not yet the case for VAX
+    computers (and may take quite a bit of work).
+
+  * The "get" and "put" functions can now read and write functions.
+
+  * The "real" and "imag" functions now always return real.
+
+  * Improved rounding.  Use rint(3m) on machines that have it.
+
+  * Added "ceil", "floor", and "round" functions.
+
+  * Changed "max", "min", and "sort", to "imax", "imin", and "isort".
+    The new functions "max", "min", and "sort" return values, not
+    indices.
+
+  * Function definitions are now expressions.
+
+  * Added the "$program" predefined variable.
+
+  * Imply statement terminator at closing brace of "if", "while", etc.
+
+  * No longer assign statement's value to "$".
+
+  * Symmetric partition gives symmetric result.
+
+  * Added error checking on reading numeric constants.
+
+  * All AMPL strings were malloced FOUR TIMES TOO LARGE.
+
+  * Added `atof', `dice', and `split' string manipulation functions.
+
+Version 0.2.3 (March 12, 1993)
+
+  * Scalar rhs in assignments is now expanded to appropriate size.
+    For example, "v[1:5]=0" assigns 0 to the first 5 elements of "v".
+
+Version 0.2.2 (February 10, 1993)
+
+  * Fixed a bug in the parser that sometimes left it in the wrong
+    state when a parse error was detected.
+
+  * Finished implementing class conversions for partitioning.
+
+  * Assignments now brought into line with our class conversion
+    rules.  For example, "x[;1]=1:x.nr" now works just fine.
+
+Version 0.2.1 (January 15, 1993)
+
+  * Mike Brennan showed me how most compilers miss an obvious switch
+    optimization.  Simply by reordering our enums (for class, type,
+    etc.), our timing tests now run up to 10% faster.  (This probably
+    also shows that we do way too much switching.)
+
+  * Added a new "read" builtin, changing the name of the old one to
+    "readnum".  The new one reads a line of text.
+
+  * Empty entries accepted in tables, vectors, and matrices.  The
+    statements "{x;}", "v[]", and "[]" are all legal now.
+
+  * The "class" function now works for NULL, too.
+
+Version 0.2.0 (December 19, 1992)
+
+  * Changed syntax for "if", "for", "while", and "function"
+    statements, replacing the "end" keywords with braces.
+
+  * Improved detection and elimination of "fat" sparse arrays --
+    sparse vectors and matrices that are more efficiently stored
+    dense.
+
+  * Significantly improved vector and matrix partitioning.  Scalar
+    selectors now reduce the dimensionality of the result.  For
+    example, "a[1,1]" is a scalar.  Also, v["1"] now works with
+    numeric labels.
+
+  * Fixed bug in the "find" function.  (The statement "find(1,1;1,1)"
+    gave wrong answers in previous versions.)
+
+  * Plugged several memory leaks.
+
+  * Changed the default AMPL_RCO to "/usr/local/lib/ampl.A".
+
+Version 0.1.9 (September 9, 1992)
+
+  * Added version info in binary files (written by "put" and read by
+    "get").  This will let us change the format and still be able to
+    read old files.  Unfortunately, it also means that binary files
+    written in previous versions can't be read now -- to fix them,
+    simply add the first four bytes of any new binary file to the
+    beginning of the old ones.
+
+  * Fixed a bug in "set".  Previously it botched character vectors
+    with duplicate elements.
+
+  * Made some small improvements to the DYNASTY I/O routines.  The
+    "putdyn" function no longer closes its file; this allows multiple
+    matrices in the same file.
+
+Version 0.1.7 (July 10, 1992)
+
+Version 0.1.6 (June 23, 1992)
+
+Version 0.1.5 (June 11, 1992)
+
+Version 0.1.3 (May 26, 1992)
+
+    Previous versions lost in the mists of time...

@@ -1,0 +1,86 @@
+
+# Show information about an entity.
+
+show = function( x ) {
+
+    local( c; t; n; i );
+
+    if ( x == NULL ) {
+	printf( "\tclass:     NULL\n" );
+	return;
+    }
+
+    c = class( x );
+    printf( "\tclass:     %s\n"; c );
+    t = {};
+
+    while ( 1 ) {
+
+        if ( c == "matrix" ) {
+            printf( "\ttype:      %s\n"; x.type );
+            printf( "\tnr, nc:    %d, %d\n"; x.nr; x.nc );
+	    printf( "\trid, cid:  " );
+	    if ( x.rid == NULL ) {
+                printf( "NULL, " );
+            else
+                printf( "%s, "; x.rid.type );
+            }
+	    if ( x.cid == NULL ) {
+                printf( "NULL\n" );
+            else
+                printf( "%s\n"; x.cid.type );
+            }
+            printf( "\tsymmetry:  %s\n"; x.symmetry );
+            printf( "\tdensity:   %s\n"; x.density );
+	    printf( "\tnn:        %d\n"; x.nn );
+	    for ( i in members( x ) ) { t.(i) = NULL; }
+	    t -= { type; nr; nc; symmetry; density; nn; rid; cid; order; class };
+	    break;
+        }
+
+        if ( c == "vector" ) {
+            printf( "\ttype:      %s\n"; x.type );
+            printf( "\tne:        %d\n"; x.ne );
+	    printf( "\teid:       " );
+	    if ( x.eid != NULL ) {
+                printf( "%s\n"; x.eid.type );
+            else
+                printf( "NULL\n" );
+            }
+            printf( "\tdensity:   %s\n"; x.density );
+	    printf( "\tnn:        %d\n"; x.nn );
+	    for ( i in members( x ) ) { t.(i) = NULL; }
+	    t -= { type; ne; density; nn; eid; order; class };
+	    break;
+        }
+
+        if ( c == "scalar" ) {
+            printf( "\ttype:      %s\n"; x.type );
+	    for ( i in members( x ) ) { t.(i) = NULL; }
+	    t -= { type; class };
+	    break;
+        }
+
+        if ( c == "table" ) {
+            printf( "\tsize:      %d\n"; members( x ).ne );
+	    for ( i in members( x ) ) { t.(i) = NULL; }
+	    break;
+        }
+
+        if ( c == "function" ) {
+            printf( "\tilk:       %s\n"; x.ilk );
+	    for ( i in members( x ) ) { t.(i) = NULL; }
+	    t -= { ilk; class };
+	    break;
+        }
+
+	break;
+    }
+
+    if ( members(t).ne ) {
+        printf( "\tothers:\n" );
+	t.("") = NULL;
+	t?
+    }
+
+};

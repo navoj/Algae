@@ -1,0 +1,28 @@
+
+# This function removes labels.  If its argument is a vector or a
+# matrix, it sets the labels to NULL and returns the result.  If the
+# argument has any other class, it is returned unchanged.
+
+unlabel = function( x )
+{
+    return unlabel.(class(x))(x);
+};
+
+( unlabel.scalar =
+  unlabel.table =
+  unlabel.("function") =
+  unlabel.("NULL") =
+    function( x ) { return x; }
+);
+
+unlabel.vector = function( v )
+{
+    v.eid = NULL;
+    return v;
+};
+
+unlabel.matrix = function( m )
+{
+    m.rid = m.cid = NULL;
+    return m;
+};

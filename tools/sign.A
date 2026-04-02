@@ -1,0 +1,7 @@
+
+# This is the signum function for numeric arrays.
+
+sign = function (x)
+{
+  return (x > 0) - (x < 0);
+};

@@ -1,0 +1,16 @@
+
+		      An ARPACK subset for Algae
+
+This directory contains a subset of the ARPACK package distributed
+from Rice University (at "http://www.caam.rice.edu/software/ARPACK/").
+The single precision ARPACK routines are not included here.
+
+This is the ARPACK96 version, with patches from 4 October 2003.  One
+modification is that all calls to `second' have been changed to the
+function version (as opposed to the subroutine version) so that it
+matches what is provided by LAPACK.
+
+This version of ARPACK is not compatible with DLAHQR from LAPACK
+version 3.0.  (It works with the 2.0 version.)  I have temporarily
+bypassed the real non-symmetric ARPACK code, which is the only place
+that calls DLAHQR.

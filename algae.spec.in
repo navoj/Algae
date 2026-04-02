@@ -1,0 +1,94 @@
+Summary: Algae - Another Matrix Programming Language
+Name: algae
+Version: VERSION_NUMBER
+Release: 1
+Group: Applications/Math
+Source: ftp://algae.sourceforge.net/pub/algae/algae-VERSION_NUMBER.tar.gz
+Copyright: GPL
+Icon: icon.gif
+URL: http://algae.sourceforge.net/index.html
+Packager: K. Scott Hunziker <ksh@users.sourceforge.net>
+Requires: gnuplot >= 3.5
+Vendor: sideslip.org
+%undefine __check_files
+
+%description
+Algae is a high-level interpreted language for numerical analysis.
+Algae was developed because we needed a fast and versatile tool,
+capable of handling large problems.  Algae has been applied to many
+interesting dynamics problems in aerospace and related fields.
+
+%prep
+%setup
+
+# I'd prefer to use the BLAS and LAPACK packages that are available as
+# RPM's, but they seem to have problems.  They work fine on my relatively
+# new i686, but I have a couple of older i686's on which they produce
+# spurious floating point exceptions.
+
+%build
+./configure --prefix=/usr --without-blas --without-lapack
+make
+
+%install
+make install
+
+%post
+rm -f /usr/bin/algae
+ln -sf /usr/bin/algae-VERSION_NUMBER \
+       /usr/bin/algae
+rm -f /usr/share/algae/html
+ln -sf /usr/share/algae/VERSION_NUMBER/html \
+       /usr/share/algae/html
+/sbin/install-info /usr/share/info/algae.info \
+		   /usr/share/info/dir
+
+%preun
+[ ! /usr/bin/algae -ef \
+    /usr/bin/algae-VERSION_NUMBER ] || \
+      rm -f /usr/bin/algae
+[ ! /usr/share/algae/VERSION_NUMBER/html -ef \
+    /usr/share/algae/html ] || \
+      rm -f /usr/share/algae/html
+if [ "$1" = 0 ]; then
+  /sbin/install-info --del /usr/share/info/algae.info \
+			   /usr/share/info/dir
+fi
+
+%postun
+rmdir /usr/share/algae/VERSION_NUMBER
+rmdir /usr/lib/algae/VERSION_NUMBER
+
+%files
+%doc COPYING INSTALL LICENSE NEWS PROBLEMS README doc/FAQ
+/usr/bin/algae-VERSION_NUMBER
+%config /usr/lib/algae/VERSION_NUMBER/algae.A
+/usr/share/algae/VERSION_NUMBER/html
+/usr/share/algae/VERSION_NUMBER/tools
+/usr/share/info/algae.info*
+/usr/man/man1/algae.1
+
+%changelog
+* Tue Dec  9 2003 Scott Hunziker <ksh@sideslip.org>
+- Don't install header files.
+
+* Tue Jan  7 2003 Scott Hunziker <ksh@sideslip.org>
+- New installation directory layout.
+
+* Thu Dec  5 2002 Scott Hunziker <ksh@sideslip.org>
+- Forget about trying to relocate.  (Broken in RH 8.0)
+
+* Wed Oct 31 2001 Scott Hunziker <ksh@sideslip.org>
+- Back to our own BLAS and LAPACK.
+
+* Thu Oct 25 2001 Scott Hunziker <ksh@sideslip.org>
+- Use system BLAS and LAPACK, if available.
+
+* Sun Sep 02 2001 Scott Hunziker <ksh@sideslip.org>
+- Use install-info.
+
+* Sun Sep 02 2001 Scott Hunziker <ksh@sideslip.org>
+- Supply our own BLAS and LAPACK routines.
+
+* Fri Aug 31 2001 Scott Hunziker <ksh@sideslip.org>
+- Update to 3.5.0.

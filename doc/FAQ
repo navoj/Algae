@@ -1,0 +1,549 @@
+
+		      Frequently Asked Questions
+			     About Algae
+			    (With Answers)
+
+			   9 December 2003
+
+			  K. Scott Hunziker
+		      ksh@users.sourceforge.net
+
+What follows is just a start.  It obviously needs help, and you can
+provide it.  One way would be for you to take over as the maintainer
+of this FAQ.  Another way to help would be to send me new questions,
+answers, and improvements.  Thanks in advance.
+
+----------------------------------------------------------------------
+			    The Questions
+----------------------------------------------------------------------
+
+1.  About Algae
+---------------
+
+1.1:   Where can I get Algae?
+
+1.2:   Where should I report bugs and other problems with Algae?
+
+1.3:   Does Algae really only work on Unix machines?
+
+1.4:   What about Algae on DOS, Microsoft Windows, or OS/2?
+
+1.5:   You mean I can't run Algae on my PC?
+
+2.  Installation
+----------------
+
+2.1:  How can I compile Algae in 64-bit mode on AIX?
+
+2.2:  Configure reports "Cannot handle floating point exceptions".  Why?
+
+2.3:  Can I use the Apple-supplied BLAS and LAPACK on Mac OS X?
+
+3.  Running Algae
+-----------------
+
+3.1:  When I try to run Algae, it fails with the message "Problem
+      reading startup file...".  What's wrong?
+
+3.2:  Why does Algae's display not match the width of my terminal?
+
+3.3:  How do I use the `builtin' function to link to code in my own
+      shared objects?
+
+4.  The Language
+----------------
+
+4.1:  Why do I get inconsistent results when partitioning with labels?
+
+4.2:  How can I create variables A1, A2, A3, etc. in a loop?
+
+5.  Files
+---------
+
+5.1:  I can't read my file.  Algae says it's "already open".  Why?
+
+5.2:  Why is Algae leaving temporary files around after it exits?
+
+5.3:  How do I read numbers from a file?
+
+6.  Math
+--------
+
+6.1:  Why does Algae only use four significant digits?
+
+6.2:  Why does the transpose operator take the complex conjugate?
+
+6.3:  I need to invert a matrix, but the Algae documentation says that
+      the `inv' function isn't very efficient.  Is there a better way?
+
+6.4:  How do I compute the determinant of a matrix?
+
+6.5:  Does Algae have symbolic math capability?
+
+6.6:  The symmetry of my matrix result is wrong.  What gives?
+
+7.  Memory and Speed
+--------------------
+
+7.1:  Algae says it's "out of memory", but I think my computer has
+      more memory than what it's using.  What's happening?
+
+7.2:  For certain problems, I've noticed unexpectedly large performance
+      differences between roughly comparable platforms.  Why?
+
+----------------------------------------------------------------------
+			     The Answers
+----------------------------------------------------------------------
+
+1.  About Algae
+---------------
+
+1.1:  Where can I get Algae?
+
+  You can get Algae from these sites:
+      <ftp://algae.sourceforge.net/pub/algae>
+      <ftp://ftp.eskimo.com/u/k/ksh/algae>
+
+1.2:  Where should I report bugs and other problems with Algae?
+
+  Please send bug reports to <ksh@users.sourceforge.net>.
+
+1.3:  Does Algae really only work on Unix machines?
+
+  Currently, Algae is set up to configure itself for most Unix
+  operating systems.  To run Algae on something else, you'll probably
+  have to do some work to port it.  (And if you do, please tell me
+  about it so that others can also benefit.)
+
+  Algae uses a number of features that are present in all Unix systems.
+  To my knowledge, these features are all incorporated in the family
+  of standards known as "POSIX".  Getting Algae running on a POSIX
+  system, then, may be relatively easy.  For example, at one time I
+  had Algae running on a VAX computer running VMS.
+
+1.4:  What about Algae on DOS, Microsoft Windows, or OS/2?
+
+  As far as I know, Algae has not yet been ported to any of these
+  systems.  Although there would likely be some limitations, these
+  ports are entirely possible.  If you're interested in taking one of
+  these on, I may be able to put you in contact with someone who can
+  help.
+
+1.5:  You mean I can't run Algae on my PC?
+
+  Of course you can!  You just need a modern, well-designed operating
+  system.  In fact, I do all of the Algae development (as well as real
+  work) on "buxom", my 90 MHz Pentium machine running Linux.  (In the
+  summer of 2001, "buxom" was replaced by a faster machine, but it's
+  still plugging along as a web server.)
+
+
+2.  Installation
+----------------
+
+2.1:  How can I compile Algae in 64-bit mode on AIX?
+
+  On our AIX 4.3 machine, you can do this by making the following
+  environment variable assignments before running configure:
+
+	CC=cc
+	F77=f77
+	CFLAGS="-q64 -O -qmaxmem=8192"
+	FFLAGS="-q64 -O -qmaxmem=8192"
+	LDFLAGS="-b64"
+	ARFLAGS="-X64"
+
+2.2:  Configure reports "Cannot handle floating point exceptions".  Why?
+
+  Unfortunately, there's no standard way to either enable or handle
+  floating point exceptions.  What we've done for configuring Algae
+  isn't very elegant -- we simply try every file in the "fpe"
+  directory, one at a time, looking for one that works.  The message
+  you're seeing means that none of them did.
+
+  The good news is that it shouldn't be very hard to fix.  We simply
+  need to install a SIGFPE handler and enable exceptions, and
+  virtually every system provides a means to do that.  (But see
+  below.)  The "config.log" file will contain error messages that may
+  help solve the problem.  (Even when it finds an "fpe" file that
+  works, there will be error messages from the ones that didn't.)
+
+  By the way, the names of the files in the "fpe" directory are pretty
+  lame.  Mostly, they're just the names returned by "config.guess" on
+  the machine on which they were developed.  For example, there are
+  "i386", "i586", and "i686" files in there, but in reality the
+  differences between them have nothing to do with the CPU model.
+  There is a generic "fpe.c" file in there, but currently it handles
+  only a few machine types.
+
+  Linux has been a moving target, but I think it has finally
+  stabilized.  Until glibc 2.2, the Linux libc had no standard way to
+  enable floating point exceptions.  The fpsetmask and __setfpucw
+  functions came and went, but I don't think either of them was
+  documented.  Beginning with glibc 2.2, the function feenableexcept
+  is now the standard way to do this.  Unfortunately, glibc 2.1.3
+  doesn't appear to provide any of these.  I've been able to grab the
+  feenableexcept definition out of recent glibc sources and add it to
+  "fpe/i686-pc-linux-gnu.c", but the best approach with glibc 2.1.3 is
+  to upgrade to a more recent version.
+
+2.3:  Can I use the Apple supplied BLAS and LAPACK on Mac OS X?
+
+  From Randall Skelton:
+
+  - To use the Apple supplied blas and lapack libraries (based around
+    atlas with altivec extensions):
+    (1) add -latlas to the linking library list in configure
+    (2) set LDFLAGS=-framework veclib
+
+  - Also works with Nagware fortran 95 compiler but this requires a
+    bit of fiddling.
+    (1) do (1) and (2) from above.
+    (2) set F77=/usr/local/bin/f95nag -dcfuns
+    (3) set LIBS=/usr/local/lib/NAGWare/libf96.a \
+	    /usr/local/lib/NAGWare/quickfit.o
+    (4) change configure to include a c-wrapper for erf function.
+   3648 
+   3649 echo "$as_me:3649: checking whether we can link Fortran" >&5
+   3650 echo $ECHO_N "checking whether we can link Fortran... $ECHO_C" >&6
+   3651 cat > conftestf.f <<EOF
+   3652       DOUBLE PRECISION X
+   3653       X=ERF(2.0)
+   3654       WRITE(*,*) X
+   3655       STOP
+   3656       END
+   3657 EOF
+   3658 cat > conftest.c <<EOF
+   3659 double erf_(double x)
+   3660 {
+   3661       return erf(x);
+   3662 }
+   3663 EOF
+   3664 if eval $f77_c_link; then
+   3665   rm -rf conftest*
+
+3.  Running Algae
+-----------------
+
+3.1:  When I try to run Algae, it fails with the message "Problem
+      reading startup file...".  What's wrong?
+
+  Many of Algae's standard functions are themselves written in Algae.
+  So, when it starts up, Algae tries to read them.  There's a startup
+  file, usually called "algae.A", which arranges for all the other
+  files to be read.  The default name and location of the startup file
+  is set when Algae is installed, but you can override that with the
+  ALGAE_RC0 environment variable.
+
+  For example, if your startup file is "/tmp/foo" (and you're using a
+  Bourne compatible shell), you can start it like this:
+
+	ALGAE_RC0=/tmp/foo algae
+
+3.2:  Why does Algae's display not match the width of my terminal?
+
+  When it starts, Algae attempts to determine the width of the
+  terminal on which it is running.  This width, in characters, is set
+  in the $term_width variable.  If Algae has trouble determining the
+  width, this is set to zero and Algae simply doesn't worry about the
+  terminal width.  (And you can get some very long lines.)  Also,
+  changing the width of the terminal after Algae is started will not
+  change the value of $term_width.
+
+  Changing the value of $term_width will immediately change Algae's
+  idea of the terminal width.
+
+3.3:  How do I use the `builtin' function to link to code in my own
+      shared objects?
+
+  The `builtin' function itself is simple to use -- the trick is
+  writing code to interface with Algae.  There's no programmer's
+  manual, so you may need to learn a bit about Algae's source code.
+  There's an example of this kind of stuff in a package called
+  "shuffle" that's in the "contrib" section of the Algae project at
+  Sourceforge (http://sourceforge.net/projects/algae).
+
+  Once you have the shared object set up, you'd run Algae like this:
+
+    $ algae
+    > shuffle = builtin ("./shuffle.so"; "bi_shuffle");
+    > shuffle (1:6)
+	( 6,    1,    3,    4,    5,    2 )
+
+  The first argument to `builtin' is the file name of the shared
+  object library, and the second is the name of the symbol you're
+  going to call.
+
+4.  The Language
+----------------
+
+4.1:  Why do I get inconsistent results when partitioning with labels?
+
+  Here's an example that sometimes causes confusion.
+
+	> x = 1, 2, 3, 4;
+	> x.eid = "a", "b", "b", "c";
+	> x["e","f"]
+	> x["e"]
+	algae: stdin: line 3: run time error: Specified label does not
+	exist in vector partition operation.
+
+  Why does x["e"] return an error, and x["e","f"] doesn't?  The answer
+  lies with the definitions for vector partitioning.
+
+  The expression x["e","f"] uses a single vector to select the elements.
+  By definition, this expression returns a vector containing as many
+  of those elements as exist, or a zero-length vector if none of them
+  do.
+
+  On the other hand, the expression x["e"] uses a scalar to specify
+  the selection.  By definition, a scalar is returned.  So, it's an
+  error.  (There's no scalar equivalent to a zero-length vector.)
+  Also, x["b"] would be an error because "b" isn't unique among the
+  labels.  You could, instead, type x[vector("e")] or x[["e"]] and get
+  behavior similar to the second and third examples.
+
+  By the way, this behavior is consistent with all partitioning -- not
+  just by label.  If `s' is a scalar and `a' is either a vector or a
+  matrix (or blank), then here are the results:
+
+	x[s] or x[s;s]		 -->	scalar
+	x[a], x[a;s], or x[s;a]	 -->	vector
+	x[a;a]			 -->	matrix
+
+4.2:  How can I create variables A1, A2, A3, etc. in a loop?
+
+  Are you sure you really want to do that?  Using arrays or tables is
+  usually a better choice.  For example, to set up a list of the first
+  ten cubes, you could use
+
+	c = 0;
+	for (i in 1:9) { c = c, i^3; }
+
+  (Much better, though, to use the simple statement `c=(0:9)^3'.)
+
+  If your variables were to have, say, matrix values, then you could
+  use a table instead.  Here's an example where we save several "magic
+  squares" in a table:
+
+	t = {};
+	for (i in 1:9) { t.(i) = magic (i); }
+
+  If you really need to do what you ask, use the `$$' identifier to
+  refer to the global symbol table.  For example, to set A1, A2, A3,
+  etc. equal to 1, 2, 3, etc., use
+
+	for (i in 1:9) { $$.(sprintf("A%d";i)) = i; }
+
+  You could also do this with the `exec' function, as in
+
+	for (i in 1:9) { exec (sprintf ("A%d = i;"; i)); }
+
+  By the way, neither of these two approaches is capable of setting
+  variables that are local to a function.
+
+5.  Files
+---------
+
+5.1:  I can't read my file.  Algae says it's "already open".  Why?
+
+  In Algae, files may be open for either input or output -- not both.
+  So, if you've already opened it for output, Algae will complain if
+  you try to read it.  Close the file, and then you'll be able to open
+  it as you wish.
+
+5.2:  Why is Algae leaving temporary files around after it exits?
+
+  Algae's `tmp_file' function creates temporary files.  They're put in
+  the directory /tmp, unless you specify something different with the
+  TMPDIR environment variable.  The `plot' function is one of several
+  that uses temporary files.
+
+  Algae keeps track of the temporary files it has created, and deletes
+  them when it exits.  It does this even if it terminates abnormally.
+  However, it is limited in the number of temporary files it can
+  handle.  It can usually handle more than 500 files, but the limit is
+  system dependent.  If you go over the limit, some or all of the
+  files will not be deleted.  (You will not necessarily see an error
+  message.)
+
+  Our code for temporary files is clever, but not very robust.
+  Someone should improve it.
+
+  In the meantime, I can think of a couple partial workarounds.  One
+  possibility is to occasionally execute the statement
+
+	close (tmp_file.cleanup);
+
+  This will immediately delete all temporary files, so of course you
+  must be done with them.
+
+
+5.3:  How do I read numbers from a file?
+
+  If the numbers are in a text file, the `readnum' function is
+  probably your best bet, being fast and easy.  The numbers must be
+  separated by whitespace, and it simply reads as many numbers as you
+  request.
+
+  If it's a text file but the numbers are in a particular format (in
+  10 character wide fields, for example), then you may need to use the
+  `read' function and then perhaps functions like `split' and `atof'.
+
+  The Algae package called MatrixMarket provides a function to read
+  matrices in the Netlib text file format of the same name.
+
+  For binary files, the `get' function reads native Algae data.  These
+  files are portable between various computers.
+
+  The `getmat' function reads MATLAB binary files in their v.4
+  "Level-1 MAT-file" format.  The `getdyn' function reads matrices
+  from binary DYNASTY files.
+
+  At the lowest level, you can use the `fread' function to read the
+  file as you like.
+
+6.  Math
+--------
+
+6.1:  Why does Algae only use four significant digits?
+
+  It doesn't.  For real and complex numbers, it uses full double
+  precision floating point numbers.  By default it only displays four
+  digits, but you can change that with the `digits' function.
+
+6.2:  Why does the transpose operator take the complex conjugate?
+
+  With linear algebra on complex matrices, it is usually the complex
+  conjugate transpose that's needed, rather than the pure transpose.
+  To transpose a complex matrix without taking its complex conjugate,
+  use either conj(x') or conj(x)'.
+
+6.3:  I need to invert a matrix, but the Algae documentation says that
+      the `inv' function isn't very efficient.  Is there a better way?
+
+  It's not that Algae's implementation is poor.  As any good linear
+  algebra text will tell you, it's rarely a good idea to form a matrix
+  inverse.
+
+  Consider the linear system `A*x = b'.  You can use the matrix
+  inverse to solve this as `x = inv(A)*b'.  A much better way, though,
+  is to use the direct solution `x = solve(A;b)'.  The direct approach
+  is much faster and behaves better numerically.
+
+  You can use this in many places where it might not be apparent.  For
+  example, suppose that you need to compute
+
+	Kaa = K11 - K12 * inv(K22) * K21
+
+  Here again, the right way to solve this is
+
+	Kaa = K11 - K12 * solve (K22; K21)
+
+  If for some reason you really need the inverse, then go right ahead
+  and use `inv'.  It simply uses `solve' with an identity matrix on
+  the right-hand side.
+
+6.4:  How do I compute the determinant of a matrix?
+
+  The determinant is equal to the product of the singular values.  Use
+  `svd' to get the singular values (they're returned in the member
+  called "sigma") and multiply them all together with `product'.
+
+  If you're looking for a measure of how well conditioned a matrix is
+  (like "is this matrix singular?"), then the determinant is not very
+  useful.  It's much better to look at the RCOND condition number
+  estimate returned by the `factor' and `chol' functions.
+
+6.5:  Does Algae have symbolic math capability?
+
+  Not at this time.  With Algae's ability to read from and write to
+  pipes, implementing something similar to MATLAB's interface to Maple
+  would be pretty easy.  It might make a nice little project for
+  someone, especially since it wouldn't require any changes to the
+  source code.  There are several useful symbolic packages available.
+  I'm particularly fond of maxima (www.ma.utexas.edu/users/wfs/maxima.html).
+
+  As an example of this type of interface, consider the following code
+  for computing Bessel functions of integer order:
+
+	J = function (n; x)
+	{
+	  local (fn; r);
+	  fn = sprintf ("!echo 'j(%d,%g)' | bc -l"; n; x);
+	  r = readnum (; fn);
+	  close (fn);
+	  return r;
+	};
+
+  No symbolic math is involved, but it shows a simple interface to
+  another program.  (This function can be improved in many ways, all
+  of which are left as an exercise for the reader.  Even then, it's
+  going to be slow.)
+
+6.6:  The symmetry of my matrix result is wrong.  What gives?
+
+  Well, it could be a bug.  If you think it is, please report it.
+
+  However, there are many situations where you can get a symmetry that
+  you might not expect.  For example, consider the expression
+
+	B = sqrt(-1) * symmetric(A)
+
+  where `A' is a real, square matrix.  If you look at the resulting
+  matrix B, you'll see that it is symmetric.  However, `B.symmetry'
+  returns "general".  There is a subtle reason for this.
+
+  For complex matrices, Algae has a fundamental preference for
+  hermitian symmetry.  When a real, symmetric matrix is cast to
+  complex type, it has both ordinary and hermitian symmetry.
+  Unfortunately, with Algae it's one or the other -- not both.  As the
+  expression is evaluated, the real, symmetric matrix becomes complex
+  and hermitian and is then multiplied by a complex scalar.  But, in
+  general, that product destroys the symmetry.  At this point, Algae
+  does not realize that the imaginary part of the right factor is
+  zero.
+
+7.  Memory and Speed
+--------------------
+
+7.1:  Algae says it's "out of memory", but I think my computer has
+      more memory than what it's using.  What's happening?
+
+  The most common reason is that your processes are being restricted
+  to a maximum data size.  This may be increased (up to a hard limit)
+  with the ulimit shell command.  For example, I usually use the
+  command "ulimit -d 1049600" on our Alpha to set the data size to its
+  hard limit.
+
+  Another possibility showed up recently on a new IBM (AIX) machine.
+  By default, the linker creates an executable that can use a maximum
+  of 256 Mb for heap, stack, and initialized data combined.  The
+  linker option "-bmaxdata" may be used to increase this.
+
+  Most 32-bit compilers are limited to about 2 Gb of data.  To get
+  more than that, you'll need to use 64-bit mode.
+
+7.2:  For certain problems, I've noticed unexpectedly large performance
+      differences between roughly comparable platforms.  Why?
+
+  If your code is not math-intensive, then you may be seeing
+  differences in the operating system's memory management
+  implementations.  Algae was designed with the assumption that the
+  memory management overhead would not be a significant factor.  While
+  this is generally true, malloc is so slow on some systems that an
+  Algae program can actually spend the majority of its time there.
+
+  As far as I've seen, the dlmalloc package used in Linux's glibc has
+  the best performance.  Compared to that, AIX and HP-UX can be more
+  than 10 times slower.  The most extreme example (though it can't all
+  be attributed to malloc) is the Cray, which took 2 minutes to do
+  what my old 0.6 GHz Pentium did in 5 seconds.
+
+  If this is a real issue, you should complain to your vendor and then
+  either switch to Linux or else download the dlmalloc code and link
+  to it instead.
+
+  Update (4.3.3): The dlmalloc package is now included in Algae by
+  default.  If you'd like to compile without it, use the
+  --disable-dlmalloc option to configure.

@@ -1,0 +1,20 @@
+
+printf( "Starting the magic test...\n" );
+
+check_magic = function( x ) {
+    local( ones; sum; i );
+    ones = (1:x.nr)*0+1;
+    sum = 0; for ( i in 1:x.nr ) { sum += scalar(x[i;i]); }
+    return( !test( diag(x)*ones != sum ) &
+            !test( x*ones != sum ) &
+            !test( ones*x != sum ) );
+};
+
+if ( check_magic( magic(12) ) &
+     check_magic( magic(13) ) &
+     check_magic( magic(14) ) ) {
+    printf( "...passed.\n" );
+else
+    printf( "...failed.\a\n" );
+    exception();
+}

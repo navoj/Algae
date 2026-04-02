@@ -1,0 +1,61 @@
+
+# This routine uses subspace iteration to compute the first
+# few eigenvalues and vectors for a real, symmetric, generalized
+# eigenvalue problem A*V=B*V*w.
+
+# Input:	`A'	A real, symmetric, non-singular matrix.
+#		`B'	A real, symmetric, non-singular matrix.
+#		`V'	A set of starting vectors.  The number
+#			of columns specifies the number of modes.
+#		`eps'	The convergence tolerance.
+#		`n'	The number of accurate modes desired.
+
+ssi = function( A; B; V; eps; n ) {
+
+    if ( A.symmetry != "symmetric" | B.symmetry != "symmetric" ) {
+        message( "run time error: Matrices must be symmetric for subspace iteration." )
+	exception();
+    }
+
+    if ( A.type != "integer" & A.type != "real" |
+	 B.type != "integer" & B.type != "real" |
+	 V.type != "integer" & V.type != "real" ) {
+	message( "run time error: Wrong input type for subspace iteration." );
+	exception();
+    }
+
+    if ( eps == NULL ) { eps = 1.0E-6; }
+
+    if ( n == NULL ) {
+        if ( V.nc > 16 ) {
+            n = V.nc - 8;
+        else
+            n = integer( (V.nc+1) / 2 );
+        }
+    else
+        if ( n <= 0 | n > V.nc ) {
+            message( "run time error: Illegal value for fifth argument." );
+            exception();
+        }
+    }
+
+    local ( lambda; tmp; Afac; Vb; e; d; i; r );
+    lambda = diag( transform(A;V) ) / diag( transform(B;V) );
+
+    n = 1:n;
+    Afac = chol( A );
+    while ( 1 ) {
+        Vb = solve( Afac; B*V );
+        e = eig( transform(A;Vb); transform(B;Vb) );
+        d = e.values;
+        tmp = abs( lambda - d );
+        for ( i in n ) { tmp[i] = tmp[i] / d[i]; }
+        r = tmp[ imax( tmp[n] ) ];
+        lambda = e.values;
+        V = Vb*e.vectors;
+        if ( r < eps ) { break; }
+    }
+
+    return { values=e.values; vectors=V };
+
+};

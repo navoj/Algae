@@ -1,0 +1,23 @@
+
+# Return table containing all non-functions.
+
+who = function( A ) {
+
+    local( st; i; e; $$$ );
+
+    $$$ = $$;
+    st = {};
+
+    for ( i in members( $$$ ) ) {
+        if ( A != "$" & i < "A" ) { continue; }
+        e = $$$.(i);
+        if ( e != NULL ) {
+            if ( class( e ) != "function" ) {
+                st.(i) = e;
+            }
+        }
+    }
+
+    return st-{$};
+
+};

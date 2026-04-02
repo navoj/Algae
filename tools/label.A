@@ -1,0 +1,34 @@
+
+# This function adds labels to vectors and matrices.  If `x' is a
+# vector, then `id1' becomes its element labels.  If `x' is a matrix,
+# then `id1' becomes its row labels and `id2' becomes its column
+# labels.  If `x' has any other class, an exception is raised.
+
+label = function (x; id1; id2)
+{
+  return self.(class(x)) (x; id1; id2);
+};
+
+( label.scalar =
+  label.table =
+  label.("function") =
+  label.("NULL") =
+    strip (function (x; id1; id2)
+    {
+      message ("run time error:  Invalid %s class for labels."; class(x));
+      exception ();
+    })
+);
+
+label.vector = strip (function (x; id1; id2)
+{
+  x.eid = id1;
+  return x;
+});
+
+label.matrix = strip (function (x; id1; id2)
+{
+  x.rid = id1;
+  x.cid = id2;
+  return x;
+});

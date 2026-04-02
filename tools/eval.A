@@ -1,0 +1,10 @@
+
+# This function parses and executes the given character string.  The
+# string must be a valid expression.  All variable references are at
+# global scope.
+
+eval = function (s)
+{
+  if (exec ("$eval=("+s+");")) {exception ();}
+  return $eval;
+};

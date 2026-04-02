@@ -1,0 +1,153 @@
+
+# This is an adaptive 4th-order Runge-Kutta integrator.
+
+ode4 = function( ydot; t0; tf; y0; output; tol; h; yscale ) {
+
+    local( t; y; dydt; scale; hh; yt; ys );
+    local( yout; tout; output_cnt; output_max );
+    local( TINY; rk4; errmax );
+
+    TINY = 1e-4;
+    rk4 = ode4.rk4;
+
+    # Convert args, if necessary.
+
+    t0 = scalar( t0 );
+    tf = scalar( tf );
+    y0 = vector( y0 );
+
+    # Supply defaults.
+
+    if ( tol == NULL ) { tol = 0.001; else tol = scalar( tol ); }
+    if ( h == NULL ) { h = abs( tf - t0 ) / 1000.0; else h = scalar( h ); }
+
+    # Initialize.
+
+    t = t0;
+    h = h * ( tf - t0 ) / abs( tf - t0 );
+    y = y0;
+    scale = yscale;
+
+    # We'll try to save a little time here by accumulating the
+    # output before appending it.
+
+    if ( output == NULL ) {
+        yout = dense([y]');
+    else
+        yout = dense([output(t;y)]');
+    }
+
+    yout = yout, fill( yout.nr, 99; 0 );
+
+    tout = t, fill( 99; 0 );
+    output_cnt = 1;
+    output_max = 100;
+
+    while ( (t-tf)*(tf-t0) < 0.0 ) {
+
+        dydt = unlabel( ydot( t; y ) );
+        if ( yscale == NULL ) { scale = abs(y) + abs(h*dydt) + TINY; }
+
+        # If the step can overshoot end, cut the stepsize.
+
+        if ( (t+h-tf)*(t+h-t0) > 0.0 ) { h = tf - t; }
+
+        # Take a step
+
+        ys = y;
+
+        while ( 1 ) {
+
+            # Take two half steps.
+
+            hh = 0.5 * h;
+            yt = rk4( ydot; t; hh; ys; dydt );
+            y = rk4( ydot; t+hh; hh; yt; unlabel( ydot( t+hh; yt ) ) );
+
+            # Check for step too small.
+
+            if ( t+h == t ) {
+
+                message( "run time error: Step size too small." );
+                yt = 0.0;
+                errmax = 1.0;
+                tf = t;
+
+            else
+
+		# Take the full step.
+    
+		yt = y - rk4( ydot; t; h; ys; dydt );
+    
+		# Evaluate accuracy.
+    
+		errmax = norm( abs( yt ) / scale; "inf" ) / tol;
+
+            }
+
+            # Success?
+
+            if ( errmax <= 1.0 ) { break; }
+
+            # Try again.  Reduce step size, but by no more than
+            # a factor of about 50.
+
+            if ( errmax > 4e6 ) {
+                h = 0.02*h;
+            else
+                h = 0.9*h*errmax^-0.25;
+            }
+
+        }
+
+        t += h;
+
+        # Take care of 5th order.
+
+        y += yt/15.0;
+
+        # Save output at the current point.
+
+        if ( ( output_cnt += 1 ) > output_max ) {
+            yout = yout, fill( yout.nr,100; 0.0 );
+            tout = tout, fill( 100; 0 );
+            output_max += 100;
+        }
+
+        tout[output_cnt] = t;
+        if ( output == NULL ) {
+            yout[;output_cnt] = [y]';
+        else
+            yout[;output_cnt] = [output( t; y )]';
+        }
+
+        # Determine next step size.
+
+        if ( errmax > 6e-4 ) {
+            h = 0.9*h*errmax^-0.2;
+        else
+            h = 4*h;
+        }
+
+    }
+
+    yout = yout[;1:output_cnt];
+    tout = tout[1:output_cnt];
+    yout.cid = tout;
+
+    return yout;
+
+};
+
+ode4.rk4 = function( ydot; t; h; y; dydt ) {
+
+    local( k1; k2; k3; k4 );
+
+    k1 = h * dydt;
+    k2 = h * unlabel( ydot( t+h/2; y+k1/2 ) );
+    k3 = h * unlabel( ydot( t+h/2; y+k2/2 ) );
+    k4 = h * unlabel( ydot( t+h; y+k3 ) );
+
+    return y + ( k1 + 2.0*k2 + 2.0*k3 + k4 ) / 6.0;
+
+};

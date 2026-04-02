@@ -1,0 +1,30 @@
+
+# Generate a log-spaced vector from `a' to `b' with `n' points.
+
+logspace = function (a; b; n)
+{
+  a = scalar (a);
+  b = scalar (b);
+  n = integer (scalar (n));
+  if (n < 2)
+  {
+    message ("run time error: At least 2 points required in logspace.");
+    exception ();
+  }
+  return a*exp(((1:n)-1)/(n-1)*log(b/a));
+};
+
+# Generate a linear-spaced vector from `a' to `b' with `n' points.
+
+linspace = function (a; b; n)
+{
+  a = scalar (a);
+  b = scalar (b);
+  n = integer (scalar (n));
+  if (n < 2)
+  {
+    message ("run time error: At least 2 points required in linspace.");
+    exception ();
+  }
+  return ((1:n)-1)/(n-1)*(b-a)+a;
+};

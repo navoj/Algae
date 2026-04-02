@@ -1,0 +1,7 @@
+
+# Compute the argument (phase) of complex values.
+
+arg = function (z)
+{
+  return atan2 (imag (z); real (z));
+};

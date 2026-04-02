@@ -1,0 +1,88 @@
+#---------------------------------------------------------------------
+# This file is a Makefile (or its template) for the installed tools
+# directory of Algae.  It compiles Algae's standard user functions
+# so that Algae can simply load them at startup.  In the process, it
+# calls `strip' on each of them.
+#
+# This is intended to be run at installation time.  That way, the
+# resulting binary file is stored in the native format.
+#---------------------------------------------------------------------
+
+tools.algae:
+	../src/algae  -Sxe ' \
+	  if ($$directories == NULL) { $$directories = {html="../doc"}; } \
+	  t = $$$$; \
+	  source ("all.A"); \
+	  source ("arg.A"); \
+	  source ("autosrc.A"); \
+	  source ("brent.A"); \
+	  source ("circshift.A"); \
+	  source ("combine.A"); \
+	  source ("diff.A"); \
+	  source ("equal.A"); \
+	  source ("eval.A"); \
+	  source ("first.A"); \
+	  source ("gcd.A"); \
+	  source ("grep.A"); \
+	  source ("help.A"); \
+	  source ("ident.A"); \
+	  source ("info.A"); \
+	  source ("inv.A"); \
+	  source ("label.A"); \
+	  source ("last.A"); \
+	  source ("lcm.A"); \
+	  source ("load.A"); \
+	  source ("log10.A"); \
+	  source ("logspace.A"); \
+	  source ("magic.A"); \
+	  source ("max.A"); \
+	  source ("merge.A"); \
+	  source ("message.A"); \
+	  source ("monte.A"); \
+	  source ("mult.A"); \
+	  source ("ode4.A"); \
+	  source ("pick.A"); \
+	  source ("plot.A"); \
+	  source ("primes.A"); \
+	  source ("product.A"); \
+	  source ("prof.A"); \
+	  source ("provide.A"); \
+	  source ("randn.A"); \
+	  source ("require.A"); \
+	  source ("reverse.A"); \
+	  source ("roots.A"); \
+	  source ("save.A"); \
+	  source ("select.A"); \
+	  source ("seq.A"); \
+	  source ("shape.A"); \
+	  source ("show.A"); \
+	  source ("sign.A"); \
+	  source ("solve.A"); \
+	  source ("sources.A"); \
+	  source ("spline.A"); \
+	  source ("src.A"); \
+	  source ("ssi.A"); \
+	  source ("string.A"); \
+	  source ("sum.A"); \
+	  source ("surprise.A"); \
+	  source ("tmp_file.A"); \
+	  source ("trapz.A"); \
+	  source ("umin.A"); \
+	  source ("unlabel.A"); \
+	  source ("what.A"); \
+	  source ("who.A"); \
+	  tt = $$$$ - t; \
+	  for (f in members (tt)) \
+	  { \
+	    if (class (tt.(f)) == "function") {tt.(f) = strip (tt.(f));} \
+	    if (substr (f; 1; 1) == "$$") \
+	    { \
+	      if (f != "$$features") \
+	      { \
+	     	q = {}; \
+	     	q.(f) = NULL; \
+	     	tt -= q; \
+	      } \
+	    } \
+	  }; \
+	  put (tt);' > $@ || ( rm -f $@ ; false )

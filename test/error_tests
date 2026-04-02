@@ -1,0 +1,71 @@
+#! /bin/sh
+
+# Run Algae on a script full of errors, and check its output.
+
+echo Starting the error tests...
+
+TEMPFILE=errors
+
+../src/algae -i -S ../tools/*.A - > $TEMPFILE 2>&1 <<EOF
+	\$term_width = 70;
+	x = 1 ** 2;
+	( 1 +
+	  2 ^ )
+	a.b.c
+	f = function( a; b ) {
+	    local( c );
+	    c = a*b;
+	    if ( !c ) {
+		message( "suck eggs" );
+		exception();
+	    }
+	    return c;
+        };
+        f(a;b);
+	f(1:5;[1:5]);
+	f(0;rand(4));
+	t = { t = { t = { t = { t = { t = { t = {} } } } } } };
+	while(1)
+        {
+	    t = t.t;
+	}
+	imax( { x = 1 } );
+EOF
+
+diff - $TEMPFILE > /dev/null <<EOF
+algae: stdin: line 2: parse error: 
+	x = 1 ** 2;
+	       ^ parse error
+
+algae: stdin: line 4: parse error: 
+	  2 ^ )
+	      ^ parse error
+
+algae: stdin: line 5: run time error: Member reference on NULL.
+
+algae: stdin: line 8: run time error: Multiply operation on NULL.
+
+algae: stdin: line 8: run time error: Inconsistent dimensions for
+matrix multiply.  Left matrix has 5 columns, but right matrix has 1
+row.
+
+
+algae: stdin: line 10: suck eggs
+
+algae: stdin: line 21: run time error: Member reference on NULL.
+
+algae: stdin: line 23: run time error: Can't handle the "scalar"
+class.
+
+EOF
+
+EXIT=$?
+
+if [ $EXIT -eq 0 ]
+  then
+    echo '...passed.'
+  else
+    echo '...failed.'
+  fi
+
+exit $EXIT

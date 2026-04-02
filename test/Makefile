@@ -1,0 +1,57 @@
+
+#---------------------------------------------------------------------
+# This file is a Makefile (or its template) for the test directory of
+# Algae.  It is run by the Makefile in the parent directory.
+#---------------------------------------------------------------------
+
+srcdir = .
+
+
+# ============================ Targets ============================
+
+tests: DATA DATA1 DATA.mat
+	../src/algae -S ../tools/*.A *.A
+	/bin/sh error_tests
+	/bin/sh trap_tests
+
+DATA: DATA.in
+	uudecode DATA.in
+
+DATA1: DATA1.in
+	uudecode DATA1.in
+
+DATA.mat: DATA.mat.in
+	uudecode DATA.mat.in
+
+install:
+.PHONY:	install
+
+uninstall:
+.PHONY:	uninstall
+
+# ========================== Distribution =========================
+
+DISTFILES = Makefile.in *.A DATA.in DATA1.in DATA.mat.in error_tests trap_tests
+BINDISTFILES = Makefile *.A DATA.in DATA1.in DATA.mat.in error_tests trap_tests
+
+dist:
+	for file in $(DISTFILES); do \
+	  ln $$file $(distdir) > /dev/null 2>&1 || cp $$file $(distdir); \
+	done
+.PHONY:	dist
+
+binaries:
+	for file in $(BINDISTFILES); do \
+	  ln $$file $(distdir) > /dev/null 2>&1 || cp $$file $(distdir); \
+	done
+.PHONY:	binaries
+
+# ========================== Cleaning Up ==========================
+
+.PHONY:	clean mostlyclean distclean maintainer-clean
+
+clean mostlyclean distclean maintainer-clean::
+	rm -f DATA DATA1 DATA.mat
+
+distclean maintainer-clean::
+	rm -f Makefile

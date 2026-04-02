@@ -1,0 +1,1428 @@
+This is algae.info, produced by makeinfo version 4.3 from algae.texinfo.
+
+INFO-DIR-SECTION Programming Languages
+START-INFO-DIR-ENTRY
+* algae: (algae).		Another Matrix Programming Language
+END-INFO-DIR-ENTRY
+
+
+File: algae.info,  Node: Element,  Next: Member,  Prev: Call,  Up: Operators
+
+Element References
+------------------
+
+   The element reference operation returns specified vector elements or
+matrix rows and columns.  Applied to a table, the operation is performed
+on each of the table's members.
+
+   Elements are referenced by following a vector or matrix expression
+with a bracket-enclosed list of the desired elements.  For vector `v',
+the expression `v[w]' gives the elements specified by `w'.  The
+expression within the brackets is expected to be a scalar or a
+vector--if it's a matrix, it will be converted into a vector if
+possible.  So, for example,
+
+     v[3:8]
+
+prints the third through eighth elements of `v'.  If the vector inside
+the brackets has a numeric type, then it is converted to integer if
+necessary (by taking the real part and rounding) and then used to refer
+to the element numbers.
+
+   The class of the element reference expression is determined by the
+class of the specifiers.  Once any matrix specifiers are converted to
+vectors, the dimension of the result is equal to the sum of the
+dimensions of the specifiers.  For example, `M[1;2]' is a scalar,
+`M[[1];2]' and `M[1;[2]]' are vectors, and `M[[1];[2]]' is a matrix.
+Notice that the class of the result does not depend on the class of the
+original entity.
+
+   If the vector inside the brackets has character type, then it is
+taken to refer to the element labels instead of the element numbers.
+For example, if you set `x' as
+
+     x = 1:3;
+     x.eid = "this", "that", "other";
+
+then `x["that"]' returns 2, the value of the element of `x' having the
+label `"that"'.  If the labels do not have character type, they are
+temporarily converted to character type for the comparison.
+
+   Element references work the same way for matrices, except that both
+rows and columns are specified.  For example,
+
+     M[ 1,3; 7:12 ]
+
+specifies rows 1 and 3, columns 7 through 12, of the matrix `M'.
+
+   The specifiers need not be irredundant.  For example, `M[1,1,1;]'
+returns three copies of the first row of `M'.
+
+   Besides their use for element references, brackets are also used to
+form matrices.
+
+
+File: algae.info,  Node: Member,  Next: Transpose,  Prev: Element,  Up: Operators
+
+Member References
+-----------------
+
+   Members of an entity are referenced with the "dot" operator.  For
+example, `x.type' returns the value of `x''s member `type'.  Notice
+that, if the right-hand operand is an identifier, then it is taken
+literally as the name of the desired member.  You might have a variable
+called `type', but that is irrelevant when it comes to evaluating
+`x.type'.
+
+   On the other hand, if the right-hand operand is an expression, then
+its value (converted to a character scalar) is taken as the desired
+member name.  Since you can change an identifier into an expression
+simply by enclosing it in parentheses, the expression `x.(type)' does
+use the value of the variable `type' as the name of the member.
+
+   Member names do not share the same limitations as variable names.  In
+fact, any string of ASCII characters (excluding NUL) will work.  This
+can be pretty useful.  For example, you could set up a "vector" of
+entities (of any class) as in
+
+     V = {};
+     V.(1) = A;
+     V.(2) = B;
+     V.(3) = C;
+     V.(4) = D;
+
+and then refer to the individual "elements" (that is, the members of
+`V') by number.  You could handle multiple dimensions by referring to
+element `"3,2,4"', for example.
+
+
+File: algae.info,  Node: Transpose,  Next: Power,  Prev: Member,  Up: Operators
+
+Transpose
+---------
+
+   The transpose operator applies the conjugate transpose operation to a
+matrix.  For integer, real, and character types, this means moving every
+element from row `i' and column `j' to row `j' and column `i'.  If the
+matrix has complex type, the complex conjugate operation is applied as
+well.
+
+   If you want the transpose of a complex matrix `M', and not its
+conjugate transpose, then use the expression `conj(M')'.
+
+   If transpose is applied to a scalar or vector, the entity is first
+converted to a matrix and then transposed.  For example, `(1,2)'' is
+the same as `[1;2]'--the vector is first converted into a matrix with
+one row and then transposed to form a matrix with one column.
+
+   If this operator is applied to a table, then the operation is
+performed on each member of that table.
+
+
+File: algae.info,  Node: Power,  Next: Not,  Prev: Transpose,  Up: Operators
+
+Power
+-----
+
+   The "power" operator `^' is a binary operator that raises its left
+operand to the power of its right operand.  Thus `2^3' gives 8.  It
+associates right-to-left, so the expressions `x^y^z' and `x^(y^z)' are
+equivalent.
+
+   When vectors and matrices are involved, the "power" operator performs
+in an "element-by-element" sense.  For example, if `M' is a matrix,
+then `M^2' squares each element of `M'.  This is definitely not the
+same thing as `M*M'!
+
+   In an expression such as `2^M', where the left operand is scalar and
+the right operand is a vector or matrix, the result has each element
+`i' of `M' replaced by `2^M[i]'.  For example,
+
+     2^(0:3)
+
+prints the vector `(1,2,4,8)'.
+
+   Notice that the precedence of `^' is higher than `-', so the
+expression `-1^2' returns `-1'.
+
+   In mathematical usage, `0^0' is undefined--it yields an error in
+Algae.
+
+   If both left and right operands are arrays, then they must have
+matching dimensions and labels.
+
+   If this operator is applied to a table, then the operation is
+performed on each member of that table.
+
+
+File: algae.info,  Node: Not,  Next: Negation,  Prev: Power,  Up: Operators
+
+Not
+---
+
+   The `!' operator is a unary, prefix operator that returns 1 if its
+operand is considered "false", and 0 otherwise.  The "false" operands
+are:
+
+   * NULL.
+
+   * Numeric entities in which every element is zero.
+
+   * Character entities in which every element is `""'.
+
+   * Vectors and matrices with no elements.
+
+   * Tables with no elements.
+
+   If this operator is applied to a table, then the operation is
+performed on each member of that table.
+
+
+File: algae.info,  Node: Negation,  Next: Multiplication,  Prev: Not,  Up: Operators
+
+Negation
+--------
+
+   The unary negation operator `-' multiplies its numeric argument by
+`-1'.  The `+' operator is for user convenience--Algae ignores it in
+its unary context.  For example, `+-1' gives a negative one.  On the
+other hand, `1+-1' and `1-+1' both return 0.
+
+   If one of these operators is applied to a table, then that operation
+is performed on each member of the table.
+
+
+File: algae.info,  Node: Multiplication,  Next: Addition,  Prev: Negation,  Up: Operators
+
+Multiplication
+--------------
+
+   Both the `*' and the `@' operators perform multiplication.  The
+difference is that `@' performs in an element-by-element sense, while
+`*' performs in an inner product sense.  The operands of `@' must have
+matching dimensions and labels; each element of its left operand is
+multiplied by the corresponding element of the right operand.  For
+example,
+
+     ( 1, 2, 3 ) @ ( 4, 5, 6 )
+
+returns the vector `(4,10,18)'.
+
+   When `*' is applied to matrices, the number of columns of the left
+operand must equal the number of rows of the right operand, and the
+corresponding labels must match.  The result is a matrix that has the
+same number of rows as the left operand and the same number of columns
+as the right operand.
+
+   If one of the operands of `*' is a vector and the other is a matrix,
+the vector is (conceptually) converted to a matrix before the
+multiplication is performed.  If on the left, it is converted to a
+matrix with one row; if on the right, it is converted to a matrix with
+one column.
+
+   Multiplication of two vectors gives their inner product.
+
+   The `/' operator performs division.  Like `@', it performs in an
+element-by-element sense.
+
+   If either operand of any of these operators is a scalar, then the
+operation is performed in an element-by-element sense.  For example
+
+     2*(1,2,3)
+
+gives `(2,4,6)'--every element of the vector is multiplied by the
+scalar.
+
+   The `%' operator performs the modulus operation, producing the
+remainder when the left operand is divided by the right operand.  For
+example, `(2,2.5,3)%2' returns the vector `(0,0.5,1)'.
+
+   The result has the same sign as the left operand.  If this operator
+is applied to a table, then the operation is performed on each member
+of the table.
+
+
+File: algae.info,  Node: Addition,  Next: Relation,  Prev: Multiplication,  Up: Operators
+
+Addition
+--------
+
+   The "addition" operators are the binary operators `+' and `-'.  If
+their operands are numeric, then they perform the normal addition and
+subtraction operations.
+
+   When the `+' operator is applied to character strings, it catenates
+them.  The `-' operator is not defined for character strings.
+
+   Between two tables, `+' combines their members in the resulting
+table.  Conceptually, the members of the left operand are inserted in
+this new table first, followed by the members of the right operand.
+This means that if the operands have a member with the same name, the
+value of that member in the resulting table comes from the right
+operand.  For example, if `t' is a table that contains the member
+"foo", then the result of
+
+     t + { foo = NULL }
+
+is identical to `t' except that its member "foo" has the value NULL.
+
+   When the `-' operator is applied to tables, the result is a table
+that has all the members of the left operand except those that are also
+in the right operand.  For example
+
+     {x;y;z}-{x;y}
+
+returns a table that has the single member "z".
+
+   If just one of the operands is a table, then the operation is
+performed between the other operand and each member of the table.
+
+
+File: algae.info,  Node: Relation,  Next: And,  Prev: Addition,  Up: Operators
+
+Relation
+--------
+
+   The relation operators `<', `>', `<=', `>=', `==', and `!=' return
+"true" (1) or "false" (0) to reflect the truth of the expression.  For
+example,
+
+     (1:5) < 3
+
+returns `(1,1,0,0,0)'.
+
+   If both operands are arrays, then their dimensions and labels must
+match.
+
+   Unlike most of the operators, `==' and `!=' allow NULL as an
+operand.  In that case, the other operand is simply checked to see if
+it is or is not a NULL.
+
+   If one of these operators is applied to a table, then that operation
+is performed on each member of the table.
+
+
+File: algae.info,  Node: And,  Next: Or,  Prev: Relation,  Up: Operators
+
+And
+---
+
+   The `&' operator performs the logical "and" operation in an
+element-by-element sense.  For example,
+
+     x = 1:5;
+     x > 2 & x < 4
+
+prints `(0,0,1,0,0)'.
+
+   If this operator is applied to a table, then the operation is
+performed on each member of that table.
+
+
+File: algae.info,  Node: Or,  Next: Short And,  Prev: And,  Up: Operators
+
+Or
+--
+
+   The `|' operator performs the logical "or" operation in an
+element-by-element sense.  For example,
+
+     x = 1:5;
+     x < 2 | x > 4
+
+prints `(1,0,0,0,1)'.
+
+   If this operator is applied to a table, then the operation is
+performed on each member of that table.
+
+
+File: algae.info,  Node: Short And,  Next: Short Or,  Prev: Or,  Up: Operators
+
+Short And
+---------
+
+   The `&&' operator performs the "short-circuit" logical "and"
+operation.  Both operands are evaluated for "truth" as if they were the
+test of an `if' statement.  If the left operand is "false", then the
+right operand is not evaluated.  If both operands are "true", the
+result of the operation is 1; otherwise the result is 0.  Note that
+this operation is quite different from that of the `&' operator, which
+works element-by-element.
+
+   The following example code is from the `solve' function:
+
+     if (options != NULL && members (options) == "pos")
+     {
+       A = chol (A);
+     else
+       A = factor (A);
+     }
+
+The variable `options' is first checked to see if it's NULL.  Only if
+it is not NULL is the `member' function called.  That's just what we
+want, since it would be an error to call `member' with a NULL argument.
+
+
+File: algae.info,  Node: Short Or,  Next: Generate,  Prev: Short And,  Up: Operators
+
+Short Or
+--------
+
+   The `||' operator performs the "short-circuit" logical "or"
+operation.  Both operands are evaluated for "truth" as if they were the
+test of an `if' statement.  If the left operand is "true", then the
+right operand is not evaluated.  If either operand is "true", the
+result of the operation is 1; otherwise the result is 0.  Note that
+this operation is quite different from that of the `|' operator, which
+works element-by-element.
+
+   In the statement
+
+     if (options == NULL || options.tol == NULL) { tol = 1e-6; }
+
+the variable `options' is first checked to see if it's NULL.  Only if
+it is not NULL is the member reference `options.tol' evaluated.
+
+
+File: algae.info,  Node: Generate,  Next: Append,  Prev: Short Or,  Up: Operators
+
+Generate
+--------
+
+   Numeric vectors may be generated with the `:' operator.  An
+expression like `i:j' generates a vector that starts with the value of
+`i'.  If `j' is greater than `i', each successive element is 1 greater
+than the previous one, with the last element less than or equal to `j'.
+If `j' is less than `i', each successive element is 1 less than the
+previous one, with the last element greater than or equal to `j'.
+
+   The `:' operator also has a ternary form, as in `i:j:k'.  This does
+the same thing as `i:j' except that successive elements differ by `k'
+instead of 1.
+
+   For complex operands, the operation can be described conceptually in
+the complex plane.  A line is drawn between the points `i' and `j'.
+Then the resulting vector contains the points located on that line
+segment beginning at `i', proceeding toward `j', spaced a distance `k'
+(or 1, if `k' is not given) apart.
+
+
+File: algae.info,  Node: Append,  Next: Assign,  Prev: Generate,  Up: Operators
+
+Append
+------
+
+   The `,' operator "appends" its operands.  If the operands are
+vectors, then the result is a new vector containing both the operands.
+If the operands are matrices, then the result is a new matrix containing
+the left operand on the left and the right operand on the right.
+
+   If this operator is applied to a table, then the operation is
+performed on each member of that table.
+
+
+File: algae.info,  Node: Assign,  Prev: Append,  Up: Operators
+
+Assign
+------
+
+   The assignment operators are `=', `+=', `-=', `*=', `/=', `@=', and
+`%='.  The `=' operator returns the value of the right operand, setting
+the left operand to that value in the process.  For example,
+
+     a = b = c = 1;
+
+assigns 1 to the variables `a', `b', and `c'.  The assignment operators
+associate right to left, so first `c' is given the value 1.  The result
+of that expression, `c = 1', is 1, so that value is used with `b' as if
+it read `b = 1'.
+
+   Notice that a test like
+
+     if (i = j) ...
+
+is entirely different than
+
+     if (i == j) ...
+
+In the first example, `i' is assigned the value of `j' and then that
+value is tested by the `if' statement.  In the second example, the `if'
+statement tests the equality of `i' and `j'.  So if `i' is 1 and `j' is
+2, the first example tests true (as well as changing the value of `i')
+and the second one tests false.
+
+   Individual elements of an array may be changed; for example
+
+     x[3;4:6] = 0, 0, 0;
+
+sets to 0 the elements of `x' in row 3 and columns 4 through 6.  The
+right operand is converted to the same type as the left operand, if
+possible, and the dimensions must agree.  However, if the right operand
+is a scalar, then it is filled to the appropriate size.  Thus, the
+previous example could just as well be written
+
+     x[3;4:6] = 0;
+
+   One more thing about array assignments: If the variable on the left
+is a vector, but you specify two dimensions for it, then that variable
+will be converted into a matrix.  Likewise, if the variable on the left
+is a matrix, but you specify only one dimension, then it will be
+converted into a vector.  For example, in the code
+
+     A = B = [ 1, 2, 3 ];
+     A[2] = B[;2] = 9;
+
+`A' and `B' both begin as matrices.  The second element of each array
+is then changed to 9.  In the end, though, `A' is changed to a vector
+because only one dimension was given for it.  `B' remains as a matrix.
+
+   The other assignment operators (`+=', `-=', etc.) are simply for
+convenience.  The expression `i+=j' means the same thing as `i=i+j',
+and `i-=j' means the same thing as `i=i-j'.  If the left-hand side is
+an expression, you should keep in mind that it will be evaluated twice.
+For example,
+
+     x[ func() ] += 1
+
+will actually make two calls to the function `func'.
+
+
+File: algae.info,  Node: Expressions,  Next: Statements,  Prev: Operators,  Up: Language
+
+Expressions
+===========
+
+   Assignments are made in the normal fashion: `a=5' sets the variable
+`a' to contain the scalar 5.  Variables are not declared prior to use,
+but rather take on the structure and type of whatever is assigned to
+them.  You could, for example, enter
+
+     a=1;
+     a=[a,a];
+
+in which case the variable `a' is first a scalar and then a matrix.  A
+list of the previously defined variables (except functions) is given by
+the `who()' function, and a variable can be deleted by assigning NULL
+to it.
+
+   In addition to simple variables, elements and members can also be
+specified on the left hand side of an assignment. For example, the
+statement
+
+     A[ 1:4; 1:4 ] = 3;
+
+assigns 3 to all of the elements of the first 4-by-4 partition of matrix
+`A', leaving the other elements of `A' unchanged.  Values can be
+assigned to members in the same way.  For example, the statements
+
+     A = [ 1,2,3; 4,5,6 ];
+     time = [ 1.1, 2.2, 3.3 ];
+     A.rid = [ "first"; "second" ]
+     A.cid = time
+
+assign the row and column labels of `A'.
+
+
+File: algae.info,  Node: Statements,  Next: Functions,  Prev: Expressions,  Up: Language
+
+Statements
+==========
+
+   Statements are terminated by a question mark, a semicolon, or a
+newline.  Using a question mark or newline causes the value of the
+statement to be printed; with a semicolon the printing is suppressed.
+A newline terminates a statement only if it does not occur within
+parentheses, brackets, or braces.
+
+   Statement termination is implied by the closing brace of an "if",
+"for", or "while" statement or "function" expression.  Printing is
+enabled when the terminator is implied.  For example,
+
+     for (i in 1:10) { i }
+
+prints all of the integers from 1 to 10.
+
+   When real or complex numbers are printed, Algae prints 4 significant
+digits by default.  This can be changed with the `digits' function, or
+just by setting the global variable `$digits'.
+
+   Comments are introduced with the `#' character.  That character and
+any that follow it on the same line are ignored (excluding the newline).
+
+
+File: algae.info,  Node: Functions,  Prev: Statements,  Up: Language
+
+Functions
+=========
+
+   Functions are defined by a function expression, which consists of the
+keyword "function", followed by a parenthesized list of arguments,
+followed by a set of statements enclosed by braces.  For example,
+Algae's `max' function is defined by something like
+
+     max = function (x) { return x[imax(x)]; };
+
+Functions are just another class of entity; the statement above defines
+a function and then assigns it to the variable `max'.
+
+   The arguments are variables that are local to the function.  On
+entry, they take on the values of the formal arguments in the calling
+expression.  Passing more arguments than are in the function's
+definition is an error.  If fewer arguments are passed, then NULL's are
+passed in place of the missing arguments.
+
+   The function reference needn't be an identifier--a function
+expression works just fine.  For example,
+
+     child = (his_functions + her_functions).reproduce();
+
+would combine the tables `his_functions' and `her_functions', reference
+the member `reproduce', call it with no arguments, and then assign the
+result to `child'.  Notice that, since `.' and `()' have the same
+precedence, their left-to-right associativity causes the member
+reference to occur first and then the function call.  In an expression
+like `sin(1).type', the function call is performed first.
+
+   When a function is compiled, information is included that relates its
+operations to the file name and line numbers of the source code.  If an
+error occurs, this information is useful in tracking down its cause.  In
+some cases, this information is undesirable and may be removed with the
+`strip' function.  The `message' function is such a case.
+
+
+File: algae.info,  Node: Data,  Next: Standard Functions,  Prev: Language,  Up: Top
+
+Data
+****
+
+   Entities are the basic objects (constants and variables) in Algae.
+They contain members and elements.  Members contain information about
+the entity, such as the number of rows in a matrix.  An entity's
+elements, if it has any, contain the data such as the value of a scalar.
+There are five classes:
+
+`scalar'
+     The `scalar' data structure contains a single element, its value,
+     which may have any of the data types described above.  Its members
+     are:
+
+    `class'
+          The string `"scalar"'.
+
+    `type'
+          The type (like `"integer"' or `"real"').
+
+     Notice that a scalar is not the same as a one-element vector or
+     matrix.
+
+`vector'
+     The `vector' entity contains a one-dimensional array of elements.
+     Its members are:
+
+    `class'
+          The string `"vector"'.
+
+    `type'
+          The type (like `"integer"' or `"real"').
+
+    `density'
+          Either `"dense"' or `"sparse"'.
+
+    `ne'
+          The number of elements.
+
+    `nn'
+          The number of non-zero elements.
+
+    `eid'
+          The element labels.
+
+     The element labels of a vector are themselves a vector.
+
+`matrix'
+     The `matrix' data structure contains two-dimensional arrays of
+     elements.  It contains zero or more rows and columns.  The members
+     of a matrix are:
+
+    `class'
+          The string `"matrix"'.
+
+    `type'
+          The type (like `"integer"' or `"real"').
+
+    `symmetry'
+          One of `"general"', `"symmetric"', or `"hermitian"'.
+
+    `density'
+          One of `"dense"', `"sparse"' or `"sparse_upper"'.
+
+    `nr'
+          The number of rows.
+
+    `nc'
+          The number of columns.
+
+    `nn'
+          The number of nonzero elements.  For matrices with
+          "sparse_upper" density, this number does not include the
+          elements on the diagonal, all of which are stored.  Sorry.
+
+    `rid'
+          The row labels.
+
+    `cid'
+          The column labels.
+
+     The row and column labels of a matrix are vectors.  The row label
+     vector has the same number of elements as its matrix has rows, and
+     likewise for the column label.
+
+`table'
+     The `table' object is like a bucket that can contain any number of
+     other objects.
+
+     Several functions return tables.  For example, the `eig' function
+     returns a table that contains the matrices `values' and `vectors'.
+
+     The entities contained in a table are members of it, so they can be
+     extracted using the `.' operator.  Thus `eig(A).values' returns
+     the eigenvalues of `A'.
+
+`function'
+     Functions are entities just like scalars and matrices, and can be
+     operated on in the same manner.  Functions have two members:
+     `class', which is `"function"', and `ilk', which is either
+     `"user"' or `"builtin"'.
+
+   The `scalar', `vector', and `matrix' classes are known collectively
+as "arrays".  These are the only classes that contain elements, and all
+have the member `type' that specifies the data type.  There are four
+types:
+
+`integer'
+     On most machines this is a 32-bit integer, like 42 or -273.
+
+`real'
+     This is a floating point number like 3.1415.  It is stored in 64
+     bits on most machines.
+
+`complex'
+     This is a complex number having both real and imaginary parts.
+
+`character'
+     This is a character string like `"Hello"'.
+
+   Scalar constants are specified in a manner similar to that used in
+other programming languages.  Numeric constants can be given in decimal
+form, such as `32' or `32.0', or in scientific notation, such as
+`3.2E1'.  In the latter notation, the letters `e' and `E' may be used
+interchangeably to prefix the exponent.  White space (space, tab, etc.)
+is significant in that context, of course, so that `1.2e+3' (1200.0) is
+definitely not the same as `1.2e +3' (4.2).
+
+   A `character' constant is a sequence of one or more characters
+surrounded by matching double-quotes.  Within the quotes, the backslash
+character may be used to introduce "escape sequences" for unusual
+characters like <newline>.  For example, the string `"\""' is a string
+containing a single character (the right double-quote).  The following
+escape sequences may be used:
+
+`\a'
+     bell
+
+`\b'
+     backspace
+
+`\e'
+     escape
+
+`\f'
+     formfeed
+
+`\n'
+     newline
+
+`\r'
+     carriage return
+
+`\t'
+     tab
+
+`\v'
+     vertical tab
+
+`\ooo'
+     octal number
+
+`\xhh'
+     hexadecimal number
+
+The escape sequence `\ooo' consists of a backslash followed by one,
+two, or three octal digits, which are taken to specify the value of the
+desired character.  For example, `\33' is the ASCII "escape" character
+(which is also given by `\e').  Likewise, the sequence `\xhh' consists
+of a backslash followed by `x', followed by one or two hexadecimal
+digits, which specify the value of the desired character.  For example,
+`\x1b' also specifies the ASCII "escape" character.
+
+   If the character following the backslash is not one of those
+specified above, then that character is taken literally.  For example,
+`\"' specifies the double-quote character--not the end of the character
+constant.
+
+   Matrices may be generated by specifying their elements within
+brackets.  Commas separate elements within rows and semicolons separate
+the rows.  Thus `[1,2;3,4]' specifies the matrix
+
+     [ 1  2 ]
+     [ 3  4 ]
+
+   A vector may be generated by using either of the forms `i:j' or
+`i:j:k'.  It is obtained by starting with the value `i' and
+incrementing by `k' (or 1 if the first form is used) while remaining
+between `i' and `j', inclusive.  (Notice that this is not the same
+format used by MATLAB.)  For example, `[1:8:2]' is the same as
+`[1,3,5,7]'.  All elements within a matrix have the same type
+(`integer', `real', etc.); conversion will be performed automatically
+if possible.
+
+   The terms within the brackets may be constants, variables, or
+expressions.  For example, `[1+2,3]' is the same as `[3,3]'.  Matrices
+may be involved, as long as their dimensions are appropriate.  For
+example, if the variable `A' is defined to be equal to the square
+matrix `[1,2;3,4]', then a new column could be appended to it with the
+expression `[A,[5;6]]' to yield
+
+     [ 1  2  5 ]
+     [ 3  4  6 ]
+
+   Matrices may be partitioned by specifying the desired row and column
+numbers within brackets.  For example, if `A' is a previously defined
+matrix then `A[1;1]' specifies a scalar having the value of the element
+in the first row and the first column of `A'.  The semicolon within the
+parentheses separates the row specifiers from the column specifiers.
+
+   Members of data structures are referred to by using the member
+operator `.'.  For example, the number of rows in a matrix is stored in
+the member `nr', so `A.nr' returns the number of rows in the matrix
+`A'.  The member operator associates left to right, so that
+`A.type.type' returns the string `"character"'.
+
+
+File: algae.info,  Node: Standard Functions,  Next: Running Algae,  Prev: Data,  Up: Top
+
+The Standard Functions
+**********************
+
+   Functions are called by giving their name followed by a parenthesized
+list of their arguments.  For example, `sqrt(a)' computes the square
+root of its argument `a'.  The parentheses are required, whether they
+contain any arguments or not.  Functions may take more than one number
+and kind of argument.
+
+* Menu:
+
+* Basic Math::		abs, sin, sqrt, ...
+* Arrays::		fill, sparse, zero, ...
+* Sets::		union, intersection, ...
+* Linear Algebra::	solve, factor, fft, ...
+* Numerical Analysis::	ode4, brent, ...
+* Basic I/O::		read, printf, ...
+* Entity I/O::		get, put, ...
+* Execution::		source, system, ...
+* Special Tools::	plot, npsol, ...
+* Miscellaneous::	who, what, time, ...
+
+
+File: algae.info,  Node: Basic Math,  Next: Arrays,  Prev: Standard Functions,  Up: Standard Functions
+
+Basic Math
+==========
+
+* Menu:
+
+* abs::		absolute value
+* acos::	arc cosine
+* acosh::	arc cosine hyperbolic
+* arg::         argument (phase)
+* asin::	arc sine
+* asinh::	arc sine hyperbolic
+* atan::	arc tangent
+* atanh::	arc tangent hyperbolic
+* atan2::	arc tangent (y/x)
+* ceil::        ceiling
+* conj::	complex conjugate
+* cos::		cosine
+* cosh::	hyperbolic cosine
+* erf::         error function
+* erfc::        complementary error function
+* exp::		exponential
+* floor::       floor
+* gcd::         greatest common divisor
+* imag::	imaginary part
+* integer::	round to nearest integer
+* lcm::         least common multiple
+* log::		natural logarithm
+* log10::       base-10 logarithm
+* primef::      prime factors
+* primes::      prime numbers
+* real::	real part
+* round::       round to nearest whole number
+* sin::		sine
+* sinh::	hyperbolic sine
+* sqrt::	square root
+* tan::		tangent
+* tanh::	hyperbolic tangent
+
+
+File: algae.info,  Node: abs,  Next: acos,  Prev: Basic Math,  Up: Basic Math
+
+ - Function: abs ( x )
+     The `abs' function returns the absolute value of its numeric
+     argument.  "Absolute value" is synonymous with "magnitude" for
+     complex types.  If X is non-scalar, every element is replaced by
+     its absolute value.
+
+     `x' must be a numeric scalar, vector, or matrix.
+
+
+File: algae.info,  Node: acos,  Next: acosh,  Prev: abs,  Up: Basic Math
+
+ - Function: acos ( x )
+     The `acos' function returns the arc cosine of its numeric
+     argument.  If it's argument is complex or has a magnitude greater
+     than one, then the result is complex.  Otherwise, the result is
+     real.  If X is non-scalar, every element is replaced by its arc
+     cosine.
+
+     The argument X must be a numeric scalar, vector, or matrix.
+
+
+File: algae.info,  Node: acosh,  Next: arg,  Prev: acos,  Up: Basic Math
+
+ - Function: acosh ( x )
+     The `acosh' function returns the hyperbolic arc cosine of its
+     numeric argument.  If it's argument is complex or is less than
+     1.0, then the result is complex.  Otherwise, the result is real.
+     If X is non-scalar, every element is replaced by its hyperbolic
+     arc cosine.
+
+     The argument X must be a numeric scalar, vector, or matrix.  Note
+     that `acosh(0)' is not zero, so if `acosh' is applied to a sparse
+     vector or matrix, then a dense array is the result.
+
+
+File: algae.info,  Node: arg,  Next: asin,  Prev: acosh,  Up: Basic Math
+
+ - Function: arg ( z )
+     The `arg' function returns the argument (phase angle) of its
+     numeric argument.
+
+     See also `abs'.
+
+
+File: algae.info,  Node: asin,  Next: asinh,  Prev: arg,  Up: Basic Math
+
+ - Function: asin ( x )
+     The `asin' function returns the arc sine of its numeric argument.
+     If it's argument is complex or has a magnitude greater than one,
+     then the result is complex.  Otherwise, the result is real.  If X
+     is non-scalar, every element is replaced by its arc sine.
+
+     The argument X must be a numeric scalar, vector, or matrix.
+
+
+File: algae.info,  Node: asinh,  Next: atan,  Prev: asin,  Up: Basic Math
+
+ - Function: asinh ( x )
+     The `asinh' function returns the hyperbolic arc sine of its numeric
+     argument.  If X is non-scalar, every element is replaced by its
+     hyperbolic arc sine.
+
+     The argument X must be a numeric scalar, vector, or matrix.
+
+
+File: algae.info,  Node: atan,  Next: atanh,  Prev: asinh,  Up: Basic Math
+
+ - Function: atan ( x )
+     The `atan' function returns the arc tangent of its numeric
+     argument.  If it's argument is complex, then the result is complex.
+     Otherwise, the result is real.  If X is non-scalar, every element
+     is replaced by its arc tangent.
+
+     The argument X must be a numeric scalar, vector, or matrix.
+
+
+File: algae.info,  Node: atanh,  Next: atan2,  Prev: atan,  Up: Basic Math
+
+ - Function: atanh ( x )
+     The `atanh' function returns the hyperbolic arc tangent of its
+     numeric argument.  If it's argument is complex or has magnitude
+     greater than 1.0, then the result is complex.  Otherwise, the
+     result is real.  If X is non-scalar, every element is replaced by
+     its hyperbolic arc tangent.
+
+     The argument X must be a numeric scalar, vector, or matrix.
+
+
+File: algae.info,  Node: atan2,  Next: ceil,  Prev: atanh,  Up: Basic Math
+
+ - Function: atan2 ( y; x )
+     The `atan2' function computes an angle corresponding to Y and X,
+     the lengths of the opposite and adjacent sides.  This is similar
+     to `atan(y/x)', but with these differences:
+
+        * The signs of Y and X are used to determine the quadrant in
+          which the angle lies.  The angle returned is in the range -pi
+          to pi.
+
+        * The argument X may be zero, as long as Y is nonzero.  This is
+          different than `atan(y/x)', because it avoids division by
+          zero.
+
+        * Complex type for either argument is not allowed.
+
+     The arguments must be scalars, vectors, or matrices, with either
+     integer or real type.
+
+
+File: algae.info,  Node: ceil,  Next: conj,  Prev: atan2,  Up: Basic Math
+
+ - Function: ceil ( x )
+     The `ceil' function returns the ceiling of its numeric argument.
+     The ceiling of X is the smallest integer that is not less than X.
+     If X is complex, the ceiling is applied to both real and imaginary
+     parts.  If X is non-scalar, every element is replaced by its
+     ceiling.  The type of X is not changed by `ceil'.
+
+     X must be a numeric scalar, vector, or matrix.
+
+
+File: algae.info,  Node: conj,  Next: cos,  Prev: ceil,  Up: Basic Math
+
+ - Function: conj ( x )
+     The `conj' function returns the complex conjugate of its numeric
+     argument.  If X is non-scalar, every element is replaced by its
+     complex conjugate.
+
+     X must be a numeric scalar, vector, or matrix.
+
+
+File: algae.info,  Node: cos,  Next: cosh,  Prev: conj,  Up: Basic Math
+
+ - Function: cos ( x )
+     The `cos' function returns the cosine of its numeric argument.  If
+     X is non-scalar, every element is replaced by its cosine.
+
+     X must be a numeric scalar, vector, or matrix.
+
+
+File: algae.info,  Node: cosh,  Next: erf,  Prev: cos,  Up: Basic Math
+
+ - Function: cosh ( x )
+     The `cosh' function returns the hyperbolic cosine of its numeric
+     argument.  If X is non-scalar, every element is replaced by its
+     hyperbolic cosine.
+
+     X must be a numeric scalar, vector, or matrix.
+
+
+File: algae.info,  Node: erf,  Next: erfc,  Prev: cosh,  Up: Basic Math
+
+ - Function: erf ( x )
+     The `erf' function returns the error function of its numeric
+     argument.  If X is non-scalar, every element is replaced by its
+     error function result.
+
+     The error function is defined as `2/sqrt(pi)' times the integral
+     from 0 to X of `exp(-t^2) dt'.  Among its useful properties, the
+     error function is twice the integral of the Gaussian distribution
+     with 0 mean and variance of 1/2.
+
+     Complex arguments are not yet implemented.
+
+
+File: algae.info,  Node: erfc,  Next: exp,  Prev: erf,  Up: Basic Math
+
+ - Function: erfc ( x )
+     The `erfc' function returns the complementary error function of
+     its numeric argument.  If X is non-scalar, every element is
+     replaced by its complementary error function result.
+
+     The complementary error function `erfc(x)' is simply `1-erf(c)',
+     but it is computed in a way that avoids round-off errors when X is
+     large.
+
+     Complex arguments are not yet implemented.
+
+
+File: algae.info,  Node: exp,  Next: floor,  Prev: erfc,  Up: Basic Math
+
+ - Function: exp ( x )
+     The `exp' function returns the exponential of its numeric argument.
+     If X is non-scalar, every element is replaced by its exponential.
+
+     X must be a numeric scalar, vector, or matrix.
+
+
+File: algae.info,  Node: floor,  Next: gcd,  Prev: exp,  Up: Basic Math
+
+ - Function: floor ( x )
+     The `floor' function returns the floor of its numeric argument.
+     The floor of X is the largest integer that is not greater than X.
+     If X is complex, the floor is applied to both real and imaginary
+     parts.  If X is non-scalar, every element is replaced by its
+     floor.  The type of X is not changed by `floor'.
+
+     X must be a numeric scalar, vector, or matrix.
+
+
+File: algae.info,  Node: gcd,  Next: imag,  Prev: floor,  Up: Basic Math
+
+ - Function: gcd ( x )
+     This function computes the greatest common divisor (GCD) of the
+     elements of its vector argument.  The input is rounded to integer
+     type.  The scalar return value is the GCD.  Its member "factors"
+     contains an integer vector such that `gcd(x).factors*x' is equal
+     to `gcd(x)'.
+
+     See also `lcm' and `primef'.
+
+
+File: algae.info,  Node: imag,  Next: integer,  Prev: gcd,  Up: Basic Math
+
+ - Function: imag ( x )
+     The `imag' function returns the imaginary part of its numeric
+     argument.  If X is non-scalar, every element is replaced by its
+     imaginary part.  The value returned by `imag' has real type.
+
+     See also `real'.
+
+
+File: algae.info,  Node: integer,  Next: lcm,  Prev: imag,  Up: Basic Math
+
+ - Function: integer ( x )
+     The `integer' function converts the real part of its numeric
+     argument to integer type, rounding it if necessary.
+
+     See also `round'.
+
+
+File: algae.info,  Node: lcm,  Next: log,  Prev: integer,  Up: Basic Math
+
+ - Function: lcm ( x )
+     This function computes the least common multiple (LCM) of the
+     elements of its vector argument.  The input is rounded to integer
+     type.  The scalar return value is the LCM.
+
+     See also `gcd' and `primef'.
+
+
+File: algae.info,  Node: log,  Next: log10,  Prev: lcm,  Up: Basic Math
+
+ - Function: log ( x )
+     The `log' function returns the natural logarithm of its numeric
+     argument.  If X is non-scalar, every element is replaced by its
+     logarithm.
+
+     X must be a numeric scalar, vector, or matrix.
+
+
+File: algae.info,  Node: log10,  Next: primef,  Prev: log,  Up: Basic Math
+
+ - Function: log10 ( x )
+     The `log10' function returns the base-10 logarithm of its numeric
+     argument.  If X is non-scalar, every element is replaced by its
+     base-10 logarithm.
+
+     X must be a numeric scalar, vector, or matrix.
+
+
+File: algae.info,  Node: primef,  Next: primes,  Prev: log10,  Up: Basic Math
+
+ - Function: primef ( n )
+     This function computes the prime factors of its scalar argument,
+     returning them as elements of an integer vector.  The argument N
+     is rounded to integer, if necessary.  If the argument is less than
+     2, a zero length vector is returned.
+
+     See also `gcd', `lcm', and `primes'.
+
+
+File: algae.info,  Node: primes,  Next: real,  Prev: primef,  Up: Basic Math
+
+ - Function: primes ( n )
+     This function generates a vector of prime numbers that are less
+     than or equal to the scalar argument.  The argument N is rounded to
+     an integer, if necessary.  If the argument is less than 2, a zero
+     length vector is returned.
+
+     See also `gcd', `lcm', and `primes'.
+
+
+File: algae.info,  Node: real,  Next: round,  Prev: primes,  Up: Basic Math
+
+ - Function: real ( x )
+     This function returns the real part of X.  The value returned by
+     `real' has real type.
+
+     See also `imag'.
+
+
+File: algae.info,  Node: round,  Next: sin,  Prev: real,  Up: Basic Math
+
+ - Function: round ( x )
+     The `round' function rounds its numeric argument to the nearest
+     whole number.  If X is complex, both real and imaginary parts are
+     rounded.  If X is non-scalar, every element is rounded.  The type
+     of X is not changed by `round'.
+
+     If Algae has been compiled to use the system's rint(3m) function,
+     then arguments with a fractional part of exactly 1/2 are rounded
+     to the nearest even whole number.  Otherwise, such arguments are
+     rounded towards +infinity.
+
+     See also `integer'.
+
+
+File: algae.info,  Node: sin,  Next: sinh,  Prev: round,  Up: Basic Math
+
+ - Function: sin ( x )
+     The `sin' function returns the sine of its numeric argument.  If X
+     is non-scalar, every element is replaced by its sine.
+
+
+File: algae.info,  Node: sinh,  Next: sqrt,  Prev: sin,  Up: Basic Math
+
+ - Function: sinh ( x )
+     The `sinh' function returns the hyperbolic sine of its numeric
+     argument.  If X is non-scalar, every element is replaced by its
+     hyperbolic sine.
+
+
+File: algae.info,  Node: sqrt,  Next: tan,  Prev: sinh,  Up: Basic Math
+
+ - Function: sqrt ( x )
+     The `sqrt' function returns the square root of its numeric
+     argument.  If X is complex or negative, then the result is
+     complex.  Otherwise, the result is real.  If X is non-scalar,
+     every element is replaced by its square root.
+
+
+File: algae.info,  Node: tan,  Next: tanh,  Prev: sqrt,  Up: Basic Math
+
+ - Function: tan ( x )
+     The `tan' function returns the tangent of its numeric argument.  If
+     X is non-scalar, every element is replaced by its tangent.
+
+
+File: algae.info,  Node: tanh,  Prev: tan,  Up: Basic Math
+
+ - Function: tanh ( x )
+     The `tanh' function returns the hyperbolic tangent of its numeric
+     argument.  If X is non-scalar, every element is replaced by its
+     hyperbolic tangent.
+
+
+File: algae.info,  Node: Arrays,  Next: Sets,  Prev: Basic Math,  Up: Standard Functions
+
+Arrays
+======
+
+* Menu:
+
+* band::	bandwidth reduction
+* bdiag::	block diagonal
+* btrans::	block transpose
+* circshift::   circular shift of array
+* combine::     union, but in original order
+* cram::	form an array, possibly sparse
+* dense::	dense storage
+* diag::	matrix diagonal
+* dice::        individual characters of a string
+* diff::	difference between elements
+* exsparse::    disassemble a sparse matrix
+* fill::	fill an array
+* find::	find elements in a vector
+* first::       first "true" element in a vector
+* form::	form an array
+* full::	full storage
+* gpskca::      profile or bandwidth reduction
+* grep::        search using regular expression
+* hermitian::	hermitian part of a matrix
+* ident::       identity matrix
+* imax::        find maximum element
+* imin::        find minimum element
+* isort::       sorted index
+* label::       add labels
+* last::        last "true" element in a vector
+* linspace::    uniformly spaced vector
+* logspace::    logarithmically spaced vector
+* lose::	lose elements in a vector
+* magic::	magic squares
+* matrix::	convert to a matrix
+* max::		maximum value
+* merge::	merge arrays
+* min::		minimum value
+* mksparse::    sparse matrix from coordinate data
+* norm::	vector and matrix norms
+* pick::        pick non-zero elements
+* product::     product of array elements
+* rand::	uniform random numbers
+* randn::       normal random numbers
+* reverse::     reverse elements of a vector
+* scalar::	convert to scalar
+* select::      select an element at random
+* seq::         integer sequence
+* shape::       array dimensions
+* sign::        signum function
+* sort::	sort a vector
+* sparse::	sparse storage
+* srand::	seed random numbers
+* sum::		sum elements
+* surprise::    random arrays with given properties
+* symmetric::	symmetric part of a matrix
+* tril::        lower triangle
+* triu::        upper triangle
+* unlabel::     remove labels
+* vector::	convert to a vector
+* zero::	make a zero array
+
+
+File: algae.info,  Node: band,  Next: bdiag,  Prev: Arrays,  Up: Arrays
+
+ - Function: band ( m )
+     The `band' function computes the upper and lower bandwidths and
+     profiles of the square matrix M.  The row bandwidth of a
+     particular row is the number of elements to the left of the
+     diagonal in that row, but not including any consecutive zero
+     elements at the beginning of that row.  Likewise, the column
+     bandwidth of a particular column is the number of elements above
+     the diagonal in that column, but not including any consecutive
+     zero elements at the beginning of that column.  Notice that, for a
+     diagonal matrix, all row and column bandwidths are zero.  The
+     lower bandwidth is the largest of all the row bandwidths, and the
+     upper bandwidth is the largest of all the column bandwidths.  The
+     lower profile is the sum of all the row bandwidths, and the upper
+     profile is the sum of all the column bandwidths.
+
+     This function returns a real vector with four elements.  In order,
+     these elements are as follows:  lower bandwidth, lower profile,
+     upper bandwidth, and upper profile.
+
+     Profile reduction can be very effective in reducing the time and
+     memory required to factor a matrix.  The function `gpskca'
+     provides one approach for doing this.
+
+     See also `gpskca'.
+
+
+File: algae.info,  Node: bdiag,  Next: btrans,  Prev: band,  Up: Arrays
+
+ - Function: bdiag ( x; m; n )
+     The `bdiag' function mimics the `diag' function, but in a "block"
+     sense.  The matrix X is taken to be comprised of M rows and N
+     columns of blocks that are themselves matrices.  If either M or N
+     is 0, then the matrix returned has the blocks of X on its diagonal
+     and is elsewhere zero.  Otherwise, the blocks of the diagonal of X
+     are appended together.
+
+     An example of the former case is:
+
+          > M = magic (4)
+                  [  9   7   6  12 ]
+                  [  4  14  15   1 ]
+                  [ 16   2   3  13 ]
+                  [  5  11  10   8 ]
+          > bdiag (M; 0; 2)
+                  [           9          7          .          . ]
+                  [           4         14          .          . ]
+                  [          16          2          .          . ]
+                  [           5         11          .          . ]
+                  [           .          .          6         12 ]
+                  [           .          .         15          1 ]
+                  [           .          .          3         13 ]
+                  [           .          .         10          8 ]
+
+     An example of the latter case is:
+
+          > bdiag ( M; 2; 2 )
+                  [  9   7   3  13 ]
+                  [  4  14  10   8 ]
+
+     X must be scalar, vector, or matrix.  After being converted to a
+     matrix, if necessary, the number of rows of X must be evenly
+     divisible by M (unless M is 0) and the number of columns of X must
+     be evenly divisible by N (unless N is 0).
+
+     See also `btrans' and `diag'.
+
+
+File: algae.info,  Node: btrans,  Next: circshift,  Prev: bdiag,  Up: Arrays
+
+ - Function: btrans ( x; m; n )
+     The `btrans' function mimics the transpose operator, but in a
+     "block" sense.  The matrix X is taken to be comprised of M rows
+     and N columns of blocks that are themselves matrices.  The blocks
+     themselves are not transposed, but are simply moved across the
+     diagonal.
+
+     For example:
+
+          > M = magic (4)
+                  [  9   7   6  12 ]
+                  [  4  14  15   1 ]
+                  [ 16   2   3  13 ]
+                  [  5  11  10   8 ]
+          > btrans (M; 2; 2)
+                  [  9   7  16   2 ]
+                  [  4  14   5  11 ]
+                  [  6  12   3  13 ]
+                  [ 15   1  10   8 ]
+
+     X must be scalar, vector, or matrix.  After being converted to a
+     matrix, if necessary, the number of rows of X must be evenly
+     divisible by M and the number of columns of X must be evenly
+     divisible by N.
+
+     See also `bdiag'.
+
+
+File: algae.info,  Node: circshift,  Next: combine,  Prev: btrans,  Up: Arrays
+
+ - Function: circshift ( x; s )
+     The `circshift' function shifts the elements of the array X.  The
+     arg S is a vector--each of its elements specifies the shift
+     distance for the corresponding dimension of X.  A positive shift is
+     down or right; a negative shift is up or left.  If unspecified, the
+     shift distance is zero (meaning no shift).  If X is a table, the
+     function is applied to each of its members.
+
+     For example:
+
+          > x = fill (3,3; 1:9)
+                  [ 1   2   3 ]
+                  [ 4   5   6 ]
+                  [ 7   8   9 ]
+          > circshift (x; 1)
+                  [ 7   8   9 ]
+                  [ 1   2   3 ]
+                  [ 4   5   6 ]
+          > circshift (x; 0,1)
+                  [ 3   1   2 ]
+                  [ 6   4   5 ]
+                  [ 9   7   8 ]
+          > circshift (x; 1,1)
+                  [ 9   7   8 ]
+                  [ 3   1   2 ]
+                  [ 6   4   5 ]
+
+
+
+File: algae.info,  Node: combine,  Next: cram,  Prev: circshift,  Up: Arrays
+
+ - Function: combine ( u; v )
+     The `combine' function appends the vectors U and V, removing all
+     but the first of any redundant elements.  This is exactly like the
+     `union' function, except that the result is not sorted.
+

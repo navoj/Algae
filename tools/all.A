@@ -1,0 +1,14 @@
+
+# This function returns 1 if every element of its argument is true
+# (nonzero if numeric or nonzero length if character) and 0
+# otherwise.  The argument must be a scalar, vector, or matrix.
+
+all = function (x)
+{
+  if (class(x) == "scalar")
+  {
+    return x != 0;
+  else
+    return !test(!x) & test(shape(x));
+  }
+};

@@ -1,0 +1,190 @@
+
+printf( "Starting the math tests...\n" );
+
+i = sqrt(-1);
+pi = acos (-1);
+
+assert = strip( function( t ) {
+    if ( !test(t) ) {
+        message( "...failed.\a" );
+        exception();
+    }
+});
+
+near = strip (function( a; b ) {
+  return norm( a - b ) / ( norm( a ) + norm( b ) ) < 1e-10;
+});
+
+a = assert;
+
+# complex abs
+
+z = abs( 3+4*i );
+a( class(z) == "scalar" & z.type == "real" & near( z; 5 ) );
+z = abs( rand(9) + rand(9)*i );
+a( class(z) == "vector" & z.type == "real" &
+   near( z; sqrt( real(z)^2 + imag(z)^2 ) ) );
+z = abs( rand(7,3) + rand(7,3)*i );
+a( class(z) == "matrix" & z.type == "real" &
+   near( z; sqrt( real(z)^2 + imag(z)^2 ) ) );
+
+# complex division
+
+z = 1 / ( 1.23 + 4.56*i );
+a( class(z) == "scalar" & z.type == "complex" &
+   near( z; 0.0551408782194 + -0.204424719252*i ) );
+a( !(0/z) );
+v = -2:4+5*i:.3;
+z = 1/v;
+a( class(z) == "vector" & z.type == "complex" &
+   z[1] == -0.5 &
+   near( v; exp(-log(z)) ) );
+a( near( 2*v/v; 2 ) );
+z = fill( 100; v );
+z[find(0;!((1:100)%3))] = 0;
+z = sparse(z);
+a( near( (z/(3+4*i))*(3+4*i); z ) );
+z = rand(17,5) + rand(17,5)*i;
+a( class(z) == "matrix" & z.type == "complex" &
+   near( 1; real( z / ( imag(z)*i ) ) ) &
+   near( 1; z/z ) );
+
+# complex square root
+
+z = rand()+sqrt(-1)*rand();
+a( near( sqrt(z)*sqrt(z); z ) );
+z = rand(5)+sqrt(-1)*rand(5);
+a( near( sqrt(z)@sqrt(z); z ) );
+z = rand(5,5)+sqrt(-1)*rand(5,5);
+a( near( sqrt(z)@sqrt(z); z ) );
+
+# power (s^s)
+
+a( 0^2 == 0 & 2^0 == 1 & 2^-1 == 0.5 & 2^2 == 4 );
+a( 0^2.0 == 0 & 2.0^0 == 1 & 2.0^-1 == 0.5 & 2.0^2 == 4 &
+   near( (-1)^0.5; sqrt(-1) ) );
+a( i^0 == 1 & near( exp(0)^(i*pi); 1 ) );
+
+# power (s^v)
+
+a( all( 0^(1,2) == 0 ) & near( 2^(0,-1,2); 1,0.5,4 ) );
+a( all( 0^(1.0,2.0) == 0 ) & near( 2^(0,-1,2); 1,0.5,4 ) );
+a( near( (-1)^(1.0,0.0,0.5); -1,1,sqrt(-1) ) );
+a( near( 1^(0,i); 1,1 ) & near( i^(0,1,i); 1,i,0.207879576351 ) );
+
+# power (v^s)
+
+a( near( (1,2)^0; 1,1 ) & near( (0:4)^2; 0,1,4,9,16 ) &
+   near( (2,1)^(-1); 0.5,1.0 ) );
+a( near( (1.0,2.0)^0; 1,1 ) & near( (0:4)^2.0; 0,1,4,9,16 ) &
+   near( (2,1)^(-1.0); 0.5,1.0 ) & near( (-2,-1)^0.5; i*(sqrt(2),1) ) );
+a( near( (i,2*i)^2; -(1,4) ) & near( (i,2*i)^0; 1,1 ) );
+
+# power (v^v)
+
+a( near( (1,2,0:4)^(0,0,2,2,2,2,2); 1,1,0,1,4,9,16 ) &
+   near( (1,2,2,1)^(1,1,-1,-1); 1,2,0.5,1 ) );
+a( near( (1.0,2,0:4)^(0,0,2,2,2,2,2); 1,1,0,1,4,9,16 ) &
+   near( (1.0,2,2,1)^(1,1,-1,-1); 1,2,0.5,1 ) &
+   near( (-2,-1)^(0.5,0.5); i*(sqrt(2),1) ) );
+a( near( (i,2*i,i,2*i)^(2,2,0,0); -1,-4,1,1 ) );
+
+# power (s^m)
+
+a( all( 0^[1,2] == 0 ) & near( 2^[0,-1,2]; 1,0.5,4 ) );
+a( all( 0^[1.0,2.0] == 0 ) & near( 2^[0,-1,2]; 1,0.5,4 ) );
+a( near( (-1)^[1.0,0.0,0.5]; -1,1,sqrt(-1) ) );
+a( near( 1^[0,i]; 1,1 ) & near( i^[0,1,i]; 1,i,0.207879576351 ) );
+
+# power (m^s)
+
+a( near( [1,2]^0; 1,1 ) & near( [0:4]^2; 0,1,4,9,16 ) &
+   near( [2,1]^(-1); 0.5,1.0 ) );
+a( near( [1.0,2.0]^0; 1,1 ) & near( [0:4]^2.0; 0,1,4,9,16 ) &
+   near( [2,1]^(-1.0); 0.5,1.0 ) & near( [-2,-1]^0.5; i*(sqrt(2),1) ) );
+a( near( [i,2*i]^2; -(1,4) ) & near( [i,2*i]^0; 1,1 ) );
+s = sparse;
+a( near( s([1,2])^0; 1,1 ) & near( s([0:4])^2; 0,1,4,9,16 ) &
+   near( s([2,1])^(-1); 0.5,1.0 ) );
+a( near( s([1.0,2.0])^0; 1,1 ) & near( s([0:4])^2.0; 0,1,4,9,16 ) &
+   near( s([2,1])^(-1.0); 0.5,1.0 ) & near( s([-2,-1])^0.5; i*(sqrt(2),1) ) );
+a( near( s([i,2*i])^2; -(1,4) ) & near( s([i,2*i])^0; 1,1 ) );
+
+# power (m^m)
+
+a( near( [1,2,0:4]^(0,0,2,2,2,2,2); 1,1,0,1,4,9,16 ) &
+   near( [1,2,2,1]^(1,1,-1,-1); 1,2,0.5,1 ) );
+a( near( [1.0,2,0:4]^(0,0,2,2,2,2,2); 1,1,0,1,4,9,16 ) &
+   near( [1.0,2,2,1]^(1,1,-1,-1); 1,2,0.5,1 ) &
+   near( [-2,-1]^(0.5,0.5); i*(sqrt(2),1) ) );
+a( near( [i,2*i,i,2*i]^(2,2,0,0); -1,-4,1,1 ) );
+a( near( s([1,2,0:4])^(0,0,2,2,2,2,2); 1,1,0,1,4,9,16 ) &
+   near( s([1,2,2,1])^(1,1,-1,-1); 1,2,0.5,1 ) );
+a( near( s([1.0,2,0:4])^(0,0,2,2,2,2,2); 1,1,0,1,4,9,16 ) &
+   near( s([1.0,2,2,1])^(1,1,-1,-1); 1,2,0.5,1 ) &
+   near( s([-2,-1])^(0.5,0.5); i*(sqrt(2),1) ) );
+a( near( s([i,2*i,i,2*i])^(2,2,0,0); -1,-4,1,1 ) );
+
+# log and exp
+
+n = -8:-1,1:8;
+a (near (exp (log (n)); n));
+a (near (log (exp (n,0)); n,0));
+x = 3*randn(250);
+a (near (exp (log (x)); x));
+a (near (log (exp (x)); x));
+z = x + i*((3*randn(250))%pi);
+a (near (exp (log (z)); z));
+a (near (log (exp (z)); z));
+
+# sin and asin
+
+n = -1:1;
+a (near (asin (sin (n)); n));
+n = -8:8;
+a (near (sin (asin (n)); n));
+a (near (sin (asin (x)); x));
+a (near (asin (sin (x%(pi/2))); x%(pi/2)));
+a (near (sin (asin (z)); z));
+q = real (z) % (pi/2) + i*imag(z);
+a (near (asin (sin (q)); q));
+
+# cos and acos
+
+n = 0:1;
+a (near (acos (cos (n)); n));
+n = -8:8;
+a (near (cos (acos (n)); n));
+a (near (cos (acos (x)); x));
+a (near (acos (cos (abs(x%pi))); abs(x%pi)));
+a (near (cos (acos (z)); z));
+q = abs (real (z)) % pi + i*imag(z);
+a (near (acos (cos (q)); q));
+
+# sinh and asinh
+
+a (near (sinh (asinh (n)); n));
+a (near (asinh (sinh (n)); n));
+a (near (sinh (asinh (x)); x));
+a (near (asinh (sinh (x)); x));
+a (near (sinh (asinh (z)); z));
+q = (real(z)%(pi/2)) + i*(imag(z)%(pi/2));
+a (near (asinh (sinh (q)); q));
+
+# cosh and acosh
+
+a (near (cosh (acosh (n)); n));
+a (near (acosh (cosh (n)); abs(n)));
+a (near (cosh (acosh (x)); x));
+a (near (acosh (cosh (x)); abs(x)));
+a (near (cosh (acosh (z)); z));
+q = abs( real (z)) + i*abs(imag(z));
+a (near (acosh (cosh (q)); q));
+
+# sparse matrices
+
+sparse ([1,0,0;0,1,0;0,0,0]) * sparse ([0,0,0;0,0,0;0,0,1]);
+sparse ([1.0,0,0;0,1,0;0,0,0]) * sparse ([0,0,0;0,0,0;0,0,1]);
+sparse ([1,0,0;0,1,0;0,0,0]) * sparse ([0,0,0;0,0,0;0,0,1+0*sqrt(-1)]);
+
+printf( "...passed.\n" );

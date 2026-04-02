@@ -1,0 +1,9 @@
+
+# Reverse a vector.
+
+reverse = function( v )
+{
+    v = vector( v );
+    if ( v.ne > 1 ) { v = v[v.ne:1]; }
+    return v;
+};

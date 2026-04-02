@@ -1,0 +1,934 @@
+dnl ------------------------------------------------------------------
+dnl    This is an autoconf script for Algae.  Process this file with
+dnl    the GNU autoconf program to produce a configure script.
+dnl ------------------------------------------------------------------
+
+AC_REVISION($Revision: 1.40 $)dnl
+AC_INIT(tools/magic.A)
+
+#---------------------------------------------------------------------
+#  Set up the "config.h" file.
+#---------------------------------------------------------------------
+
+AC_CONFIG_HEADER(config.h)
+
+#---------------------------------------------------------------------
+#  Various commands for compiling and linking Fortran.
+#---------------------------------------------------------------------
+
+LIBS="$LIBS -lm"
+f77_compile='${F77-f77} $FFLAGS -c conftest.f 1>&AC_FD_CC 2>&AC_FD_CC'
+f77_make='make F77="${F77-f77}" FFLAGS="$FFLAGS" -f conftest.mak conftest.o 1>&AC_FD_CC 2>&AC_FD_CC'
+c_f77_link='(${F77-f77} $FFLAGS -c conftestf.f && ${CC-cc} $CFLAGS $CPPFLAGS conftest.c conftestf.o -o conftest $LDFLAGS $LIBS) 1>&AC_FD_CC 2>&AC_FD_CC'
+
+# The next two don't include LDFLAGS, because some loser f77 compilers
+# (like on hp) do their own thing with the -L option.
+
+f77_link='${F77-f77} $FFLAGS conftest.f -o conftest $LIBS 1>&AC_FD_CC 2>&AC_FD_CC'
+f77_c_link='(${CC-cc} $CFLAGS $CPPFLAGS -c conftest.c && ${F77-f77} $FFLAGS conftestf.f conftest.o -o conftest $LIBS) 1>&AC_FD_CC 2>&AC_FD_CC'
+
+#---------------------------------------------------------------------
+#  Specify location of "local" libraries like readline, BLAS, etc.
+#---------------------------------------------------------------------
+
+if test "${LDFLAGS+set}" != set; then
+  LDFLAGS_not_set=yes
+fi
+
+AC_ARG_WITH(local,
+  [  --with-local=DIR        search for libraries (readline, BLAS, LAPACK,
+                          f2c, etc.) in directory (absolute path) DIR.  The
+                          directory /usr/local/lib is searched by default.],
+  [case "${withval}" in
+	y | yes )	local_dir="/usr/local/lib" ;;
+	n | no  )	local_dir="" ;;
+	*       )	local_dir="${withval}" ;;
+   esac],
+  [local_dir="/usr/local/lib"])
+if test -n "$local_dir"; then
+  LDFLAGS="$LDFLAGS -L$local_dir"
+  runtime_libs="$local_dir"
+fi
+
+#---------------------------------------------------------------------
+#  Provide debugging support.
+#---------------------------------------------------------------------
+
+AC_ARG_ENABLE(debug,
+  [  --enable-debug          enable debugging (and significantly decrease
+                          execution speed).],
+  [case "${enableval}" in
+	 y | yes ) AC_DEFINE(DEBUG) ;;
+	 * ) AC_DEFINE(DEBUG,0) ;;
+   esac],
+  [AC_DEFINE(DEBUG,0)])
+
+AC_ARG_ENABLE(superludebug,
+  [  --enable-superludebug   enable SuperLU debugging (and significant
+                          decrease in execution speed and lots of output).],
+  [case "${enableval}" in
+	 y | yes ) AC_DEFINE(SUPERLU_DEBUG) ;;
+	 * ) AC_DEFINE(SUPERLU_DEBUG,0) ;;
+   esac],
+  [AC_DEFINE(SUPERLU_DEBUG,0)])
+
+AC_ARG_WITH(dbmalloc,
+  [  --with-dbmalloc         use Conor Cahill's dbmalloc package to debug
+                          memory allocation.  The "malloc.h" is expected
+                          to be in /usr/local/debug_include.],
+  [DEBUG_INCLUDE="-I/usr/local/debug_include"
+   LIBS="$LIBS -ldbmalloc"
+   AC_SUBST(DEBUG_INCLUDE)])
+
+AC_ARG_WITH(dmalloc,
+  [  --with-dmalloc          use Gray Watson's dmalloc package to debug
+                          memory allocation.],
+  [LIBS="$LIBS -ldmalloc"
+   AC_DEFINE(DMALLOC)])
+
+#---------------------------------------------------------------------
+#  Use Doug Lea's dlmalloc package by default.
+#---------------------------------------------------------------------
+
+AC_ARG_ENABLE(dlmalloc,
+  [  --disable-dlmalloc      disable the dlmalloc package, and use the
+                          system's malloc instead.],
+  [case "${enableval}" in
+	 n | no ) AC_DEFINE(USE_DLMALLOC,0) ;;
+	 * ) AC_DEFINE(USE_DLMALLOC) ;;
+   esac],
+  [AC_DEFINE(USE_DLMALLOC)])
+
+#---------------------------------------------------------------------
+#  Determine which C compiler to use.  If CFLAGS isn't set, then we'll
+#  give it a value later, after we figure out what machine we're on.
+#---------------------------------------------------------------------
+
+if test "${CFLAGS+set}" != set; then
+  CFLAGS_not_set=yes
+fi
+AC_PROG_CC
+
+#---------------------------------------------------------------------
+#  Determine which Fortran compiler to use.  Unfortunately, the test
+#  sets FFLAGS -- we have our own ideas later on.
+#---------------------------------------------------------------------
+
+if test "${FFLAGS+set}" != set; then
+  FFLAGS_not_set=yes
+fi
+AC_PROG_F77(g77 f77 cf77 fort77)
+
+#---------------------------------------------------------------------
+#  Check C compiler for support of ANSI prototypes.
+#---------------------------------------------------------------------
+
+AC_MSG_CHECKING([for support of ANSI prototypes])
+LOCAL_CHECK_CC_PROTOS([AC_MSG_RESULT(yes)
+  AC_DEFINE(NO_PROTOS, 0)],
+  [AC_MSG_RESULT(no)
+  AC_DEFINE(NO_PROTOS, 1)])
+
+#---------------------------------------------------------------------
+#  Look for some specific programs.
+#---------------------------------------------------------------------
+
+AC_PROG_MAKE_SET
+AC_PROG_AWK
+AC_PROG_YACC
+AC_PROG_LEX
+AC_PROG_INSTALL
+AC_PROG_RANLIB
+AC_CHECK_PROG(M4, m4, m4)
+AC_CHECK_PROG(F2C, f2c, f2c)
+AC_CHECK_PROG(EFL, efl, efl)
+AC_CHECK_PROG(RATFOR, ratfor, ratfor)
+
+AC_PATH_PROG(LS, ls)
+AC_PATH_PROG(TR, tr)
+AC_PATH_PROG(SED, sed)
+AC_PATH_PROG(INFO, info)
+AC_PATH_PROG(HTML, lynx)
+AC_PATH_PROGS(XHTML, mozilla netscape mosaic)
+AC_PATH_PROG(GNUPLOT, gnuplot)
+AC_PATH_PROG(XTERM, xterm)
+
+AC_SUBST(ARFLAGS)
+
+#---------------------------------------------------------------------
+#  Prepare f2c script, if necessary.  We can't wait and let OUTPUT
+#  do it, because we need it for our tests.
+#---------------------------------------------------------------------
+
+AC_ARG_WITH(f2c,
+  [  --with-f2c=DIR          search for f2c headers in DIR/include and
+                          libraries in DIR/lib.],
+  [case "${withval}" in
+	y | yes )	f2c_dir="${local_dir}" ;;
+	n | no  )	f2c_dir="" ;;
+	*       )	f2c_dir="${withval}" ;;
+   esac],
+  [f2c_dir="${local_dir}"])
+
+if test -z "$F77"; then
+  F77=`pwd`/f77-sh
+  sed "s%@CC@%${CC}%g; s%@CPP@%${CPP}%g; s%@EFL@%${EFL}%g;
+       s%@RATFOR@%${RATFOR}%g; s%@F2C@%${F2C}%g;
+       s%@F2CDIR@%${f2c_dir}%g" f77-sh.in > f77-sh
+  chmod +x f77-sh
+fi
+
+#---------------------------------------------------------------------
+#  Check for broken linkers.
+#---------------------------------------------------------------------
+
+AC_MSG_CHECKING([for broken linker])
+tmp_LIBS="$LIBS"
+LIBS="$LIBS -lbogus_bogus_bogus"
+AC_TRY_LINK(, [main();],
+  [AC_MSG_RESULT(broken)
+  CHKERR=./compile-sh],
+  [AC_MSG_RESULT(ok)
+  CHKERR=])
+LIBS="$tmp_LIBS"
+
+basic_CC="$CC"
+basic_F77="$F77"
+CC="$CHKERR $CC"
+F77="$CHKERR $F77"
+
+#---------------------------------------------------------------------
+#  Get the canonical system type.  It's too bad that we need it, but
+#  there are some things that we just can't test for.
+#---------------------------------------------------------------------
+
+AC_CANONICAL_HOST
+
+#---------------------------------------------------------------------
+#  Set CFLAGS based on the host system type.  Leave it alone if it's
+#  already set; otherwise, strive for run-time performance.  This is
+#  just my best guess at the appropriate options, based on what little
+#  I know about the most commonly used non-gcc compiler on this
+#  host.  Please mail suggestions for improvements to ksh@eskimo.com.
+#---------------------------------------------------------------------
+	
+if test "${CFLAGS_not_set}" = yes; then
+  if test "$GCC" = yes; then
+    if test "${enable_debug+set}" = set; then
+        CFLAGS="-g"
+    fi
+  else
+    if test "${enable_debug+set}" = set; then
+      # The patterns are not necessarily exclusive, so order is important.
+      case "$host" in
+        alpha*  )             CFLAGS="-g -Olimit 1500" ;;
+        *-aix*  )             CFLAGS="-g" ;;
+        *-hpux1*)             CFLAGS="-g +DAportable -Ae" ;;
+        *-hpux9*)             CFLAGS="-g " ;;
+        *-hpux* )             CFLAGS="-g +Obb1000" ;;
+        mips-*  )             CFLAGS="-g -Olimit 1500" ;;
+        titan-* )             CFLAGS="-g" ;;
+        *-unicos*)            CFLAGS="-g -h matherror=errno" ;;
+        *)                    CFLAGS="-g" ;;
+      esac
+    else
+      # The patterns are not necessarily exclusive, so order is important.
+      case "$host" in
+        alpha* )              CFLAGS="-O -Olimit 1500" ;;
+        *-aix[[123]]* )       CFLAGS="-O" ;;
+        *-aix*  )             CFLAGS="-O -qmaxmem=8192" ;;
+        *-hpux9.01)           CFLAGS="-O +Obb1000" ;;
+        *-hpux1*)             CFLAGS="-O +Onolimit +DAportable -Ae" ;;
+        *-hpux9*)             CFLAGS="-O +Onolimit" ;;
+        *-hpux* )             CFLAGS="-O +Obb1000" ;;
+        mips-sgi-irix[2345]*) CFLAGS="-O -Olimit 1500" ;;
+        mips-*  )             CFLAGS="-O2" ;;
+        titan-* )             CFLAGS="-O2" ;;
+        *-unicos*)            CFLAGS="-O2 -h matherror=errno" ;;
+        *)                    CFLAGS="-O" ;;
+      esac
+    fi
+  fi
+fi  
+	
+#---------------------------------------------------------------------
+#  Check for standard header files.
+#---------------------------------------------------------------------
+
+AC_HEADER_STDC
+
+#---------------------------------------------------------------------
+#  Try to set FFLAGS based on the host system type.  Unfortunately,
+#  there's no easy way to determine whether f77 is the native
+#  compiler, a front end for f2c, or something else.
+#---------------------------------------------------------------------
+	
+if test -z "$G77" -a "${FFLAGS_not_set}" = yes; then
+  # The patterns are not necessarily exclusive, so their order is important.
+  if test "${enable_debug+set}" = set; then
+    case "$host" in
+	titan-* )		FFLAGS="-cpp -g" ;;
+	*-unicos*)		FFLAGS="-Zp -dp" ;;
+	*-hpux1*)		FFLAGS="-g +DAportable" ;;
+	*)			FFLAGS="-g" ;;
+    esac
+  else
+    case "$host" in
+	titan-* )		FFLAGS="-cpp -O2 -inline" ;;
+	*-unicos*)		FFLAGS="-Zp -dp" ;;
+	*-hpux1*)		FFLAGS="-O +DAportable" ;;
+	*-aix[[123]]*)		FFLAGS="-O" ;;
+	*-aix*)			FFLAGS="-O -qmaxmem=8192" ;;
+	*)			FFLAGS="-O" ;;
+    esac
+  fi
+else
+  FFLAGS_already_set=yes
+  if test "$G77" = yes; then
+    if test "${enable_debug+set}" = set; then
+        FFLAGS="-g"
+    fi
+  fi
+fi
+	
+#---------------------------------------------------------------------
+#  Can we compile Fortran?  If not, maybe FFLAGS is set wrong.  (This
+#  is likely if f77 is really a front end for f2c.)
+#---------------------------------------------------------------------
+	
+AC_MSG_CHECKING([for working Fortran compiler])
+LOCAL_TRY_COMPILE_F77([AC_MSG_RESULT(yes)],
+[if test "$FFLAGS_already_set" != yes; then
+FFLAGS="-O"
+LOCAL_TRY_COMPILE_F77([AC_MSG_RESULT(yes)],
+[AC_MSG_RESULT(no)
+AC_MSG_ERROR([unable to compile Fortran])])
+else
+AC_MSG_RESULT(no)
+AC_MSG_ERROR([unable to compile Fortran])
+fi])
+
+#---------------------------------------------------------------------
+#  The LAPACK routine DLAMCH must be compiled without optimization.
+#---------------------------------------------------------------------
+
+if test "${FFLAGS_NOOPT+set}" != set; then
+  FFLAGS_NOOPT=`echo $FFLAGS | $AWK '{gsub("-O[[0-9]]*( |$)","");print}'`
+fi
+AC_SUBST(FFLAGS_NOOPT)
+
+#---------------------------------------------------------------------
+#  Some bozos hardwire f77 options in their builtin make rules.  If
+#  we're using a different Fortran compiler than they expected, this
+#  might fail.
+#---------------------------------------------------------------------
+
+F77_RULE="#"
+AC_MSG_CHECKING([for cooperative make and Fortran])
+LOCAL_TRY_MAKE_F77([AC_MSG_RESULT(yes)],
+[F77_RULE=""
+LOCAL_TRY_MAKE_F77([AC_MSG_RESULT(yes, with help)],
+[AC_MSG_RESULT(no)
+AC_MSG_ERROR([unable to make Fortran])])])
+AC_SUBST(F77_RULE)
+
+#---------------------------------------------------------------------
+#  Can we link Fortran?  Not much we can do about it, but a failure
+#  here would be less confusing than one below.
+#---------------------------------------------------------------------
+
+AC_MSG_CHECKING([whether we can link Fortran])
+LOCAL_TRY_LINK_F77([AC_MSG_RESULT(yes)],
+[AC_MSG_RESULT(no)
+AC_MSG_ERROR([unable to link Fortran])])
+	
+#---------------------------------------------------------------------
+#  How does the Fortran compiler mangle its symbols?  Isn't working
+#  with Fortran fun?
+#---------------------------------------------------------------------
+	
+AC_MSG_CHECKING([how the Fortran compiler mangles its symbols])
+f77_sym=""
+for f in t_ t T; do
+  LOCAL_C_FROM_FORTRAN($f, T, [f77_sym="$f"; break])
+done
+case "$f77_sym" in
+  t_ ) AC_DEFINE(NO_FORTRAN_DEFS, 0)
+	   FTN_SUFFIX="_"
+	   CDEFS="-DAdd_"
+	   AC_SUBST(FTN_SUFFIX)
+	   ;;
+  t  ) AC_DEFINE(NO_FORTRAN_DEFS, 0)
+	   FTN_SUFFIX=""
+	   CDEFS="-DNoChange"
+	   AC_SUBST(FTN_SUFFIX)
+	   ;;
+  T  ) AC_DEFINE(NO_FORTRAN_DEFS, 1)
+	   FTN_SUFFIX="_"
+	   CDEFS="-DUpCase"
+	   AC_SUBST(FTN_SUFFIX)
+	   ;;
+  *  ) AC_MSG_ERROR([unable to combine C and Fortran])
+esac
+AC_MSG_RESULT([\"T\" becomes \"$f77_sym\"])
+AC_SUBST(CDEFS)
+	
+#---------------------------------------------------------------------
+#  Where would we expect to find the Fortran libraries?
+#---------------------------------------------------------------------
+	
+AC_ARG_WITH(fortran-libs,
+  [  --with-fortran-libs=DIR use Fortran libraries in directory (absolute
+                          path) DIR.],
+  [fortran_libs="${withval}"],
+  [# The patterns are not necessarily exclusive, so their order is important.
+  case "$host" in
+	 sparc-sun-sunos4* )
+	   fortran_libs="/usr/lang/SC1.0" ;;
+	 sparc-sun-solaris2* )
+	   fortran_libs=`/bin/ls -d /opt/SUNWspro/SC* | head -1`/lib ;;
+	 alpha*-*-osf* )
+	   fortran_libs="/usr/lib" ;;
+	 *-hp-hpux1* )
+	   fortran_libs="/opt/fortran/lib" ;;
+	 * )
+	   fortran_libs="" ;;
+  esac])
+	
+#---------------------------------------------------------------------
+#  What are the names of the native Fortran libraries?  The patterns
+#  are not necessarily exclusive, so their order is important.
+#---------------------------------------------------------------------
+	
+[case "$host" in
+  alpha*	) f77_lib_names="Futil ots for Ufor" ;;
+  *-aix*	) f77_lib_names="xlf xlf90" ;;
+  *-hpux1*	) f77_lib_names="cl U77" ;;
+  *-hpux9*	) f77_lib_names="f U77" ;;
+  *-hpux*	) f77_lib_names="F77 I77 IO77" ;;
+  *-dec-ultrix*	) f77_lib_names="for i util ots I77 U77 F77" ;;
+  mips-sgi-irix*) f77_lib_names="F77 I77 U77 isam fpe ftn" ;;
+  mips-*	) f77_lib_names="F77 I77 U77 isam" ;;
+  *-solaris2*	) f77_lib_names="F77 M77 sunmath" ;;
+  *-sunos4*	) f77_lib_names="F77 V77" ;;
+  titan-*	) f77_lib_names="iF77 uF77 mF77" ;;
+  *-unicos*	) f77_lib_names="F77 I77 sci f" ;;
+  *		) f77_lib_names="F77 I77" ;;
+esac]
+f77_lib_names="$f77_lib_names g2c f2c"
+for f in $f77_lib_names; do reversed_names="$f $reversed_names"; done
+	
+#---------------------------------------------------------------------
+#  On linux (and perhaps other GNU systems), the linker has trouble
+#  with dynamically linked Fortran.
+#---------------------------------------------------------------------
+
+cat >> confdefs.h <<\EOF
+#if linux
+void MAIN__ (void) {abort();}
+#endif
+EOF
+	
+#---------------------------------------------------------------------
+#  Check for native Fortran libraries.
+#---------------------------------------------------------------------
+
+local_LIBS="$LIBS"
+local_LDFLAGS="$LDFLAGS"
+AC_MSG_CHECKING([for native Fortran libraries])
+if test -n "$fortran_libs"; then
+  runtime_libs="${fortran_libs}:${runtime_libs}"
+  LDFLAGS="$LDFLAGS -L$fortran_libs"
+fi
+AC_MSG_RESULT([using \"$LDFLAGS $LIBS\"])
+f77_libs=""
+save_libs="$LIBS"
+for f in $reversed_names; do
+LIBS="$save_libs"
+  AC_CHECK_LIB(${f}, main, [f77_libs="-l$f $f77_libs"],,)
+done
+LIBS="$save_libs"
+LIBS="$f77_libs $LIBS"
+	
+#---------------------------------------------------------------------
+#  Now, can we link a C main routine to a Fortran subroutine?
+#---------------------------------------------------------------------
+
+AC_MSG_CHECKING([whether we can link C and native Fortran])
+LOCAL_FORTRAN_FROM_C(T, $f77_sym,
+  AC_MSG_RESULT([yes]),
+  [AC_MSG_RESULT([no])
+  AC_MSG_ERROR([Unable to call Fortran from C.  Perhaps the value of the
+--with-fortran-libs option is incorrect.])])
+
+#---------------------------------------------------------------------
+#  Checks for libraries.  Must account for Fortran name mangling.
+#---------------------------------------------------------------------
+	
+case "$f77_sym" in
+  t_ ) blas_func="daxpy_"
+	   lapack_func="dgeevx_"
+	   bcslib_func="hdslin_"
+	   npsol_func="dgeap_"
+	   etime_func="etime_"
+	   ;;
+  t  ) blas_func="daxpy"
+	   lapack_func="dgeevx"
+	   bcslib_func="hdslin"
+	   npsol_func="dgeap"
+	   etime_func="etime"
+	   ;;
+  T  ) blas_func="DAXPY"
+	   lapack_func="DGEEVX"
+	   bcslib_func="HDSLIN"
+	   npsol_func="DGEAP"
+	   etime_func="ETIME"
+	   ;;
+  *  ) AC_MSG_ERROR([Fortran mangling mistake in configure])
+esac
+	
+#---------------------------------------------------------------------
+#  The readline library provides command line history and editing.
+#---------------------------------------------------------------------
+	
+AC_ARG_WITH(readline,
+  [  --with-readline=DIR     use Readline for fancy command line editing.
+                          If (absolute path) DIR is not specified, search in
+                          the directory specified by the --with-local
+                          option.],
+  [case "${withval}" in
+	 n | no ) with_readline=no ;;
+	 y | yes ) with_readline=yes ;;
+	 * ) with_readline=yes
+	      runtime_libs="${withval}:${runtime_libs}"
+	      LDFLAGS="$LDFLAGS -L${withval}" ;;
+   esac],
+  [with_readline=maybe])
+if test "$with_readline" != no; then
+  LOCAL_CHECK_LIB_TERMCAP
+  if test $algae_cv_termcap_lib = no -a $with_readline = yes; then
+    AC_MSG_ERROR([unable to find termcap library])
+  fi
+  AC_CHECK_LIB(readline, rl_yank,
+	[LIBS="-lreadline $LIBS"
+	 AC_DEFINE(HAVE_LIBREADLINE)],
+	[AC_DEFINE(HAVE_LIBREADLINE,0)
+         if test $with_readline = yes; then
+           AC_MSG_ERROR([unable to use the readline library])
+         fi])
+fi  
+	
+#---------------------------------------------------------------------
+#  "Fastest Fourier Transform in the West"
+#  The fftw library provides high-performance FFTs.  Algae provides
+#  its own less-sophisticated routines if fftw isn't available.
+#---------------------------------------------------------------------
+	
+AC_ARG_WITH(fftw,
+  [  --with-fftw=DIR         use fftw for fast Fourier transforms, instead
+                          of the routines supplied by Algae.  This is highly
+                          recommended -- see http://www.fftw.org/ for details.
+                          If (absolute path) DIR is given, look in DIR/lib.],
+  [case "${withval}" in
+	 n | no ) with_fftw=no ;;
+	 y | yes ) with_fftw=yes ;;
+	 * ) with_fftw=yes
+	     CFLAGS="$CFLAGS -I${withval}/include"
+	     LDFLAGS="$LDFLAGS -L${withval}/lib" ;;
+   esac],
+  [with_fftw=maybe])
+if test "$with_fftw" != no; then
+  AC_CHECK_HEADERS(fftw3.h)
+  if test "$ac_cv_header_fftw3_h" = yes; then
+    AC_CHECK_LIB(fftw3, fftw_malloc,
+	[LIBS="-lfftw3 $LIBS"
+	 AC_DEFINE(HAVE_FFTW)],
+	[AC_DEFINE(HAVE_FFTW,0)
+         if test $with_fftw = yes; then
+           AC_MSG_ERROR([unable to use the fftw library])
+         fi])
+  else
+    if test "$with_fftw" = yes; then
+      AC_MSG_ERROR([unable to use the fftw library])
+    fi
+  fi
+fi  
+	
+AC_ARG_ENABLE(both-fft,
+  [  --enable-both-fft       enable both legacy FFT code and fftw.  This is
+                          intended only for debugging and performance
+                          comparisons.],
+  [case "${enableval}" in
+	 y | yes ) AC_DEFINE(USE_BOTH_FFT) ;;
+	 * ) AC_DEFINE(USE_BOTH_FFT,0) ;;
+   esac],
+  [AC_DEFINE(USE_BOTH_FFT,0)])
+
+#---------------------------------------------------------------------
+#  The BLAS (Basic Linear Algebra Subprograms) library is required.
+#  We look for an existing one first, but use the generic version
+#  distributed with Algae if we must.
+#---------------------------------------------------------------------
+
+AC_ARG_WITH(blas,
+  [  --with-blas=DIR         use BLAS library in directory (absolute path)
+                          DIR.  If DIR is not specified, search where
+                          directed by the --with-local option.],
+  [case "${withval}" in
+     y|yes ) ;;
+     n|no ) BLAS=xblas ;;
+     * ) LDFLAGS="$LDFLAGS -L${withval}" ;;
+  esac])
+case $BLAS in
+  xblas ) ;;
+     *  ) AC_CHECK_LIB(blas, $blas_func, ,
+	    [case "$host" in
+	    	alpha*  ) AC_CHECK_LIB(dxml, $blas_func, , BLAS=xblas) ;;
+		*-aix*	) AC_CHECK_LIB(essl, $blas_func, , BLAS=xblas) ;;
+	      	*       ) BLAS=xblas ;;
+	     esac]) ;;
+esac
+
+# If we're using our own version, we need to make sure that ld can
+# find it.  We don't put it in LIBS, though, because the other config
+# checks (except for LAPACK) don't need it and won't find it.
+
+if test "$BLAS" = xblas; then
+  LDFLAGS="$LDFLAGS -L../blas"
+  LOCAL_LIBS="-lblas $LOCAL_LIBS"
+fi
+AC_SUBST(BLAS)
+
+#---------------------------------------------------------------------
+#  The LAPACK library is required.  We look for an existing one first,
+#  but use the generic version distributed with Algae if we must.
+#---------------------------------------------------------------------
+
+AC_ARG_WITH(lapack,
+  [  --with-lapack=DIR       use LAPACK library in directory (absolute path)
+                          DIR.  If DIR is not specified, search where
+                          directed by the --with-local option.],
+  [case "${withval}" in
+     y|yes ) ;;
+     n|no ) LAPACK=xlapack ;;
+     * ) LDFLAGS="$LDFLAGS -L${withval}" ;;
+  esac])
+case $LAPACK in
+  xlapack ) ;;
+  *       ) AC_CHECK_LIB(lapack, $lapack_func, ,
+                         LAPACK=xlapack, ${BLAS:+'-lblas'}) ;;
+esac
+
+# If we're using our own version, we need to make sure that ld can
+# find it.  We don't put it in LIBS, though, because the other config
+# checks don't need it and won't find it.
+
+if test "$LAPACK" = xlapack; then
+  LDFLAGS="$LDFLAGS -L../lapack"
+  LOCAL_LIBS="-llapack $LOCAL_LIBS"
+fi
+AC_SUBST(LAPACK)
+AC_SUBST(LOCAL_LIBS)
+
+#---------------------------------------------------------------------
+#  BCSLIB-EXT is a Boeing package that provides high-quality sparse
+#  matrix solvers.  Algae can use it if it's available.
+#---------------------------------------------------------------------
+
+AC_ARG_WITH(bcslib,
+  [  --with-bcslib=DIR       use BCSLIB library in directory (absolute path)
+                          DIR.  If DIR is not specified, search where
+                          directed by the --with-local option.],
+  [case "${withval}" in
+	 n | no )	with_bcslib=no ;;
+	 y | yes )	with_bcslib=yes ;;
+	 * )		with_bcslib=yes
+			runtime_libs="${withval}:${runtime_libs}"
+			LDFLAGS="$LDFLAGS -L${withval}" ;;
+   esac],
+  [with_bcslib=maybe])
+
+## On Crays, C doubles are the same size as Fortran single precision,
+## unless you tell the Fortran compiler to treat double precision as
+## single (the -dp option).  That's what we do for LAPACK, but can't
+## for BCSLIB.
+
+case "$host" in
+	*-unicos* )	bcslib_func=HSSLIN
+			bcsobj="bcs_sp.o"
+			AC_DEFINE(SINGLE_BCSLIB,1) ;;
+	* )		bcsobj="bcs.o" ;;
+esac
+
+if test $with_bcslib != no; then
+  AC_CHECK_LIB(bcslib, main)
+  AC_CHECK_LIB(bcsext, $bcslib_func,
+	[AC_DEFINE(HAVE_LIBBCSEXT,1)
+	LIBS="-lbcsext $LIBS"
+	OPTOBJS="$OPTOBJS $bcsobj"],
+	[AC_DEFINE(HAVE_LIBBCSEXT,0)
+	 if test $with_bcslib = yes; then
+	    AC_MSG_ERROR([The BCSLIB package was requested but not found.])
+	 fi])
+fi
+AC_SUBST(OPTOBJS)
+
+#---------------------------------------------------------------------
+#  The npsol library provides an optimization capability.
+#---------------------------------------------------------------------
+	
+AC_ARG_WITH(npsol,
+  [  --with-npsol=DIR        use the NPSOL optimization package in libnpsol.a.
+                          If (absolute path) DIR is not specified, search in
+                          the directory specified by the --with-local
+                          option.],
+  [case "${withval}" in
+	 n | no ) with_npsol=no ;;
+	 y | yes ) with_npsol=yes ;;
+	 * ) with_npsol=yes
+	      runtime_libs="${withval}:${runtime_libs}"
+	      LDFLAGS="$LDFLAGS -L${withval}" ;;
+   esac],
+  [with_npsol=maybe])
+if test "$with_npsol" != no; then
+  AC_CHECK_LIB(npsol, $npsol_func,
+	[LIBS="-lnpsol $LIBS"
+	 AC_DEFINE(HAVE_NPSOL)],
+	[AC_DEFINE(HAVE_NPSOL,0)
+         if test $with_npsol = yes; then
+           AC_MSG_ERROR([unable to use the npsol library])
+         fi],
+	 -lblas)
+fi  
+	
+#---------------------------------------------------------------------
+#  If the system supports shared objects, we may need to point the
+#  run-time linker to our local libraries.
+#---------------------------------------------------------------------
+	
+if test "$GCC" = yes; then XLINKER="-Xlinker"; fi
+case "$host" in
+# a cc() bug prevents this from working on the alpha
+#  alpha*	) LDFLAGS="$LDFLAGS $XLINKER -rpath $XLINKER $runtime_libs" ;;
+  *-hpux1*	) LDFLAGS="$LDFLAGS -Wl,+b:" ;;
+  *-hpux9*	) LDFLAGS="$LDFLAGS -Wl,+b:" ;;
+  *-linux*      ) LDFLAGS="$LDFLAGS -Wl,-export-dynamic"
+		  for r in `echo $runtime_libs | tr ':' ' '`; do
+			LDFLAGS="$LDFLAGS -Wl,-rpath $r"
+		  done ;;
+  *-solaris2*	) LDFLAGS="$LDFLAGS $XLINKER -R $XLINKER $runtime_libs" ;;
+  *-sysv4.2*	) LD_RUN_PATH="$runtime_libs"
+		  AC_SUBST(LD_RUN_PATH) ;;
+esac
+
+#---------------------------------------------------------------------
+#  By default, AIX has a severe memory limitation.
+#---------------------------------------------------------------------
+
+if test "$LDFLAGS_not_set" = yes; then
+  case "$host" in
+    *-aix* ) LDFLAGS="$XLINKER -bmaxdata:0x80000000 $LDFLAGS" ;;
+  esac
+fi
+
+#---------------------------------------------------------------------
+#  Checks for header files.
+#---------------------------------------------------------------------
+	
+AC_CHECK_HEADERS(fcntl.h float.h sys/time.h memory.h stdlib.h standards.h)
+AC_CHECK_HEADERS(stdarg.h unistd.h sys/ioctl.h sys/wait.h mcheck.h malloc.h)
+AC_CHECK_HEADERS(fenv.h machine/fpu.h ieeefp.h siginfo.h ucontext.h)
+
+#---------------------------------------------------------------------
+#  Checks for declarations.
+#---------------------------------------------------------------------
+
+AC_MSG_CHECKING([for a declaration of rint(3) in <math.h>])
+AC_EGREP_HEADER([\<rint\>], math.h,
+  [AC_DEFINE(HAVE_RINT_DECL)
+   AC_MSG_RESULT(yes)], AC_MSG_RESULT(no))
+
+AC_MSG_CHECKING([for a declaration of drand48(3) in <stdlib.h>])
+AC_EGREP_HEADER([\<drand48\>], stdlib.h,
+  [AC_DEFINE(HAVE_DRAND48_DECL)
+   AC_MSG_RESULT(yes)], AC_MSG_RESULT(no))
+
+#---------------------------------------------------------------------
+#  Checks for typedefs, structures, and compiler characteristics.
+#---------------------------------------------------------------------
+	
+AC_C_CONST
+LOCAL_C_SIGNED
+AC_TYPE_SIZE_T
+AC_C_BIGENDIAN
+AC_CHECK_TYPE(div_t,Div_t)
+
+#---------------------------------------------------------------------
+#  Checks for library functions.
+#---------------------------------------------------------------------
+
+AC_CHECK_FUNC($etime_func, AC_DEFINE(HAVE_ETIME, 1))
+AC_CHECK_FUNCS(strchr memcpy strerror strtod div setitimer mtrace)
+AC_CHECK_FUNCS(abs rint random drand48 sigset sigaction finite)
+AC_CHECK_FUNCS(acosh asinh atanh snprintf vsnprintf)
+AC_CHECK_FUNCS(feenableexcept fpsetmask fpsetdefaults)
+
+# We have to work around a bug in Unixware compilers version 1.1.2 and
+# earlier.  The tests incorrectly conclude that abs(3c) and memcpy(3c)
+# are missing.
+
+if test "$GCC" != yes; then
+  case "$host" in
+    i386-*-sysv4.2 )
+      cc -V 2>&1 | egrep 'Optimizing C Compilation.*uw1\.' >/dev/null &&
+      ( AC_DEFINE(HAVE_MEMCPY, 1)
+        AC_DEFINE(HAVE_ABS, 1) ) ;;
+    i386-univel-sysv4.2* )
+      cc -V 2>&1 | egrep 'Optimizing C Compilation.*\(CCS\) 3\.0' >/dev/null &&
+      ( AC_DEFINE(HAVE_MEMCPY, 1)
+        AC_DEFINE(HAVE_ABS, 1) ) ;;
+  esac
+fi
+
+# Check for broken rint.  If cross compiling, assume it's OK.
+
+if test "$ac_cv_func_rint" = yes; then
+  AC_MSG_CHECKING([for broken rint])
+  AC_TRY_RUN([
+#include <math.h>
+main(){exit((int)rint(1.234)!=1);}], AC_MSG_RESULT(ok),
+  [LOCAL_UNDEFINE(HAVE_RINT)
+   AC_DEFINE(HAVE_RINT, 0)
+   AC_MSG_RESULT(broken)], AC_MSG_RESULT(assume ok))
+fi
+
+# Check for "lax" log.  It should return ERANGE for log(0), but some
+# systems silently return INF.  If cross compiling, assume it's lax.
+
+AC_MSG_CHECKING([for lax logarithms])
+AC_TRY_RUN([
+#include <math.h>
+#include <errno.h>
+main(){(void)log(0.0);exit(!errno);}], AC_MSG_RESULT(ok),
+  [AC_DEFINE(LAX_LOG, 1)
+   AC_MSG_RESULT(lax)],
+  [AC_DEFINE(LAX_LOG, 1)
+   AC_MSG_RESULT(lax)])
+
+# Check for working matherr(3).  This is preferred over checking errno
+# after every math call.  It isn't always available, though, and even
+# when it is available it may take a special compiler option to enable
+# it.  If cross-compiling, assume it isn't there.
+
+AC_MSG_CHECKING([for working matherr])
+AC_TRY_RUN([
+/* exit 0 if matherr is called, 1 otherwise */
+#include <math.h>
+matherr(x) struct exception *x; {exit (0);}
+main() {exp (-99999);exit (1);}],
+  [AC_MSG_RESULT(yes)
+   AC_DEFINE(HAVE_MATHERR, 1)],
+  [AC_MSG_RESULT(no)
+   AC_DEFINE(HAVE_MATHERR, 0)],
+  [AC_MSG_RESULT(no)
+   AC_DEFINE(HAVE_MATHERR, 0)])
+
+# Check for dynamic linking.
+
+AC_CHECK_LIB(dl, dlopen,
+	[LIBS="$LIBS -ldl"
+	 AC_DEFINE(HAVE_DLOPEN)])
+
+#---------------------------------------------------------------------
+#  Signals
+#---------------------------------------------------------------------
+
+AC_TYPE_SIGNAL
+
+# Does sigaction(2) have the SA_RESTART flag?
+
+if test "$ac_cv_func_sigaction" = yes; then
+  AC_MSG_CHECKING([for SA_RESTART flag with sigaction])
+  AC_EGREP_CPP(yes_on_SA_RESTART,[
+#if HAVE_STANDARDS_H
+#include <standards.h>
+#endif
+#include <signal.h>
+#ifdef SA_RESTART
+yes_on_SA_RESTART;
+#endif
+], [AC_MSG_RESULT(yes)
+    AC_DEFINE(HAVE_SA_RESTART, 1)],
+   [AC_MSG_RESULT(no)
+    AC_DEFINE(HAVE_SA_RESTART, 0)])
+fi
+
+# There are at least three portability issues to worry about:
+#
+#     1.  Do system calls get restarted automatically?
+#     2.  Is the signal handler reset after a signal is caught?  First
+#         of all, what do you mean by "reset"?  Some folks use the
+#         word "reset" as a synonym for "clear".  I think a more
+#         precise use is as "set again".  On some systems, a signal's
+#         disposition is changed to SIG_DFL after it is once caught.
+#         If true, our macro RESET_SIGNAL_HANDLER indicates that this
+#         disposition must be reset to the desired handler each time
+#         the signal is caught.
+#     3.  What happens if we catch two identical signals, the second
+#         while we're still handling the first?
+
+LOCAL_SYS_RESTARTABLE_SYSCALLS
+LOCAL_PERSISTENT_SIG_DISP
+	
+#---------------------------------------------------------------------
+#  How to do floating point exceptions?
+#---------------------------------------------------------------------
+
+AC_CHECK_LIB(handle_sigfpes, fpe)
+
+# On HP pa1.1 machines, we must explicitly link to the libm that
+# supports fpe handling.
+
+case "$host" in hppa1.1* )
+  LDFLAGS="$LDFLAGS -L /lib/pa1.1"
+esac
+
+AC_MSG_CHECKING([for proper floating point exception handling])
+fpe_success=no
+for f in fpe/fpe.c fpe/*.c; do
+  AC_TRY_RUN([
+#define SKIP_LOCAL_INCLUDES 1
+#include "$f"
+double z=0.0;
+fail(s) char *s; { exit(0); }
+double r(x) double x; { return 1.0/x; }
+raise_exception() { exit(1); }
+wipeout(s) char *s; { exit(1); }
+warn(s) char *s; { exit(1); }
+main() { enable_fpe_traps(); fprintf(stderr,"%g\n",r(z)); exit(1); }],
+  [fpe_success=yes;break])
+done
+if test $fpe_success = no; then
+  AC_MSG_RESULT(no)
+  rm -f conftest*
+  AC_MSG_ERROR([Cannot handle floating point exceptions.])
+fi
+rm -f conftest*
+AC_MSG_RESULT(yes)
+AC_LINK_FILES($f,src/fpe.c)
+
+#---------------------------------------------------------------------
+#  Go back to original (possibly with broken ld) compilers.
+#---------------------------------------------------------------------
+
+CC="$basic_CC"
+F77="$basic_F77"
+
+#---------------------------------------------------------------------
+#  Write the output files.
+#---------------------------------------------------------------------
+
+AC_OUTPUT(rc0 Makefile doc/Makefile etc/Makefile examples/Makefile
+  fpe/Makefile src/Makefile test/Makefile timing/Makefile tools/Makefile
+  src/bcs.h src/blas.h src/fortran.h src/lapack.h src/thin.h src/arpack.h
+  blas/Makefile lapack/Makefile superlu/Makefile arpack/Makefile)

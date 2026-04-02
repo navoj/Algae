@@ -1,0 +1,22 @@
+
+# Return table containing all global functions.
+
+what = function() {
+
+    local( st; i; e; $$$ );
+
+    $$$ = $$;
+    st = {};
+
+    for ( i in members( $$$ ) ) {
+        e = $$$.(i);
+        if ( e ) {
+            if ( class( e ) == "function" ) {
+                st.(i) = e;
+            };
+        }
+    }
+
+    return st-{$};
+
+};

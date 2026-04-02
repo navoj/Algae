@@ -1,0 +1,96 @@
+/* @configure_input@ */
+
+/*
+   thin.h -- Prototypes for `thin.f'.
+
+   Copyright (C) 1994-2001  K. Scott Hunziker.
+   Copyright (C) 1990-1994  The Boeing Company.
+
+   See the file COPYING for license, warranty, and permission details.
+ */
+
+/* $Id: thin.h.in,v 1.3 2001/10/12 14:18:20 ksh Exp $ */
+
+#ifndef THIN_H
+#define THIN_H	1
+
+#if !NO_FORTRAN_DEFS
+#define DGSADD dgsadd@FTN_SUFFIX@
+#define DGSMUL dgsmul@FTN_SUFFIX@
+#define DGSSUB dgssub@FTN_SUFFIX@
+#define DGSTRN dgstrn@FTN_SUFFIX@
+#define IGSADD igsadd@FTN_SUFFIX@
+#define IGSMUL igsmul@FTN_SUFFIX@
+#define IGSSUB igssub@FTN_SUFFIX@
+#define IGSTRN igstrn@FTN_SUFFIX@
+#define XGSADD xgsadd@FTN_SUFFIX@
+#define XGSMUL xgsmul@FTN_SUFFIX@
+#define XGSTRN xgstrn@FTN_SUFFIX@
+#define ZGSADD zgsadd@FTN_SUFFIX@
+#define ZGSMUL zgsmul@FTN_SUFFIX@
+#define ZGSSUB zgssub@FTN_SUFFIX@
+#define ZGSTRN zgstrn@FTN_SUFFIX@
+#define DPSSOL dpssol@FTN_SUFFIX@
+#define DPSFAC dpsfac@FTN_SUFFIX@
+#define XPSFAC xpsfac@FTN_SUFFIX@
+#define ISSTRF isstrf@FTN_SUFFIX@
+#define DSSTRF dsstrf@FTN_SUFFIX@
+#define ZHSTRF zhstrf@FTN_SUFFIX@
+#endif
+
+void PROTO (DGSADD, (int *ia, int *ja, REAL * an, int *ib,
+		     int *jb, REAL * bn, int *n, int *m, int *ic, int *jc,
+		     REAL * cn, REAL * x));
+void PROTO (DGSMUL, (int *ia, int *ja, REAL * an, int *ib, int *jb,
+		   REAL * bn, int *na, int *mb, int *ic, int *jc, REAL * cn,
+		     REAL * x));
+void PROTO (DGSSUB, (int *ia, int *ja, REAL * an, int *ib,
+		     int *jb, REAL * bn, int *n, int *m, int *ic, int *jc,
+		     REAL * cn, REAL * x));
+void PROTO (DGSTRN, (int *ia, int *ja, REAL * an, int *n,
+		     int *m, int *iat, int *jat, REAL * ant));
+void PROTO (IGSADD, (int *ia, int *ja, int *an, int *ib,
+		     int *jb, int *bn, int *n, int *m, int *ic, int *jc,
+		     int *cn, int *x));
+void PROTO (IGSMUL, (int *ia, int *ja, int *an, int *ib,
+		     int *jb, int *bn, int *na, int *mb, int *ic, int *jc,
+		     int *cn, int *x));
+void PROTO (IGSSUB, (int *ia, int *ja, int *an, int *ib, int
+		     *jb, int *bn, int *n, int *m, int *ic, int *jc, int *cn,
+		     int *x));
+void PROTO (IGSTRN, (int *ia, int *ja, int *an, int *n, int *m,
+		     int *iat, int *jat, int *ant));
+void PROTO (XGSADD, (int *ia, int *ja, int *ib, int *jb, int *n,
+		     int *m, int *ic, int *jc, int *ix));
+void PROTO (XGSMUL, (int *ia, int *ja, int *ib, int *jb, int *na,
+		     int *mb, int *ic, int *jc, int *maxjc, int *ix));
+void PROTO (XGSTRN, (int *ia, int *ja, int *n, int *m, int *iat,
+		     int *jat));
+
+void PROTO (ZGSADD, (int *ia, int *ja, COMPLEX * an, int *ib,
+		     int *jb, COMPLEX * bn, int *n, int *m, int *ic, int *jc,
+		     COMPLEX * cn, COMPLEX * x));
+void PROTO (ZGSMUL, (int *ia, int *ja, COMPLEX * an, int *ib, int *jb,
+		     COMPLEX * bn, int *na, int *mb, int *ic, int *jc,
+		     COMPLEX * cn, COMPLEX * x));
+void PROTO (ZGSSUB, (int *ia, int *ja, COMPLEX * an, int *ib,
+		     int *jb, COMPLEX * bn, int *n, int *m, int *ic, int *jc,
+		     COMPLEX * cn, COMPLEX * x));
+void PROTO (ZGSTRN, (int *ia, int *ja, COMPLEX * an, int *n,
+		     int *m, int *iat, int *jat, COMPLEX * ant));
+void PROTO (DPSSOL, (int *iu, int *ju, REAL * un, REAL * di,
+		     int *n, REAL * b, REAL * x));
+
+void PROTO (DPSFAC, (int *ia, int *ja, REAL * an, REAL * ad, int *n,
+		int *iu, int *ju, REAL * un, REAL * di, int *ip, int *iup));
+void PROTO (XPSFAC, (int *ia, int *ja, int *n, int *nn,
+		     int *iu, int *ju, int *ip));
+
+void PROTO (ISSTRF, (int *n, int *m, int *ia, int *ja,
+		     int * an, int * ad, int * p, int * c, int * w));
+void PROTO (DSSTRF, (int *n, int *m, int *ia, int *ja,
+		     REAL * an, REAL * ad, REAL * p, REAL * c, REAL * w));
+void PROTO (ZHSTRF, (int *n, int *m, int *ia, int *ja,
+	COMPLEX * an, COMPLEX * ad, COMPLEX * p, COMPLEX * c, COMPLEX * w));
+
+#endif /* THIN_H */

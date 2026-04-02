@@ -1,0 +1,25 @@
+
+			A BLAS subset for Algae
+
+This directory contains a subset of the BLAS (Basic Linear Algebra
+Subroutines) package distributed by netlib with LAPACK.  (You can find
+it at http://www.netlib.org/blas.)  If your system provides a BLAS
+library, it may be significantly faster than the routines provided
+here.  Some systems, though, have BLAS libraries that are broken or
+that don't contain all of the routines you'll need.
+
+Highly efficient machine-specific implementations of the BLAS are
+available for many modern high-performance computers.  Alternatively,
+the user can download ATLAS (http://www.netlib.org/atlas) to
+automatically generate an optimized BLAS library for the architecture.
+According to the folks at netlib, the set of BLAS routines provided in
+this directory is a "reference" implementation, and "its use is
+discouraged as it will not perform as well as a specially tuned
+implementation".
+
+When Algae is configured, the system is searched for a suitable BLAS
+library.  If none is found, or if you've given the `--without-blas'
+option, then the routines here are used.
+
+The reference BLAS routines have changed very little in the last
+decade.  These were downloaded from netlib on June 24, 2001.

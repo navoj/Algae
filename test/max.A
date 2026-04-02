@@ -1,0 +1,80 @@
+
+printf( "Starting the max test...\n" );
+
+rnd_pos = 0;
+rnd_vec = fill( 2500; (magic(50)-0.5)/2500 );
+rnd = function( n )
+{
+    local( r );
+
+    if ( n == NULL )
+    {
+        r = rnd_vec[ rnd_pos += 1 ];
+    else
+        r = rnd_vec[ rnd_pos+1 : rnd_pos+n ];
+        rnd_pos += n;
+    }
+
+    return r;
+};
+
+fail = 0;
+
+r = rnd(314); r[23] = r[79] = 0;
+if ( imin(r) != 79 | r[imin(r)] != 0 ) { fail = 1; }
+
+I = isort(r)-314/2;
+if ( I.type != "integer" ) { fail = 1; }
+
+random_char = function() {
+    return 65+25*rnd();
+};
+
+c = fill( 100; "" );
+for ( i in 1:100 ) {
+    c[i] = sprintf( "%c%c%c"; random_char(); random_char(); random_char() );
+}
+
+z = sparse(r);
+zz = z; zz[1] = zz[314] = 0;
+
+if (imax(I) != 31 | I[imax(I)] != 157 |
+    imin(I) != 252 | I[imin(I)] != -156 |
+    imax(r) != 12 | imin(r) != 79 |
+    c[imax(c)] != "YYY" | imin(c) != 17 |
+    imax(z) != imax(r) | imin(z) != imin(r) |
+    imax(-zz) != 1 | imin(zz) != zz.ne)
+{ fail = 1; }
+
+fail += max (sparse (1,0,0,0,0)) != 1;
+fail += max (sparse (0,1,0,0,0)) != 1;
+fail += max (sparse (-1,0,0,0,0)) != 0;
+fail += imax (sparse (-1,0,0,0,0)) != 2;
+fail += max (sparse (-1,0,1,0,0)) != 1;
+fail += imax (sparse (-1,0,1,0,0)) != 3;
+fail += imax (sparse (0,0,0,0,0)) != 1;
+fail += imax (sparse (0,0,0,-1,0)) != 1;
+fail += imax(sparse(0,0,0,0,0)&sparse(0,0,1,0,0)) != 1;
+fail += imax(sparse(0,0,0,0,0)|sparse(0,0,1,0,0)) != 3;
+fail += imax(sparse("","","","","")) != 1;
+fail += imax(sparse("","","","x","")) != 4;
+
+fail += imin(sparse(0,0,0,0,0)&sparse(0,0,1,0,0)) != 5;
+fail += imin(-(sparse(0,0,0,0,0)|sparse(0,0,1,0,0))) != 3;
+fail += imin(sparse("","","","","")) != 5;
+fail += imin(sparse("x","","","","")) != 5;
+fail += imin(sparse("","","","","x")) != 4;
+fail += imin(sparse("","","","x","")) != 5;
+
+fail += !equal (imax(magic(6)); 1,6,5,1,3,2);
+fail += !equal (imin(ident(5)); 5,5,5,5,4);
+fail += !equal (max(magic(6)); 35,36,34,26,27,25);
+fail += test (min(ident(5)));
+fail += max(ident(5)) != 1.0;
+
+if ( fail ) {
+    printf( "...failed.\a\n" );
+    exception();
+else
+    printf( "...passed.\n" );
+}

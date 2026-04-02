@@ -1,0 +1,1196 @@
+This is algae.info, produced by makeinfo version 4.3 from algae.texinfo.
+
+INFO-DIR-SECTION Programming Languages
+START-INFO-DIR-ENTRY
+* algae: (algae).		Another Matrix Programming Language
+END-INFO-DIR-ENTRY
+
+
+File: algae.info,  Node: fft,  Next: filter,  Prev: factor,  Up: Linear Algebra
+
+ - Function: fft ( x; opts )
+     The `fft' function computes the complex discrete Fourier transform
+     of the vector (or matrix--see below) X using the fast Fourier
+     transform method.  The result is ordered such that the
+     corresponding frequencies are increasing (from negative to
+     positive).  Note that this is a different order than that returned
+     by many FFT routines.
+
+     If X has `N' elements, the transform is a complex vector with the
+     same length.  If `N' is even, then element `k' of the transform is
+     equal to
+          sum (x @ exp (-2*i*pi*(k-N/2)*((1:N)-1)/N))
+     If `N' is odd, then element `k' is equal to
+          sum (x @ exp (-2*i*pi*(k-(N+1)/2)*((1:N)-1)/N))
+
+     The method is most efficient when the number of elements in X is
+     the product of small primes.  For example, a vector with 1021
+     elements (a large prime number) takes roughly 100 times longer to
+     transform than a vector with 1024 elements (a power of 2).  On the
+     other hand, 1152 elements (with prime factors of 2 and 3) is
+     almost as fast as 1024.
+
+     If X has integer or real labels, they are taken to be the
+     corresponding abscissae (i.e., time or distance) and are
+     transformed accordingly to form labels for the results vector.  In
+     that case, the label values must be evenly spaced.
+
+     If X is a matrix, the transform is computed for each row or
+     column.  By default this is done by column, but you can change it
+     to work by rows by supplying the `row' option, as described below.
+
+     The argument OPTS is an options table; it may contain any or all
+     of the following members.  (The values of these members are
+     irrelevant; only their existence is signficant.)
+
+    `row'
+          If X is a matrix, this option causes the transform of each row
+          to be computed.  By default, the columns are transformed.
+
+    `estimate'
+          When planning the transform, use a simple heuristic to pick a
+          (probably sub-optimal) plan quickly.  This is the default
+          rigor.  This and the following options have an effect only if
+          Algae has been linked with the FFTW package.
+
+    `measure'
+          Find an optimized plan by actually computing several FFTs and
+          measuring their execution time.
+
+    `patient'
+          Like `measure', but considers a wider range of algorithms.
+          This may produce a "more optimal" plan, but at the expense of
+          a longer planning time.
+
+    `exhaustive'
+          Like `patient', but with an even wider range of algorithms and
+          substantially increased planning time.
+
+    `forget'
+          Plans are kept for use on subsequent FFTs with the same size
+          and characteristics.  The `forget' option causes this
+          accumulated information to be discarded.
+
+     See also `ifft'.
+
+
+File: algae.info,  Node: filter,  Next: ifft,  Prev: fft,  Up: Linear Algebra
+
+ - Function: filter ( b; a; x; z )
+     The `filter' function computes a digital filter from the standard
+     difference equation
+          y[n] = b[1]*x[n] + b[2]*x[n-1] + b[3]*x[n-2] + ...
+                           - a[2]*y[n-1] - a[3]*y[n-2] - ...
+
+     This filter is implemented using the "direct form II transposed"
+     method.  For more information, see Chapter 6 of the book
+     "Discrete-Time Signal Processing" by Oppenheim and Schafer.
+
+
+File: algae.info,  Node: ifft,  Next: inv,  Prev: filter,  Up: Linear Algebra
+
+ - Function: ifft ( x )
+     The `ifft' function computes the complex inverse discrete Fourier
+     transform of the vector (or matrix--see below) X using the fast
+     Fourier transform method.  The input is ordered such that the
+     corresponding frequencies are increasing (from negative to
+     positive).  Note that this is a different order than that required
+     by many inverse FFT routines.
+
+     If X has `N' elements, the transform is a complex vector with the
+     same length.  If `N' is even, then element `n' of the transform is
+     equal to
+          (1/N) * sum (x @ exp (2*i*pi*((1:N)-N/2)*(n-1)/N))
+     If `N' is odd, then element `n' is equal to
+          (1/N) * sum (x @ exp (2*i*pi*((1:N)-(N+1)/2)*(n-1)/N))
+
+     The method is most efficient when the number of elements in X is
+     the product of small primes.  For example, a vector with 1021
+     elements (a prime number) takes roughly 100 times longer to
+     transform than a vector with 1024 elements (a power of 2).  On the
+     other hand, 1152 elements (with prime factors of 2 and 3) is
+     almost as fast as 1024.
+
+     If X has integer or real labels, they are taken to be the
+     corresponding abscissae (i.e., frequencies) and are transformed
+     accordingly to form labels for the results vector.  In that case,
+     the label values must be evenly spaced.
+
+     If X is a matrix, the transform is computed for each row or
+     column.  By default this is done by column, but you can change it
+     to work by rows by supplying the `row' option.
+
+     For a description of the valid options and their effects, see the
+     `fft' function.
+
+     See also `fft'.
+
+
+File: algae.info,  Node: inv,  Next: iram,  Prev: ifft,  Up: Linear Algebra
+
+ - Function: inv ( a; opts )
+     The `inv' function computes the inverse of a matrix.  This is
+     sometimes useful, but you should be aware that an alternative
+     approach using `factor' (or `chol') and `solve' is usually more
+     efficient and accurate.  (See below for more details.)
+
+     The `inv' function is implemented simply by calling the `solve'
+     function with an identity matrix as the second argument.  The
+     argument OPTS is optional and is passed as the third argument to
+     `solve'.  For example,
+
+          inv (A; {pos});
+
+     computes the inverse of the positive-definite matrix `A'.
+
+     The matrix inverse is often used to solve systems of linear
+     equations.  If `Ax=b' is such a system, where `A' is a square
+     matrix with full rank, then its solution may be computed as
+
+          x = inv (A) * b;
+
+     A more efficient and accurate approach, though, is to use the
+     `solve' function as
+
+          x = solve (A; b);
+
+     The use of `solve' is appropriate even when several right-hand
+     sides are to be considered separately.  For example, the code
+
+          x = {};
+          A_inv = inv (A);
+          for (b in members (blist))
+          {
+            x.(b) = A_inv * blist.(b);
+          }
+
+     would be better written as
+
+          x = {};
+          A_fac = factor (A);
+          for (b in members (blist))
+          {
+            x.(b) = solve (A_fac; blist.(b));
+          }
+
+     See also `backsub', `chol', `factor', and `solve'.
+
+
+File: algae.info,  Node: iram,  Next: leastsq,  Prev: inv,  Up: Linear Algebra
+
+ - Function: iram ( n; op_func; b_func; params; options )
+     This function is an interface to the ARPACK routines for solving
+     algebraic eigenvalue problems.  It is based on the implicitly
+     restarted Arnoldi method.  For hermitian problems, this is a
+     Lanczos method.  This code is particularly well suited to large,
+     sparse problems.
+
+     The `iram' function provides almost all of the capability of
+     ARPACK.  However, it is a relatively low-level function and
+     requires very careful use.  Because of it's design, many simple
+     input errors cannot be detected by the function and may well
+     result in incorrect results.  I hope to soon see a high-level
+     function written, perhaps called `arnoldi', that calls `iram' but
+     trades off some of its flexibility in exchange for a simplified
+     and less error-prone interface.
+
+     To use `iram' effectively, you will need more information regarding
+     the various solution modes than can be included here.  Please
+     consult the ARPACK users manual.
+
+     The most general problem solved by `iram' is to compute a few
+     eigenvalues (`lambda') and eigenvectors (`x') for
+
+          A * x = M * x * lambda
+
+     where A and B are real or complex square matrices and M is
+     hermitian (symmetric when real).  This is a standard eigenvalue
+     problem if M is the identity matrix; otherwise it is a generalized
+     problem.
+
+     The argument N specifies the dimension of the problem.  This
+     should be an integer scalar, or at least able to be cast to one.
+
+     Rather than providing A and B directly, `iram' requires input
+     functions that perform certain operations on those matrices.  This
+     allows numerous solution approaches (called "modes"), which are
+     described in detail below.  The two user-supplied functions are
+     called as
+
+          op_func (v; params)
+          b_func (v; params)
+
+     The operations required of the OP_FUNC function differ depending
+     on the solution mode.  In the simplest case (mode 1), it is just
+     the matrix-vector multiplication `A*v'.  The argument PARAMS is
+     passed unchanged from the PARAMS argument to `iram'--it is
+     commonly a table containing the coefficient arrays A and B.
+
+     The requirements for the B_FUNC function also depend on the
+     solution mode.  It is not used at all for some modes, in which
+     case it may be NULL.  As with OP_FUNC, the PARAMS argument is
+     passed unchanged from the `iram' input.
+
+     The OPTIONS argument is a table; its members specify various
+     problem and solution options:
+
+    `mode'
+          The integer solution mode, which defaults to 1.
+
+         `1'
+               This is the "regular" mode, for standard problems only.
+               Function OP_FUNC should return `A*v', and B_FUNC should
+               be NULL.  This mode is mostly suited to finding a few of
+               the eigenvalues with largest magnitude.  It may be used
+               with any problem type.
+
+         `2'
+               This is the "regular inverse" mode for generalized
+               problems.  Function OP_FUNC should return `inv(B)*A*v'
+               (conceptually, but you should use `factor' and `solve'
+               rather than `inv'), and B_FUNC should return `B*v'.
+               This mode may not be used with real, symmetric problems.
+
+         `3'
+               This is the "shift-invert" mode for standard or
+               generalized problems.  Function OP_FUNC should return
+               `inv(A-sigma*B)*B*v' (concepturally, but you should use
+               `factor' and `solve' rather than `inv'), and B_FUNC
+               should return `B*v'.  This mode may be used with any
+               problem type.  Convergence is enhanced to eigenvalues
+               that are near the value of SIGMA.  For this mode, the
+               `which' option refers to the inverted problem, so use
+               "LM" to refer to the eigenvalues closest to SIGMA.
+
+         `4'
+               This is the "buckling" mode for generalized problems.
+               Function OP_FUNC should return `inv(A-sigma*B)*A*v'
+               (concepturally, but you should use `factor' and `solve'
+               rather than `inv'), and B_FUNC should return `A*v'.
+               This mode may only be used for real, symmetric problems.
+               Convergence is enhanced to eigenvalues that are near
+               the value of SIGMA.  For this mode, the `which' option
+               refers to the inverted problem, so use "LM" to refer to
+               the eigenvalues closest to SIGMA.
+
+         `5'
+               This is the "Cayley" mode for generalized problems.
+               Function OP_FUNC should return
+               `inv(A-sigma*B)*(A+sigma*B)*v' (concepturally, but you
+               should use `factor' and `solve' rather than `inv'), and
+               B_FUNC should return `B*v'.  This mode may only be used
+               for real, symmetric problems.  Convergence is enhanced
+               to eigenvalues that are near the value of SIGMA.  For
+               this mode, the `which' option refers to the inverted
+               problem, so use "LM" to refer to the eigenvalues closest
+               to SIGMA.
+
+    `bmat'
+          A character scalar:  `"I"' for standard problems or `"G"' for
+          generalized problems.  The default is `"I"'.
+
+    `which'
+          A character scalar that specifies which of the eigenvalues to
+          compute.  For other than "regular" mode (mode 1), this is
+          with respect to the transformed problem.  For example, with
+          the "shift-invert" mode (mode 3), one usually wants the
+          eigenvectors nearest the shift point.  In the transformed
+          problem, they are the eigenvalues with largest magnitude
+          (`"LM"').  For real, symmetric problems, WHICH must be one of
+          the following: `"LA"' (largest amplitude), `"SA"' (smallest
+          amplitude), `"LM"' (largest magnitude), `"SM"' (smallest
+          magnitude), or `"BE"' (both ends of the spectrum).  For
+          non-symmetric or complex problems, WHICH must be one of these:
+          `"LM"' (largest magnitude), `"SM"' (smallest magnitude), or
+          `"LR"' (largest real), `"SA"' (smallest real), `"LI"'
+          (largest imaginary), or `"SI"' (smallest imaginary).  The
+          default is `"LA"' for symmetric problems and `"LR"' for the
+          others.
+
+    `nev'
+          The number of eigenvalues to be computed.  This must be
+          greater than zero and less than N.  The default is the lesser
+          of 10 and `n/2'.  For non-symmetric and complex problems, NEV
+          must be less than `n-1'.
+
+    `ncv'
+          Controls the number of Arnoldi vectors generated at each
+          iteration.  For real, symmetric problems, this must be less
+          than or equal to N, must exceed NEV, and defaults to the
+          lesser of `2*nev' and `n'.  For real, non-symmetric problems,
+          NCV must be less than or equal to N, must exceed `nev+1', and
+          defaults to the lesser of `2*nev+1' and `n'.  For complex
+          problems, NCV must be less than or equal to N, must exceed
+          NEV, and defaults to the lesser of `2*nev' and `n'.
+
+    `mxiter'
+          The maximum number of Arnoldi update iterations allowed.  The
+          default is 100.
+
+    `basis'
+          If "true" (in the sense of the `test' function), then `iram'
+          returns, along with its other results, an orthonormal basis
+          for the associated approximate invariant subspace.
+
+    `vectors'
+          If "true" (in the sense of the `test' function), then `iram'
+          returns the eigenvectors along with its other results.
+
+    `tol'
+          The stopping criterion.  If TOL is NULL or less than or equal
+          to zero, then machine precision is used.
+
+    `resid'
+          If present, this is an n-length vector that provides the
+          initial residual vector.  Otherwise, a random initial vector
+          is used.
+
+    `shift'
+          A real scalar providing the shift point (SIGMA) for a spectral
+          transformation.  This is used in modes 3, 4, and 5.  The
+          default is 0.0.
+
+
+File: algae.info,  Node: leastsq,  Next: mult,  Prev: iram,  Up: Linear Algebra
+
+ - Function: leastsq ( A; b )
+     This function solves full-rank overdetermined and underdetermined
+     linear systems using a QR or LQ factorization.  The inputs are the
+     coefficient array A and the RHS B.  The return value is the
+     solution array X.
+
+     An underdetermined system is one for which A has fewer rows than
+     columns.  The rank of A must be equal to the number of rows of A.
+     The return value is the minimum norm solution.
+
+     An overdetermined system is one for which A has more rows than
+     columns.  This function treats a square A as if it were an
+     overdetermined system.  The rank of A must be equal to the number
+     of columns of A.  The return value is the solution to the least
+     squares problem
+
+          minimize || B - A*X ||
+
+     See also `solve'.
+
+
+File: algae.info,  Node: mult,  Next: solve,  Prev: leastsq,  Up: Linear Algebra
+
+ - Function: mult ( ... )
+     This function multiplies together a series of matrices, performing
+     the multiplications in an order so as to minimize the total number
+     of operations.
+
+     Only the leftmost non-NULL arguments are used, and at most 10
+     arguments are allowed.  They will be converted to matrices if
+     necessary (and possible), but in a context-free manner.  A scalar
+     becomes a 1x1 matrix, and a vector becomes a matrix with 1 row.
+     This is in contrast to Algae's multiplication operator, which makes
+     different conversions according to the context.
+
+     As an example, consider an NxN matrix `A' and an N vector `b'.  If
+     you give Algae the product `A'*A*b', it first multiplies `A'*A'
+     which involves an order of N^3 operations.  But if you do it as
+     `A'*(A*b)', there are only an order of N^2 operations.  The
+     difference can be huge!  With this function, you'd do it as
+     `mult(A';A;b')'.  (Note that we have to explicitly convert `b' to
+     a matrix with the right shape.)
+
+
+File: algae.info,  Node: solve,  Next: ssi,  Prev: mult,  Up: Linear Algebra
+
+ - Function: solve ( A; b; opts )
+     This function solves the linear equations `A*x=b' for X.
+     Conceptually it returns `inv(A)*b', except that `solve' is
+     generally much more efficient and accurate.  If A has already been
+     factored by the `factor' or `chol' functions, then its factors (in
+     the form of a table returned by those functions) may be given in
+     the place of A.  If the optional argument OPTS contains the member
+     "pos", then the Cholesky method is used to factor A.
+
+     See also `backsub', `chol', and `factor'.
+
+
+File: algae.info,  Node: ssi,  Next: svd,  Prev: solve,  Up: Linear Algebra
+
+ - Function: ssi ( A; B; V; eps )
+     The `ssi' function uses subspace iteration to compute the first few
+     eigenvalues and vectors for a real, symmetric, generalized
+     eigenvalue problem `A*v=B*v*w'.  The terms W and V are the
+     eigenvalues and eigenvectors, respectively.
+
+     Subspace iteration is an effective approach for large, sparse
+     problems and for problems for which good estimates of the
+     eigenvectors are available.  Otherwise, it sucks.
+
+     Both A and B must be real, symmetric, non-singular matrices.  The
+     matrix V contains a set of starting vectors, one to a column.  A
+     convergence tolerance may be specified with EPS; 1.0E-6 is used if
+     EPS is NULL.  A table is returned, containing the members "values"
+     and "vectors".
+
+     See also `eig'.
+
+
+File: algae.info,  Node: svd,  Next: transform,  Prev: ssi,  Up: Linear Algebra
+
+ - Function: svd ( A; opts )
+     This function computes the singular value decomposition (SVD) of
+     the matrix A.  In the full case, the SVD is written `A=U*S*V'',
+     where S is a real matrix with the same dimensions as A and U and V
+     are the orthogonal (unitary) left and right singular vectors.  The
+     matrix S contains the singular values on its diagonal and is zero
+     elsewhere.
+
+     When A is not square, one or more rows or columns of S are known a
+     priori to be zero.  By default, `svd' then returns a "compact"
+     form of the singular vectors, in which the corresponding columns
+     of U or V are not included.  This behavior may be modified by
+     using the `full' option, as described below.
+
+     The argument OPTS is an options table; it may contain the members
+     `novectors' and `full'.  (The values of these members are
+     irrelevant; only their existence is signficant.)  If OPTS contains
+     the member `novectors', then only the singular values are computed.
+     If OPTS contains only the member `full', then the full singular
+     vectors are computed.
+
+     The results of `svd' are returned in a table.  The member `sigma'
+     contains the vector of singular values, sorted in decreasing
+     order.  Unless the `novectors' option is specified, the members
+     `U' and `V' contain the corresponding left and right singular
+     vectors.
+
+     This function calls the LAPACK routines DGESVD and ZGESVD.
+
+
+File: algae.info,  Node: transform,  Prev: svd,  Up: Linear Algebra
+
+ - Function: transform ( A; P )
+     The `transform' function performs the linear coordinate
+     transformation `P'*A*P', where A is a square matrix.  In fact,
+     there are only two differences between the operator expression
+     `P'*A*P' and the function expression `transform(A;P)':
+
+        * The `transform' function results in the most appropriate
+          symmetry.  For example if A and P are both real, and A is
+          symmetric, then the result is a symmetric matrix.  With the
+          operator expression this would not be the case; the result
+          would be exactly the same (neglecting any roundoff errors)
+          except that it would be marked with general symmetry.
+
+        * The `transform' function is considerably faster than the
+          operator expression for some matrix combinations.  In
+          particular, it may be two or three times faster when P is
+          dense and A is large, sparse, and either hermitian or real
+          symmetric.
+
+
+File: algae.info,  Node: Numerical Analysis,  Next: Basic I/O,  Prev: Linear Algebra,  Up: Standard Functions
+
+Numerical Analysis
+==================
+
+* Menu:
+
+* brent::	zeros of a nonlinear equation
+* monte::       Monte Carlo integration
+* ode4::        ordinary differential equation solver
+* roots::	roots of a polynomial
+* spline::	natural cubic splines
+* trapz::       trapezoidal numerical integration
+
+
+File: algae.info,  Node: brent,  Next: monte,  Prev: Numerical Analysis,  Up: Numerical Analysis
+
+ - Function: brent ( f; a; b; tol; param )
+     This function uses Brent's method to find a single root of the
+     function F; that is, a solution to `f(x)=0'.  The ordinates A and
+     B must bracket a root, meaning that `f(A)*f(B)' must be negative.
+     If PARAM is given, it is passed as the second argument to the
+     function F.
+
+
+File: algae.info,  Node: monte,  Next: ode4,  Prev: brent,  Up: Numerical Analysis
+
+ - Function: monte ( f; limits; tol )
+     This function uses the Monte Carlo method to integrate a function.
+     The function values are obtained by calling the function F with
+     one vector argument.  The matrix LIMITS describes the rectangular
+     region over which the function is integrated.  It has two columns
+     and as many rows as F has dimensions.  Each row specifies the
+     extremes of the region for the corresponding dimension.
+
+     The TOL argument specifies an error tolerance.  (This argument is
+     required: there is no default.)  There is no limit to the number of
+     points chosen; `monte' continues to pick points until its one
+     standard deviation error estimate is less than TOL.  Generally,
+     the accuracy increases only as the square root of the number of
+     points evaluated.
+
+     The Monte Carlo method provides a simple, easy approach for solving
+     (numerically) even complicated, multi-dimensional integrals.
+     However, it is notoriously inefficient.  Each additional digit of
+     accuracy requires 100 times more effort.
+
+     Here is a simple example, in which we compute the area of a circle
+     with unit radius.  With DOMAIN, we specify a square centered on
+     the origin within which to integrate.  The number of independent
+     variables in the problem (2 in this case) is determined by the
+     number of rows of DOMAIN.  The function F takes as its argument a
+     vector of the independent variables and returns the function value
+     at that point.  It will be called repeatedly, with the independent
+     variables spread randomly within the domain.  For this problem, F
+     returns 1 if the point is inside the circle, and 0 otherwise.
+
+          domain = [-1,1; -1,1];
+          f = function (x) { return norm(x) < 1; };
+          monte (f; domain; 0.1)?
+                  3.040
+          monte (f; domain; 0.01)?
+                  3.120
+          monte (f; domain; 0.001)?
+                  3.142
+
+     As you can see from the results, the third call to `monte' gave a
+     more accurate result, but it took 10,000 times the effort used in
+     the first call.
+
+     By the way, this problem could be solved faster with a
+     one-dimensional integration.  Then again, we already know the
+     answer, don't we?
+
+
+File: algae.info,  Node: ode4,  Next: roots,  Prev: monte,  Up: Numerical Analysis
+
+ - Function: ode4 ( f; t0; tf; x0; y; tol; h; s )
+     The `ode4' function uses fourth and fifth order Runge-Kutta
+     formulas to solve an initial value problem involving a system of
+     ordinary differential equations.  The function F, called as `f( t;
+     x )', is expected to return the first derivative of the state
+     vector X with respect to the independent variable T.  The
+     arguments T0 and TF are the initial and final values of the
+     independent variable, and X0 is the initial state vector.  The
+     argument Y may be a function, called as `y( t; x )', that returns
+     a vector of output values.  If Y is NULL, the output vector is the
+     state vector itself.
+
+     The optional argument TOL specifies the desired accuracy; we use
+     0.001 if TOL is NULL.  An initial stepsize may be suggested with
+     H.  The S argument may be used to provide better control over the
+     accuracy--if S is not NULL, then a step is accepted if the
+     estimated error in each state, divided by the corresponding term of
+     S, is not greater than TOL.
+
+     The return value is a matrix containing the output history.  Each
+     column contains the output from Y for the particular value of the
+     independent variable given by the column label.
+
+
+File: algae.info,  Node: roots,  Next: spline,  Prev: ode4,  Up: Numerical Analysis
+
+ - Function: roots ( c )
+     This function computes the roots of the polynomial having the
+     coefficients given by the vector C.  If C has `n+1' elements, the
+     equation solved (for `x') is
+
+          c[1]*x^n + c[2]*x^(n-1) + ... + c[n]*x + c[n+1] = 0
+
+     A vector with zero elements is returned if the equation has no
+     solution (`roots(1)', for example).  NULL is returned if it has an
+     infinite number of solutions (`roots(0)', for example).
+     Otherwise, the vector returned contains all of the solutions.
+
+
+File: algae.info,  Node: spline,  Next: trapz,  Prev: roots,  Up: Numerical Analysis
+
+ - Function: spline ( a; x )
+     This function computes or evaluates natural cubic spline
+     interpolations for given data.  If called with one argument, A, a
+     spline for the points in the vector A is computed.  The elements
+     of A give the ordinates; the labels of A give the abscissae.  If A
+     has no numeric labels, then the natural numbers from one to the
+     length of A are assumed.  In any case, the vector A is sorted with
+     respect to its labels; they must be unique.
+
+     If `spline' is called with two arguments, A and X, then the spline
+     A (or a spline interpolation of A, if A is not a spline) is
+     evaluated at the abscissa values given by the vector X.
+
+
+File: algae.info,  Node: trapz,  Prev: spline,  Up: Numerical Analysis
+
+ - Function: trapz ( y )
+     This function computes an approximation of the integral of Y using
+     the trapezoidal method.  If Y has numeric labels, they are used as
+     its abscissae; otherwise, unit spacing is assumed.  For the result
+     to make sense, you'll probably want the labels to be in
+     monotonically increasing order.
+
+     As an example, use `trapz' to compute the definite integral of
+     `1/x' from 1 to 2.
+
+          x = linspace (1; 2; 11);
+          y = label (1/x; x);
+          trapz (y)
+                  0.6938
+          log(2)-log(1)
+                  0.6931
+
+
+File: algae.info,  Node: Basic I/O,  Next: Entity I/O,  Prev: Numerical Analysis,  Up: Standard Functions
+
+Basic I/O
+=========
+
+* Menu:
+
+* close::	close a file
+* digits::	specify numeric print format
+* fread::       read a binary file
+* fprintf::	formatted print to a file
+* fwrite::      write a binary file
+* message::	print an error message
+* print::	print to a file
+* printf::	formatted print to standard output
+* read::	read a line from a file
+* readnum::     read numbers from a file
+* sprintf::	formatted write to a character scalar
+* tmp_file::    create a temporary file
+
+
+File: algae.info,  Node: close,  Next: digits,  Prev: Basic I/O,  Up: Basic I/O
+
+ - Function: close ( file )
+     The `close' function closes the specified file.  The file name
+     FILE must be given exactly as it was when the file was opened.
+     (Whitespace is significant.)  Any buffered data is flushed.
+
+
+File: algae.info,  Node: digits,  Next: fread,  Prev: close,  Up: Basic I/O
+
+ - Function: digits ( n )
+     The `digits' function may be used to specify the number of digits
+     that Algae uses when printing real and complex numbers.  This
+     applies to the `print' function and to "printing statements"
+     (those with question mark or newline terminators).  The argument N
+     specifies the number of digits.  If N is NULL, no action is taken.
+
+     The function returns the number of digits being used.  By default,
+     Algae uses 4 digits.
+
+     Here's an example interaction, with user input preceded by the ">"
+     prompt:
+
+          > digits ()      # the default
+                  4
+          > acos (-1)      # pi, to 4 significant digits
+                  3.142
+          > digits (20);   # set to 20 digits
+          > acos (-1)      # pi, to 20 digits (but only accurate to 17)
+                  3.1415926535897931000
+
+     This function simply sets the global variable `$digits', so you
+     can do the same thing by assigning to it directly.
+
+     See also `print'.
+
+
+File: algae.info,  Node: fread,  Next: fprintf,  Prev: digits,  Up: Basic I/O
+
+ - Function: fread ( file; length; type )
+     The `fread' function reads data from a binary file into a numeric
+     array.  This is a low-level routine, and it requires that you know
+     precisely the format of the data that is being read.  To read
+     Algae's own binary files (those written with `put'), see `get'.
+
+     The FILE argument (a character scalar) is the file name.  As with
+     any file name, if its first character is an exclamation mark then
+     the rest of the string is given to the shell as a filter.  If FILE
+     is NULL, then standard input is read.
+
+     The LENGTH argument (an integer scalar) gives the number of items
+     to read.  If it's NULL, the entire file is read.  Otherwise, it
+     should be a non-negative integer.  A vector is returned that
+     contains the data that was read.  If `fread' reaches the end of
+     the file before having read LENGTH elements, then the vector it
+     returns will contain fewer than LENGTH elements.
+
+     The TYPE argument is an optional table; its member's names specify
+     the type of data to read and, implicitly, the type of the returned
+     array.  (The values of this table's members are inconsequential;
+     only their names are important.)  These names may include any of
+     the C language types:
+    `char'
+          Each is cast to an Algae `integer'.
+
+    `int'
+          Same as an Algae `integer'.
+
+    `float'
+          Each is cast to an Algae `real'.
+
+    `double'
+          Same as an Algae `real'.
+
+     The C language type qualifiers are also accepted in TYPE:
+    `long'
+          A qualifier for `int' and `double' types.  Both are cast to
+          `real'.
+
+    `short'
+          A qualifier for `int'.  Casts to `integer'.
+
+    `signed'
+          A qualifier for `char' and `int'.  Casts to `integer'.
+
+    `unsigned'
+          A qualifier for `char' and `int'.  An `unsigned char' casts
+          to `integer', while an `unsigned int' casts to `real'.
+     Combinations that are disallowed in C (such as `unsigned double')
+     are disallowed here, too.  If TYPE is NULL or empty, `double' is
+     assumed.
+
+     Besides the C language type qualifiers just described, the
+     following special qualifiers are also accepted:
+    `big'
+          Specifies the so-called "big endian" byte order.
+
+    `little'
+          Specifies the so-called "little endian" byte order.
+
+    `ieee'
+          Specifies the IEEE 754 binary floating point format.
+
+
+File: algae.info,  Node: fprintf,  Next: fwrite,  Prev: fread,  Up: Basic I/O
+
+ - Function: fprintf ( file; format; ... )
+     The `fprintf' function prints formatted output to FILE.  The
+     FORMAT argument is a character string that contains two types of
+     objects: characters and conversion specifications.  Characters are
+     printed directly; conversion specifications cause the next
+     argument to be formatted and printed.
+
+     Conversion specifications are introduced using the percent sign
+     `%'.  Although extensions are planned, the conversion
+     specifications are currently identical to those for the "fprintf"
+     function of the ANSI C language.
+
+     If the first character of FILE is an exclamation mark, then the
+     rest of FILE is given to the shell as a filter to which the
+     printed output of `fprintf' is sent.  For example, the command
+     `fprintf("!sort";"a\nc\nb\n");close("!sort");' sends "a", "c", and
+     "b", each on a separate line, to the system's sort function, which
+     then presumably sorts and prints it.  If FILE is NULL, stdout is
+     used.
+
+     See also `message', `print', `printf', `sprintf', and `put'.
+
+
+File: algae.info,  Node: fwrite,  Next: message,  Prev: fprintf,  Up: Basic I/O
+
+ - Function: fwrite ( file; v; type )
+     The `fwrite' function writes binary data to a file from a numeric
+     array.  This is a low-level routine, and it requires that you
+     specify precisely the format of the data being written.  To write
+     an entity for use in Algae, you'll probably want to use `put'
+     instead.
+
+     The FILE argument (a character scalar) is the file name.  As with
+     any file name, if its first character is an exclamation mark then
+     the rest of the string is given to the shell as a filter.  If FILE
+     is NULL, then the data is written to standard output.
+
+     The data to be written is given in the argument V, a numeric
+     vector.
+
+     The TYPE argument is an optional table; its member's names specify
+     the type of data to write.  (The values of this table's members are
+     inconsequential; only their names are important.)  These names may
+     include any of the C language types and qualifiers, and a few
+     others.  See `fread' for details.
+
+
+File: algae.info,  Node: message,  Next: print,  Prev: fwrite,  Up: Basic I/O
+
+ - Function: message ( fmt; ... )
+     The `message' function is used to write error messages to stderr.
+     Its arguments are exactly like `printf', except that a maximum of
+     10 arguments is allowed.  The message written includes the program
+     and file names as well as the line number.
+
+     See also `printf'.
+
+
+File: algae.info,  Node: print,  Next: printf,  Prev: message,  Up: Basic I/O
+
+ - Function: print ( x; file )
+     The `print' function prints its argument X to a file named by
+     FILE.  This output goes through the same formatting that Algae
+     uses to print entities to the screen.  In particular, the variable
+     `$term_width' controls the width of this output, and the `$digits'
+     variable specifies the number of significant digits printed for
+     real and complex numbers.
+
+     If FILE is NULL, then the output is written to stdout.
+
+     See also `digits', `fprintf', `printf', `sprintf', and `put'.
+
+
+File: algae.info,  Node: printf,  Next: read,  Prev: print,  Up: Basic I/O
+
+ - Function: printf ( format; ... )
+     The `printf' function prints formatted output to stdout.  It is
+     exactly the same as calling `fprintf' with NULL as the first
+     argument.
+
+     See also `fprintf', `message', `print', `put', and `sprintf'.
+
+
+File: algae.info,  Node: read,  Next: readnum,  Prev: printf,  Up: Basic I/O
+
+ - Function: read ( file )
+     This function reads a line of text and returns it as a character
+     string.  The argument FILE may be a file name or a pipe; see
+     `fprintf' for details.  If FILE is NULL, the text is read from
+     standard input.
+
+     When `read' reaches the end of file, it returns NULL.
+
+     See also `get' and `readnum'.
+
+
+File: algae.info,  Node: readnum,  Next: sprintf,  Prev: read,  Up: Basic I/O
+
+ - Function: readnum ( shape; file )
+     This function reads real numbers from a file named FILE.  The
+     vector SHAPE specifies the form of the output.  If SHAPE is NULL or
+     has zero length, a scalar is returned.  If SHAPE has length one,
+     then a vector with `shape[1]' elements is returned.  If SHAPE has
+     two elements, then a matrix is returned with `shape[1]' rows and
+     `shape[2]' columns.
+
+     The values are read from FILE, or from stdin if FILE is NULL or
+     not given.  The `#' symbol is special--it and all remaining
+     characters on a line are ignored.  If the end of file is reached
+     before the specified number of values is read, then the result is
+     filled out with zeros.  After a call to `readnum', the number of
+     values actually read is contained in the variable `$read'.
+
+     For example, let's say you have a file called `jnk' that contains
+     the following:
+
+          # this line is ignored -- numbers like 1.23 are skipped
+          the first two numbers are 42 and 99.
+          3.14 is the next one
+
+     In the following interaction we read the numbers from the file
+     into a matrix:
+
+          > x = readnum (2,4; "jnk")?
+                  [         42.00        99.00        3.140        0.000 ]
+                  [         0.000        0.000        0.000        0.000 ]
+          > $read?
+                  3
+          > readnum (3; "jnk")?
+                  (        0.000,       0.000,       0.000 )
+
+     As you can see, anything that doesn't look like a number is simply
+     skipped.  The `readnum' function found three numbers and filled in
+     the rest of the matrix with zeros.  The global variable `$read' was
+     set to 3 - the number of values actually read.
+
+     Subsequent calls to `readnum' with the same file name simply
+     continue reading from the last position in the file.  In the last
+     statement of the previous example, no more numbers were found so
+     the vector was filled with zeros.  To read again from the start of
+     the file, you must first close the file with the `close' function.
+
+     The `readnum' function recognizes integers and floating point
+     numbers.  A floating point number consists of an optionally signed
+     integer part, a decimal point, a fraction part, an `e' or `E', and
+     an optionally signed integer exponent.  All of the following
+     examples are recognized as numbers: `1', `-1.2', `1e2', `-1.e2',
+     `.1e2', `-1.2e3', and `1.2e-3'.
+
+     Fortran users take note!  A Fortran double precision number such as
+     `1.23D4' will not be read by `readnum' as a single number.  The
+     character `D' is not recognized as part of a floating point
+     number, so `readline' will read this as the two numbers `1.23' and
+     `4'.
+
+
+File: algae.info,  Node: sprintf,  Next: tmp_file,  Prev: readnum,  Up: Basic I/O
+
+ - Function: sprintf ( format; ... )
+     The `sprintf' function writes formatted output to a character
+     scalar.  It works the same as `printf', except that the output is
+     returned instead of printed.  For example, `x=sprintf("y=%d";1)'
+     puts the string "y=1" in the scalar X.
+
+     See also `fprintf', `printf', and `put'.
+
+
+File: algae.info,  Node: tmp_file,  Prev: sprintf,  Up: Basic I/O
+
+ - Function: tmp_file ( )
+     The `tmp_file' function creates a temporary file and returns its
+     name.  This file will be deleted automatically when Algae exits.
+
+     By default, Algae writes temporary files in the directory `/tmp'.
+     You can override that with an environment variable called
+     `TMPDIR'.  For example, if you use the Bourne shell and put the
+     lines
+
+          TMPDIR=/usr/tmp
+          export TMPDIR
+
+     in your `~/.profile' file, then Algae will put its temporary files
+     in the `/usr/tmp' directory.
+
+     This function not only creates the file, but opens it for output.
+     If you want to read from the temporary file, then you should close
+     it first.  (Of course, you'll need to arrange to get something in
+     it, first.)  Notice that temporary files are not deleted when
+     closed, but only when Algae exits.
+
+
+File: algae.info,  Node: Entity I/O,  Next: Execution,  Prev: Basic I/O,  Up: Standard Functions
+
+Entity I/O
+==========
+
+* Menu:
+
+* get::		get an entity from a binary file
+* getdyn::	get a matrix from a DYNASTY file
+* getmat::	get a matrix from a MATLAB file
+* load::	load variables from file
+* put::		put an entity to a binary file
+* putdyn::	put a matrix to a DYNASTY file
+* putmat::	put a matrix to a MATLAB file
+* save::	save variables to file
+
+
+File: algae.info,  Node: get,  Next: getdyn,  Prev: Entity I/O,  Up: Entity I/O
+
+ - Function: get ( file )
+     The `get' function reads an Algae entity from a binary file named
+     FILE.  If no argument is given, standard input is used.  Use this
+     function to read files written with `put'.  The file name can
+     specify a pipe; see `fprintf' for more details.
+
+     NULL is returned if an error occurs in reading the file; otherwise
+     `get' returns the entity it read.
+
+
+File: algae.info,  Node: getdyn,  Next: getmat,  Prev: get,  Up: Entity I/O
+
+ - Function: getdyn ( fname )
+     This function reads matrices from the DYNASTY file FNAME.
+     (DYNASTY is the name of a software package used at Boeing for
+     dynamic analysis.)  A table is returned, containing the matrices as
+     members.
+
+     The file name can specify a pipe; see `fprintf' for more details.
+
+
+File: algae.info,  Node: getmat,  Next: load,  Prev: getdyn,  Up: Entity I/O
+
+ - Function: getmat ( fname )
+     The `getmat' function reads matrices from a MATLAB binary file
+     named FNAME.  It returns the matrices in a table.
+
+     The file name can specify a pipe; see `fprintf' for more details.
+
+     Notice that `getmat' doesn't assign the matrices to the global
+     symbol table as MATLAB's "load" function does.  To do that, you
+     might use something like the following:
+
+          Load = function (fname)
+          {
+            local (t; n);
+            t = getmat (fname);
+            for (n in members (t))
+            {
+              $$.(n) = t.(n);
+            }
+          };
+
+     The `getmat' function reads the MATLAB v.4 "Level-1 MAT-file"
+     format.  MATLAB can read and write in this format, but its default
+     for writing is now Level-2.  Using the newer format would require
+     us to link to their libraries, meaning that you'd need to actually
+     have MATLAB on that machine.  We'll stick with the older format.
+
+     One unfortunate consequence of using the older file format is that
+     matrices cannot be written in sparse form.  To get around this,
+     convert the matrix to coordinate form (which is dense) within
+     MATLAB and then change it back to sparse form in Algae with the
+     `mksparse' function.
+
+     See also `get', `put', and `putmat'.
+
+
+File: algae.info,  Node: load,  Next: put,  Prev: getmat,  Up: Entity I/O
+
+ - Function: load ( fname )
+     The `load' function reads a table from a file named FNAME and
+     assigns its members as global variables.  This can be used, for
+     example, to restore an Algae session that was saved with the `save'
+     function.
+
+     If an error occurs in reading the file, `load' returns 0; otherwise
+     it returns 1.
+
+     See also `get', `put', and `save'.
+
+
+File: algae.info,  Node: put,  Next: putdyn,  Prev: load,  Up: Entity I/O
+
+ - Function: put ( x; fname )
+     The `put' function writes X to a binary file named FNAME (or
+     standard output if FNAME is NULL).  This binary file can be read
+     with `get'.  The file name can specify a pipe; see `fprintf' for
+     more details.
+
+     NULL is returned if an error occurs in writing the file; otherwise
+     a 1 is returned.
+
+
+File: algae.info,  Node: putdyn,  Next: putmat,  Prev: put,  Up: Entity I/O
+
+ - Function: putdyn ( x; fname )
+     This function writes the members of the table X to a DYNASTY file
+     named FNAME.  (DYNASTY is the name of a software package used at
+     Boeing for dynamic analysis.)  The file name may specify a pipe;
+     see `fprintf' for more details.
+
+     The file is not closed when `putdyn' finishes, so subsequent writes
+     to the same file will append data to the end of it unless you
+     close it first.  On some machines, this could be used to build a
+     complete DYNASTY file with several different calls to `putdyn'.
+     The disadvantage, though, is that the DYNASTY file format doesn't
+     allow this on all machines.
+
+
+File: algae.info,  Node: putmat,  Next: save,  Prev: putdyn,  Up: Entity I/O
+
+ - Function: putmat ( t; fname )
+     The `putmat' function writes a table of matrices T to a MATLAB
+     binary file named FNAME.  The file name can specify a pipe; see
+     `fprintf' for more details.
+
+     NULL is returned if an error occurs in writing the file; otherwise
+     a 1 is returned.
+
+     NULL members in T are skipped; otherwise each member is converted
+     to a matrix if necessary and then written to the file.
+
+     The `putmat' function writes in the MATLAB v.4 "Level-1 MAT-file"
+     format.  MATLAB can read and write in this format, but its default
+     for writing is now Level-2.  Using the newer format would require
+     us to link to their libraries, meaning that you'd need to actually
+     have MATLAB on that machine.  We'll stick with the older format.
+
+     One unfortunate consequence of using the older file format is that
+     matrices cannot be written in sparse form.  To get around this,
+     use the `exsparse' function to convert the matrix to coordinate
+     form (which is dense) and then change it back to sparse form
+     within MATLAB.
+
+     See also `get', `getmat', and `put'.
+
+
+File: algae.info,  Node: save,  Prev: putmat,  Up: Entity I/O
+
+ - Function: save ( fname )
+     The `save' function writes all non-NULL global variables as a table
+     to a file named FNAME.  This can be used, for example, to save an
+     Algae session that you wish to start again later using the `load'
+     function.
+
+     NULL is returned if an error occurs in writing the file; otherwise
+     `save' returns 1.
+
+     See also `get', `load', and `put'.
+
+
+File: algae.info,  Node: Execution,  Next: Special Tools,  Prev: Entity I/O,  Up: Standard Functions
+
+Execution
+=========
+
+* Menu:
+
+* autosrc::     define an autosrc function
+* builtin::	link a new builtin function
+* cd::          change directory
+* eval::        evaluate a string as an expression
+* exception::	raise an exception
+* exec::        parse and execute a string
+* exit::        terminate Algae
+* file::        current file name
+* get_path::    get a path list
+* getenv::      get the value of an environment variable
+* line::        current line number
+* provide::     provide a feature
+* require::     require a feature
+* search_path:: search for a file
+* source::	read source file (low level)
+* sources::	read source files, with file name generation
+* src::         read source file
+* strip::       strip line and file info from a function
+* system::	execute a shell command
+
+
+File: algae.info,  Node: autosrc,  Next: builtin,  Prev: Execution,  Up: Execution
+
+ - Function: autosrc ( name; file )
+     This function creates an "autosrc" function named NAME.  When this
+     new function is later called, it replaces itself with a definition
+     that it reads by calling the `src' function with the file name
+     FILE.  In this way, you can put off reading a function's
+     definition until it is actually called.
+
+     If FILE is `NULL', then `autosrc' uses the value of NAME for the
+     file name.
+
+     For example, consider the following code:
+
+          autosrc ("yow");
+          yow ();
+
+     The first line defines an autosrc function named `yow'.  When
+     `yow' is called on the second line, it reads the real definition of
+     `yow' by calling `src' with the file name `"yow"'.  It then calls
+     its replacement (with the same arguments, of course).
+
+     The current implementation of `autosrc' restricts the number of
+     arguments to 10.  (It's an ugly restriction, but if you need that
+     many arguments perhaps you should be using a table, instead.)  A
+     zero returned indicates success.
+
+
+File: algae.info,  Node: builtin,  Next: cd,  Prev: autosrc,  Up: Execution
+
+ - Function: builtin ( file; symbol )
+     On machines that support dymamic linking, this function creates a
+     new builtin function by linking to a shared object named by FILE
+     and locating the symbol named by SYMBOL.
+
+     Suppose you have some old Fortran code that computes your chances
+     of being hit by a comet.  You can write a C wrapper for it, link
+     them as a shared object, use `builtin' to attach it, and, voila!,
+     it's a builtin function.
+
+     Unlike other functions in Algae that deal with files, `builtin'
+     does not accept the special "bang" type file names.  (These are
+     file names that begin with an exclamation point and are given to
+     the shell as a command.)
+
+     It isn't hard to create shared objects for `builtin', but currently
+     there's no documentation for it.  Perhaps you can find some code to
+     imitate.
+

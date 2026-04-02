@@ -1,0 +1,32 @@
+
+printf( "Starting the svd test...\n" );
+
+assert = strip( function( t ) {
+    if ( !test(t) ) {
+        message( "...failed.\a" );
+        exception();
+    }
+});
+
+a = rand( 50,50 );
+s = svd( a );
+assert( norm( s.U'*s.U-ident(50); "inf" ) < 1e-10 );
+assert( norm( s.V'*s.V-ident(50); "inf" ) < 1e-10 );
+assert( norm( s.U*diag(s.sigma)*s.V'-a; "inf" ) < 1e-10 );
+assert( abs( norm( a ) - s.sigma[1] ) < 1e-12 );
+
+a = rand( 43,43 ) + sqrt(-1)*rand( 43,43 );
+s = svd( a );
+assert( norm( s.U'*s.U-ident(43); "inf" ) < 1e-10 );
+assert( norm( s.V'*s.V-ident(43); "inf" ) < 1e-10 );
+assert( norm( s.U*diag(s.sigma)*s.V'-a; "inf" ) < 1e-10 );
+assert( abs( norm( a ) - s.sigma[1] ) < 1e-12 );
+
+a = rand( 61,18 );
+s = svd( a; {full} );
+assert( norm( s.U'*s.U-ident(61); "inf" ) < 1e-10 );
+assert( norm( s.V'*s.V-ident(18); "inf" ) < 1e-10 );
+assert( norm( s.U*[diag(s.sigma);fill(61-18,18;0.0)]*s.V'-a; "inf" ) < 1e-10 );
+assert( abs( norm( a ) - s.sigma[1] ) < 1e-12 );
+
+printf( "...passed.\n" );

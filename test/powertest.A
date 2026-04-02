@@ -1,0 +1,57 @@
+
+# Tests the power routines.
+
+printf( "Starting the power tests...\n" );
+
+fail = function() {
+    printf( "...failed.\a\n" );
+    exception();
+};
+
+rnd_pos = 0;
+rnd_vec = fill( 2500; (magic(50)-0.5)/2500 );
+rnd = function( n )
+{
+    local( r );
+
+    if ( n == NULL )
+    {
+        r = rnd_vec[ rnd_pos += 1 ];
+    else
+        r = rnd_vec[ rnd_pos+1 : rnd_pos+n ];
+        rnd_pos += n;
+    }
+
+    return r;
+};
+
+i = integer( rnd( 7 ) * 10 );
+r = rnd( 7 );
+c = r + sqrt(-1) * rnd( 7 );
+
+q = 3^i;
+if ( q != integer(3.0^i) | q != integer((3.0+0*sqrt(-1))^i) ) { fail(); }
+for ( j in 1:i.ne ) { if ( q[j] != 3^scalar(i[j]) ) { fail(); } }
+
+i -= 5;
+
+q = 5^i;
+if ( norm( q-5.0^i ) + norm( q-(5.0+0*sqrt(-1))^i ) > 1.0e-10 ) { fail(); }
+for ( j in 1:i.ne ) { if ( q[j] != 5^scalar(i[j]) ) { fail(); } }
+
+if ( norm( (i+(i==0))^r-1/((i+(i==0))^(-r)) ) > 1.0e-10 ) { fail(); }
+
+if ( norm( r^i-1/(r^(-i)) ) > 1.0e-10 ) { fail(); }
+
+i[1,2,4,7] = 0,0,0,0;
+i = sparse( i );
+
+q = 5^i;
+if ( norm( q-5.0^i ) + norm( q-(5.0+0*sqrt(-1))^i ) > 1.0e-10 ) { fail(); }
+for ( j in 1:i.ne ) { if ( q[j] != 5^scalar(i[j]) ) { fail(); } }
+
+i += 0.2;
+if ( norm( i^r-1/(i^(-r)) ) > 1.0e-10 ) { fail(); }
+if ( norm( r^i-1/(r^(-i)) ) > 1.0e-10 ) { fail(); }
+
+printf( "...passed.\n" );

@@ -1,0 +1,27 @@
+
+# This function solves for `x' in the set of simultaneous linear equations
+#
+#	A*x = b
+#
+# It's argument `A' may be either the coefficient matrix itself, or a
+# previously factored matrix in the form of the output of the `factor'
+# or `chol' functions.
+#
+# If the optional table `options' contains a member named "pos", then
+# `A' is taken to be positive definite and Cholesky factorization is
+# performed instead of the more expensive general method.
+
+solve = function (A; b; options)
+{
+  if (class(A) != "table")
+  {
+    if (options != NULL && members (options) == "pos")
+    {
+      A = chol (A);
+    else
+      A = factor (A);
+    }
+  }
+
+  return backsub (A; b);
+};

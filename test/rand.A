@@ -1,0 +1,23 @@
+
+printf( "Starting the random test...\n" );
+
+assert = function( t ) {
+    if ( !test(t) ) {
+        printf( "...failed.\a\n" );
+        exception();
+    }
+};
+
+# It would be nice to have a few honest-to-goodness tests for
+# randomness here.  For now, though, we'll just check for some
+# obvious bozos.
+
+assert( rand().class == "scalar" );
+assert( rand().type == "real" );
+assert( rand(2).ne == 2 );
+assert( equal( shape( rand(2,3) ); 2,3 ) );
+assert( abs( rand(1000)*fill(1000;1.0) - 500 ) < 100 );
+assert( !test( rand(20,30) > 1.0 ) );
+assert( !test( rand(543) < 0.0 ) );
+
+printf( "...passed.\n" );

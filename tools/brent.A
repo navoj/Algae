@@ -1,0 +1,111 @@
+
+# Use Brent's method to find the root of a function `func' that is
+# known to lie between `a' and `b'.  If the `param' argument is given,
+# it is passed on to `func' as its second argument.
+
+brent = function (func; a; b; tol; param)
+{
+  local (fa; fb; c; fc; d; e; tol1; xm; p; q; r; s; i; eps);
+
+  eps = 1e-16;
+  if (tol == NULL) { tol = 1e-8; };
+
+  a = scalar (a);
+  b = scalar (b);
+
+  if (param == NULL)
+  {
+    fa = func (a);
+    fb = func (b);
+  else
+    fa = func (a; param);
+    fb = func (b; param);
+  }
+
+  if (fa*fb > 0)
+  {
+    message ("run time error: Root not bracketed.");
+    exception ();
+  }
+
+  fc = fb;
+
+  for (i in 1:100)
+  {
+    if (fb*fc >= 0)
+    {
+      c = a;
+      fc = fa;
+      d = b-a;
+      e = d;
+    }
+
+    if (abs (fc) < abs (fb))
+    {
+      a = b;
+      b = c;
+      c = a;
+      fa = fb;
+      fb = fc;
+      fc = fa;
+    }
+
+    tol1 = 2*eps*abs(b) + 0.5*tol;
+    xm = 0.5*(c-b);
+
+    if (abs (xm) <= tol1 | fb == 0) { return b; }
+
+    if (abs(e) >= tol1 & abs(fa) > abs(fb))
+    {
+      s = fb/fa;
+      if (a == c)
+      {
+        p = 2.0*xm*s;
+        q = 1.0-s;
+      else
+        q = fa/fc;
+        r = fb/fc;
+        p = s*(2.0*xm*q*(q-r)-(b-a)*(r-1.0));
+        q = (q-1.0)*(r-1.0)*(s-1.0);
+      }
+      if (p > 0.0) { q = -q; }
+      p = abs (p);
+      if (2.0*p < 3.0*xm*q-abs(tol1*q) & 2.0*p < abs(e*q))
+      {
+        e = d;
+        d = p/q;
+      else
+        d = xm;
+        e = d;
+      }
+    else
+      d = xm;
+      e = d;
+    }
+
+    a = b;
+    fa = fb;
+    if (abs(d) > tol1)
+    {
+      b = b+d;
+    else
+      if (xm >= 0)
+      {
+        b = b + abs (tol1);
+      else
+        b = b - abs(tol1);
+      }
+    }
+
+    if (param == NULL)
+    {
+      fb = func (b);
+    else
+      fb = func (b; param);
+    }
+  }
+
+  message ("run time warning: Too many iterations.");
+
+  return b;
+};

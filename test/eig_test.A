@@ -1,0 +1,180 @@
+
+printf( "Starting the eig test...\n" );
+
+near = function (a; b)
+{
+  return norm (a - unlabel(b)) / (norm (a) + norm (b)) < 1e-10;
+};
+
+rnd_pos = 0;
+rnd_vec = fill (99^2; (magic(99)-0.5)/99^2);
+rnd = function (n)
+{
+    local (r);
+
+    if (n == NULL)
+    {
+        r = rnd_vec [rnd_pos += 1];
+    else
+        r = rnd_vec [rnd_pos+1 : rnd_pos+n];
+        rnd_pos += n;
+    }
+
+    return r;
+};
+
+assert = strip (function (t)
+{
+  if (!test (t))
+  {
+    message ("...failed.\a");
+    exception ();
+  }
+});
+
+# standard, real, symmetric
+
+a = symmetric( rand( 8,8 ) );
+a[2;1]=a[2;1];			# force general symmetry
+e=eig(a;{left});
+assert( norm( sum(diag(a)) - sum(e.values) ) < 1e-8 );
+assert( norm(e.vectors-e.left_vectors;"inf") < 1e-8 );
+assert( norm(e.vectors-eig(a).vectors;"inf") < 1e-8 );
+assert( norm(a*e.vectors-e.vectors*diag(e.values);"inf") < 1e-8 );
+assert( norm(a'*e.left_vectors-e.left_vectors*diag(e.values);"inf") < 1e-8 );
+assert( norm( imag( e.values ) ) < 1e-8 );
+
+a += diag( (1:8)+(8-2) );
+e=eig(a;{left});
+assert( norm( sum(diag(a)) - sum(e.values) ) < 1e-8 );
+assert( norm(e.vectors-e.left_vectors;"inf") < 1e-8 );
+assert( norm(e.vectors-eig(a).vectors;"inf") < 1e-8 );
+assert( norm(a*e.vectors-e.vectors*diag(e.values);"inf") < 1e-8 );
+assert( norm(a'*e.left_vectors-e.left_vectors*diag(e.values);"inf") < 1e-8 );
+assert( norm( imag( e.values ) ) < 1e-8 );
+es=eig(symmetric(a));
+assert( norm( sort( real( e.values ) ) - es.values ) < 1e-8 );
+assert( norm( abs(e.vectors[;isort(real(e.values))]'*es.vectors)-ident(8); "inf" ) < 1e-8 );
+
+a = symmetric( rand( 43,43 ) );
+a[2;1]=a[2;1];			# force general symmetry
+e=eig(a;{left});
+assert( norm( sum(diag(a)) - sum(e.values) ) < 1e-8 );
+assert( norm(e.vectors-e.left_vectors;"inf") < 1e-8 );
+assert( norm(e.vectors-eig(a).vectors;"inf") < 1e-8 );
+assert( norm(a*e.vectors-e.vectors*diag(e.values);"inf") < 1e-8 );
+assert( norm(a'*e.left_vectors-e.left_vectors*diag(e.values);"inf") < 1e-8 );
+assert( norm( imag( e.values ) ) < 1e-8 );
+
+a += diag( (1:43)+(43-2) );
+e=eig(a;{left});
+assert( norm( sum(diag(a)) - sum(e.values) ) < 1e-8 );
+assert( norm(e.vectors-e.left_vectors;"inf") < 1e-8 );
+assert( norm(e.vectors-eig(a).vectors;"inf") < 1e-8 );
+assert( norm(a*e.vectors-e.vectors*diag(e.values);"inf") < 1e-8 );
+assert( norm(a'*e.left_vectors-e.left_vectors*diag(e.values);"inf") < 1e-8 );
+assert( norm( imag( e.values ) ) < 1e-8 );
+es=eig(symmetric(a));
+assert( norm( sort( real( e.values ) ) - es.values ) < 1e-8 );
+assert( norm( abs(e.vectors[;isort(real(e.values))]'*es.vectors)-ident(43); "inf" ) < 1e-8 );
+
+# standard, complex, hermitian
+
+a = hermitian( rand( 23,23 ) + sqrt(-1)*rand( 23, 23 ) );
+a[2;1]=a[2;1];			# force general symmetry
+e=eig(a;{left});
+assert( norm( sum(diag(a)) - sum(e.values) ) < 1e-8 );
+assert( norm(e.vectors-e.left_vectors;"inf") < 1e-8 );
+assert( norm(e.vectors-eig(a).vectors;"inf") < 1e-8 );
+assert( norm(a*e.vectors-e.vectors*diag(e.values);"inf") < 1e-8 );
+assert( norm(e.left_vectors'*a-diag(e.values)*e.left_vectors';"inf") < 1e-8 );
+assert( norm( imag( e.values ) ) < 1e-8 );
+es=eig(hermitian(a));
+assert( norm( sort( real( e.values ) ) - es.values ) < 1e-8 );
+assert( norm( abs(e.vectors[;isort(real(e.values))]'*es.vectors)-ident(23); "inf" ) < 1e-8 );
+
+# standard, real, unsymmetric
+
+a = rand( 51,51 );
+e=eig(a;{left});
+ee=eig(a';{left});
+assert( norm( sum(diag(a)) - sum(e.values) ) < 1e-8 );
+assert( norm(e.vectors-eig(a).vectors;"inf") < 1e-8 );
+assert( norm(a*e.vectors-e.vectors*diag(e.values);"inf") < 1e-8 );
+assert( norm(e.left_vectors'*a-diag(e.values)*e.left_vectors';"inf") < 1e-8 );
+
+# standard, complex, unsymmetric
+
+a = rand( 17,17 ) + sqrt(-1) * rand( 17, 17 );
+e = eig( a; {left} );
+assert( norm( sum(diag(a)) - sum(e.values) ) < 1e-8 );
+assert( norm(e.vectors-eig(a).vectors;"inf") < 1e-8 );
+assert( norm(a*e.vectors-e.vectors*diag(e.values);"inf") < 1e-8 );
+assert( norm(e.left_vectors'*a-diag(e.values)*e.left_vectors';"inf") < 1e-8 );
+
+# generalized, real, symmetric
+
+a = symmetric( magic( 9 ) );
+b = symmetric( bdiag( magic(3),magic(3),magic(3); 0; 3 ) ) + diag(11:19);
+e = eig( a; b );
+assert( norm(a*e.vectors-b*e.vectors*diag(e.values);"inf") < 1e-8 );
+assert( norm(e.vectors'*a*e.vectors-diag(e.values);"inf") < 1e-8 );
+assert( norm(e.vectors'*b*e.vectors-ident(9);"inf") < 1e-8 );
+
+# generalized, real, unsymmetric
+
+a = magic(28);
+b = bdiag( fill( 7,28; magic(7) ); 0; 4 );
+e = eig( a; b; {left} );
+v = e.values.num / e.values.denom;
+assert( norm(a*e.vectors-b*e.vectors*diag(v);"inf") < 1e-8 );
+assert( norm(e.left_vectors'*a-diag(v)*e.left_vectors'*b;"inf") < 1e-8 );
+
+a = symmetric( magic( 9 ) );
+b = symmetric( bdiag( magic(3),magic(3),magic(3); 0; 3 ) ) + diag(11:19);
+a[2;1] = -a[1;2];
+e = eig( a; b; {left} );
+v = e.values.num / e.values.denom;
+assert( norm(a*e.vectors-b*e.vectors*diag(v);"inf") < 1e-8 );
+assert( norm(e.left_vectors'*a-diag(v)*e.left_vectors'*b;"inf") < 1e-8 );
+
+# generalized, complex, hermitian
+
+a = symmetric (magic (61));
+b = diag (1:61);
+e = eig (a; b);
+aa = hermitian (a+0*sqrt(-1));
+bb = b+0*sqrt(-1);
+ee = eig (aa; bb);
+assert (near (e.values; ee.values));
+assert (near (aa*ee.vectors; bb*ee.vectors*diag(ee.values)));
+assert (near (a*ee.vectors; b*ee.vectors*diag(ee.values)));
+
+n = 17;
+a = hermitian (rand(n,n)+n*ident(n)+sqrt(-1)*rand(n,n));
+b = hermitian (rand(n,n)+n*ident(n)+sqrt(-1)*rand(n,n));
+e = eig (a; b);
+assert (near (a*e.vectors; b*e.vectors*diag(e.values)));
+
+# generalized, complex, general
+
+a = symmetric (magic (57));
+b = diag (1:57);
+e = eig (a; b);
+aa = symmetric (a+0*sqrt(-1));
+bb = b+0*sqrt(-1);
+ee = eig (aa; bb);
+v = ee.values.num / ee.values.denom;
+assert (near (e.values; sort(real(v))));
+assert (near (aa*ee.vectors; bb*ee.vectors*diag(v)));
+assert (near (a*ee.vectors; b*ee.vectors*diag(v)));
+
+n = 21;
+a = fill (n,n; rnd (n^2)) + sqrt(-1) * fill (n,n; rnd (n^2)) + n*ident(n);
+b = diag (1:n);
+e = eig (a; b; {left});
+v = e.values.num / e.values.denom;
+assert (near (a*e.vectors; b*e.vectors*diag(v)));
+assert (near (e.left_vectors'*a; diag(v)*e.left_vectors'*b));
+
+printf( "...passed.\n" );

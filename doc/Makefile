@@ -1,0 +1,192 @@
+
+# Makefile for Algae documentation.
+
+# Copyright (C) 1994-2001  K. Scott Hunziker.
+# Copyright (C) 1990-1994  The Boeing Company.
+
+# See the file COPYING for license, warranty, and permission details.
+
+.SUFFIXES:
+
+srcdir = .
+
+
+INSTALL = /usr/bin/install -c
+INSTALL_DATA = $(INSTALL) -m 644
+
+AWK = gawk
+MAKEINFO = makeinfo
+TEXI2DVI = texi2dvi
+TEXI2HTML = texi2html
+PS2PDF = ps2pdf
+
+include ../VERSION
+
+# ============================ Targets ============================
+
+all: algae.info algae.ps algae.1 algae_toc.html algae.pdf info.db
+.PHONY: all
+
+info: algae.info
+.PHONY:	info
+
+# <<<< This section is deleted in the "binary" distribution.
+
+algae.info: algae.texinfo.in ../VERSION
+	sed -e "s|VERSION_NUMBER|$(VERSION_NUMBER)|" \
+	    -e "s|VERSION_DATE|$(VERSION_DATE)|" algae.texinfo.in \
+	  > algae.texinfo
+	$(MAKEINFO) algae.texinfo
+	rm -f algae.texinfo
+
+algae.ps: algae.texinfo.in algae_fig.eps ../VERSION
+	sed -e "s|VERSION_NUMBER|$(VERSION_NUMBER)|" \
+	    -e "s|VERSION_DATE|$(VERSION_DATE)|" algae.texinfo.in \
+	  > algae.texinfo
+	$(TEXI2DVI) algae.texinfo
+	/bin/rm -f algae.texinfo
+	dvips -o algae.ps -t letter algae.dvi
+
+algae.pdf: algae.ps
+	$(PS2PDF) algae.ps
+
+algae.1: algae.1.in ../VERSION
+	sed -e "s|VERSION_NUMBER|$(VERSION_NUMBER)|" \
+	    -e "s|VERSION_DATE|$(VERSION_DATE)|" \
+	  algae.1.in > algae.1
+
+# The current texi2html doesn't handle "--" correctly, so we have to
+# help it out.  We also add an icon to the top of each chapter.
+# Also, texi2html puts index labels for function descriptions in the
+# wrong place.  Also, texi2html no longer handles @ifinfo correctly,
+# so we have to toss it ourselves.  We also add a link to the table of
+# contents.
+
+algae_toc.html: algae.texinfo.in ../VERSION
+	sed -e "s|VERSION_NUMBER|$(VERSION_NUMBER)|" \
+	    -e "s|VERSION_DATE|$(VERSION_DATE)|" algae.texinfo.in \
+	  | $(AWK) '/^@table +@samp/,/^@end +table/ \
+	      { if ( /^@item/ ) { print; next } } \
+	      /@samp{[^}]*--/ { print; next } \
+	      { gsub( "---", "dashdashdash" ); gsub( "--", "-" ); \
+	        gsub( "dashdashdash", "---" ); print }' \
+	  | $(AWK) '/^@ifinfo/,/^@end ifinfo/ {next} {print}' > algae.texinfo
+	$(TEXI2HTML) -expand tex \
+	  -split_chapter -no-section_navigation algae.texinfo
+	for f in algae_*.html; do \
+	  mv $$f $$f.tmp; \
+	  sed -e 's|^<[hH]1>|<h1><img src="icon.gif" alt=""> |' $$f.tmp \
+	  >$$f; \
+	  rm -f $$f.tmp; \
+	done
+	$(AWK) '/<BLOCKQUOTE><TABLE/ {print; \
+	  print "<tr><td align=left valign=top><a href=\"algae_toc.html\">"; \
+	  print "Table of Contents</a></td><td>&nbsp;&nbsp;</td>"; \
+	  print "<td align=left valign=top>Table of Contents.</td></tr>"; \
+	  next} {print}' algae.html > algae.html.tmp; \
+	  mv algae.html.tmp algae.html
+	rm -f algae.texinfo algae_ovr.html
+
+index.html: index.html.in ../VERSION
+	sed -e "s|VERSION_NUMBER|$(VERSION_NUMBER)|" \
+	    -e "s|VERSION_DATE|$(VERSION_DATE)|" \
+	    -e "s|SITE_INDEX|$(datadir)/algae/site/index.html|" \
+	  index.html.in > index.html
+
+# Make up a simple index into the HTML manual for the algae `info' function.
+
+info.db: algae_toc.html
+	egrep '^<A NAME="[^"]+"></A>$$' algae_[1-9]*.html | \
+	  egrep -v 'IDX|SEC|NAME="algae_' | \
+	  $(AWK) '{gsub("<A NAME=\"",""); \
+	           gsub("\"></A>",""); \
+	           print}' | \
+	  ../src/algae -Sxe ' \
+	    t={};while(l=read()){x=split(l;":");t.(x[2])=x[1];};put(t);' \
+	    > info.db
+
+dvi:	algae.dvi
+.PHONY:	dvi
+
+algae.dvi: algae.texinfo.in ../VERSION
+	sed -e "s|VERSION_NUMBER|$(VERSION_NUMBER)|" \
+	    -e "s|VERSION_DATE|$(VERSION_DATE)|" algae.texinfo.in \
+	  | $(AWK) '/^@ifhtml/,/^@end ifhtml/ {next} {print}' > algae.texinfo
+	$(TEXI2DVI) algae.texinfo
+	/bin/rm -f algae.texinfo
+
+# >>>> End of deleted section.
+
+# ========================== Distribution =========================
+
+# Files in the source distribution from this directory.
+DISTFILES = Makefile.in algae.1.in algae.texinfo.in algae.info* algae.ps \
+	index.html.in algae*.html icon.gif algae_fig.eps info.db FAQ
+
+# Files in the binary distribution from this directory.  Makefile isn't
+# included because it's handled separately.
+BINDISTFILES = algae.1 algae.info* algae.ps FAQ \
+	index.html algae*.html icon.gif algae_fig.eps info.db
+
+# Files in the web site distribution from this directory.
+WEBDISTFILES = *.html *.gif *.jpg
+
+# <<<< This section is deleted in the "binary" distribution.
+
+dist: algae.info algae.ps algae_toc.html index.html info.db
+	for file in $(DISTFILES); do \
+	  ln $$file $(distdir) > /dev/null 2>&1 || cp $$file $(distdir); \
+	done
+.PHONY: dist
+
+# >>>> End of deleted section.
+
+binaries: algae.info algae.ps algae_toc.html algae.1 index.html info.db
+	for file in $(BINDISTFILES); do \
+	  ln $$file $(distdir) > /dev/null 2>&1 || cp $$file $(distdir); \
+	done
+	awk '/<<[<]</,/>>[>]>/ {next} {print}' Makefile > $(distdir)/Makefile
+.PHONY: binaries
+
+web:	algae_toc.html index.html icon.gif
+	for file in $(WEBDISTFILES); do \
+	  ln $$file $(distdir) > /dev/null 2>&1 || cp $$file $(distdir); \
+	done
+.PHONY: web
+
+# ========================== Cleaning Up ==========================
+
+.PHONY:	clean mostlyclean distclean maintainer-clean
+
+clean mostlyclean distclean maintainer-clean::
+	rm -f algae.cp algae.fn algae.ky algae.pg algae.tp algae.vr
+	rm -f algae.??? algae.texinfo algae*.html.tmp info.db
+
+distclean maintainer-clean::
+	rm -f Makefile algae.dvi algae.1 index.html
+
+maintainer-clean::
+	rm -f algae.info* algae.ps algae*.html
+
+# ========================== Installation =========================
+
+install: algae.info algae.1 algae_toc.html index.html info.db
+	-if test -f algae.info; then d=.; else d=$(srcdir); fi; \
+	for f in $$d/algae.info $$d/algae.info-*; do \
+	  $(INSTALL_DATA) $$f $(infodir); \
+	done; \
+	if $(SHELL) -c 'install-info --version' > /dev/null 2>&1; then \
+	  install-info --info-dir=$(infodir) $$d/algae.info; else true; fi
+	-if test -f algae_toc.html; then d=.; else d=$(srcdir); fi; \
+	for f in $$d/index.html $$d/algae*.html $$d/icon.gif $$d/info.db; do \
+	  $(INSTALL_DATA) $$f $(htmldir); done
+	-rm -f $(datadir)/algae/html; ln -s $(htmldir) $(datadir)/algae/html
+	-$(INSTALL_DATA) algae.1 $(mandir)/algae.$(manext)
+
+uninstall:
+	rm -f $(infodir)/algae.info* $(mandir)/algae.$(manext) \
+	  $(htmldir)/algae*.html $(htmldir)/icon.gif \
+	  $(htmldir)/index.html $(htmldir)/info.db; \
+	if $(SHELL) -c 'install-info --version' > /dev/null 2>&1; then \
+	  install-info --delete --info-dir=$(infodir) algae.info; \
+	  else true; fi

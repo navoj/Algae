@@ -1,0 +1,29 @@
+
+printf( "Starting the Van der Pol test...\n" );
+
+xdot = function( t; x )
+{
+    return x[1]*(1.0-x[2]^2)-x[2], x[1];
+};
+
+x = ode4( xdot; 0; 20; 0,.25; NULL; 1e-6 );
+
+fail = 0;
+
+if ( abs( max(x[1;]) - 2.671 ) > 0.01 ) { fail = 1; }
+if ( abs( min(x[1;]) + 2.677 ) > 0.01 ) { fail = 1; }
+if ( abs( max(x[2;]) - 2.009 ) > 0.01 ) { fail = 1; }
+if ( abs( min(x[2;]) + 2.009 ) > 0.01 ) { fail = 1; }
+
+if ( abs( x[1;]*fill(x.nc;1) - 18.486 ) > 0.01 ) { fail = 1; }
+if ( abs( x[2;]*fill(x.nc;1) - 29.185 ) > 0.01 ) { fail = 1; }
+if ( abs( x[1;]*x[1;] - 446.639 ) > 0.1 ) { fail = 1; }
+if ( abs( x[1;]*x[2;] - 69.2305 ) > 0.1 ) { fail = 1; }
+if ( abs( x[2;]*x[2;] - 529.738 ) > 0.1 ) { fail = 1; }
+
+if ( fail ) {
+    printf( "...failed.\a\n" );
+    exception();
+else
+    printf( "...passed.\n" );
+}

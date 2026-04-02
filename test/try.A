@@ -1,0 +1,122 @@
+
+# Test the trap/catch mechanism.
+
+printf( "Starting the try/catch tests...\n" );
+
+assert = strip (function (t)
+{
+  if (!test(t))
+  {
+    message ("...failed.\a");
+    exception ();
+  }
+});
+
+
+try { x=21; exception (); x=0; } x*=2;
+assert (x == 42);
+
+try { x=99; catch x=0; exception (); }
+assert (x == 99);
+
+try
+{
+  x = 0;
+  exception ();
+catch
+  try
+  {
+    exception ();
+  catch
+    try
+    {
+      exception ();
+    catch
+      try
+      {
+  	exception ();
+      catch
+  	try
+  	{
+  	  exception ();
+  	catch
+  	  try
+  	  {
+  	    exception ();
+  	  catch
+  	    try
+  	    {
+  	      exception ();
+  	    catch
+  	      try
+  	      {
+  		exception ();
+  	      catch
+  		try
+  		{
+  		  exception ();
+  		catch
+		  x = 1;
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+  }
+}
+assert (x);
+
+x = 0;
+try {try {try {try {try {try {try {try {
+x = 0; exception ();
+catch
+x = 1;
+}}}}}}}}
+assert (x);
+
+N = 10;
+x = i = 0;
+f = function (n)
+{
+  if (n)
+  {
+    try
+    {
+      self (n-1);
+    catch
+      i += 1;
+      assert (x);
+      exception ();
+    }
+  else
+    x = 1;
+    exception ();
+  }
+};
+try {f (N); catch assert (x); }
+assert (i == N);
+
+fact = function (n)
+{
+  try {
+    if (n<2) {exception();}
+    return n*self(n-1);
+  catch
+    return 1.0;
+  }
+};
+assert (fact (6) == 720);
+
+fact = function (n)
+{
+  if (n<2) {exception();}
+  try {
+    n *= self(n-1);
+  }
+  return n;
+};
+assert (fact (7) == 5040);
+
+printf ("...passed.\n");

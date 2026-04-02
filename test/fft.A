@@ -1,0 +1,105 @@
+
+# Test FFTs.
+
+printf( "Starting the fft tests...\n" );
+
+pi = acos (-1);
+i = sqrt (-1);
+
+assert = strip (function (t)
+{
+  if (!test(t))
+  {
+    message ("...failed.\a");
+    exception ();
+  }
+});
+
+near = strip (function (a; b)
+{
+  return norm (a-b) / (norm (a) + norm (b) + 1) < 1e-7;
+});
+
+x = label (1,1,0,0; 0:3);
+X = fft (x);
+assert (near (X; 1+i,2,1-i,0));
+assert (near (X.eid; -pi/2,0,pi/2,pi));
+assert (near (ifft (X); x));
+assert (near (ifft(X).eid; x.eid));
+
+# vectors
+
+for (i in 1:20)
+{
+  x = vector (surprise (0:30; 1; "real","complex"));
+  x.eid = (seq(x.ne)-1)*3;
+  X = fft (x);
+  ix = ifft (X);
+  assert (near (x.eid; ix.eid));
+  assert (near (x; unlabel (ix)));
+  assert (near (unlabel (x); fft (ifft (x))));
+}
+
+# matrices, by column
+
+x = label (surprise (16; 8; "real"); 0:150:10; 0:700:100);
+X = fft (x);
+assert (near (X[;5]; fft (x[;5])));
+assert (near (X.rid; (-7:8)*pi/80));
+assert (equal (X.cid; x.cid));
+assert (near (X; fft(x)));
+assert (near (ifft(X); x));
+assert (near (ifft(X[;2]); x[;2]));
+
+for (i in 1:20)
+{
+  x = surprise (1:19; 1:15; "real","complex");
+  x.rid = (seq(x.nr)-1)*3;
+  x.cid = (seq(x.nc)-1)*5;
+  X = fft (x);
+  ix = ifft (X);
+  assert (near (x.rid; ix.rid));
+  assert (near (x; unlabel (ix)));
+  assert (near (unlabel (x); fft (ifft (x))));
+}
+
+# matrices, by row
+
+x = label (surprise (8; 16; "real"); 0:700:100; 0:150:10);
+X = fft (x; {row});
+assert (near (X[5;]; fft (x[5;])));
+assert (near (X.cid; (-7:8)*pi/80));
+assert (equal (X.rid; x.rid));
+assert (near (ifft(X;{row}); x));
+assert (near (ifft(X[2;]); x[2;]));
+
+for (i in 1:20)
+{
+  x = surprise (1:19; 1:15; "real","complex");
+  x.rid = (seq(x.nr)-1)*3;
+  x.cid = (seq(x.nc)-1)*5;
+  X = fft (x; {row});
+  ix = ifft (X; {row});
+  assert (near (x.rid; ix.rid));
+  assert (near (x; unlabel (ix)));
+  assert (near (unlabel (x); fft (ifft (x; {row}); {row})));
+}
+
+# If compiled with both fft and fftw, compare them.
+
+if (fftw)
+{
+  for (i in 1:10)
+  {
+    x = vector (surprise (0:30; 1; "real","complex"));
+    assert (near (fft(x); fftw(x)));
+    assert (near (ifft(x); ifftw(x)));
+    x = surprise (1:19; 1:15; "real","complex");
+    assert (near (fft(x); fftw(x)));
+    assert (near (ifft(x); ifftw(x)));
+    assert (near (fft(x;{row}); fftw(x;{row})));
+    assert (near (ifft(x;{row}); ifftw(x;{row})));
+  }
+}
+
+printf ("...passed.\n");

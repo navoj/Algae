@@ -1,0 +1,226 @@
+
+# This function generates random matrices with given characteristics.
+
+surprise = function (rows; cols; type; density; symmetry; other)
+{
+  local (rt; n; nt; ns; no; nc; i; combos; spec; A; d);
+
+  rt = "run time error: ";
+
+  # Set defaults.
+
+  if (rows == NULL)	{ rows = 0; }
+  if (cols == NULL)	{ cols = 0; }
+  if (type == NULL)	{ type = "real"; }
+  if (density == NULL)	{ density = 1; }
+  if (symmetry == NULL)	{ symmetry = "general"; }
+  if (other == NULL)	{ other = "none"; }
+
+  # All are vectors.
+
+  rows = vector (integer (rows));
+  cols = vector (integer (cols));
+  type = vector (type);
+  density = vector (density);
+  symmetry = vector (symmetry);
+  other = vector (other);
+
+  # Check legality.
+
+  if (rows < 0)
+    {
+      message (rt + "Row dimension is negative.")
+      exception ();
+    }
+  if (cols < 0)
+    {
+      message (rt + "Column dimension is negative.")
+      exception ();
+    }
+  if (complement ("integer", "real", "complex"; type))
+    {
+      message (rt + "Invalid type.");
+      exception ();
+    }
+  if (density.type == "character")
+    {
+      message (rt + "Density argument must be numeric.");
+      exception ();
+    }
+  if (density < 0 || density > 1)
+    {
+      message (rt + "Invalid density.");
+      exception ();
+    }
+  if (complement ("general", "symmetric", "hermitian"; symmetry))
+    {
+      message (rt + "Invalid symmetry.");
+      exception ();
+    }
+  if (complement ("none", "diagonal", "positive_definite"; other))
+    {
+      message (rt + "Invalid \"other\" matrix characteristic.");
+      exception ();
+    }
+
+  # Square precluded?
+
+  if ((symmetry == "symmetric" || symmetry == "hermitian") &&
+      !intersection (rows; cols).ne)
+    {
+      symmetry = symmetry [lose ("symmetric","hermitian"; symmetry)];
+      other = other [lose ("diagonal","positive_definite"; other)];
+    }
+
+  # Generate matrix combinations.
+
+  nt = type.ne;
+  ns = symmetry.ne;
+  no = other.ne;
+  n = nt * ns * no;
+
+  type = fill (n; fill (ns*no,nt; type) ');
+  symmetry = fill (n; btrans (fill (nt*no,ns; symmetry); nt; 1) ');
+  other = fill (n; other);
+
+  combos = type + "," + symmetry + "," + other;
+  combos = combos [lose (self.disallowed; combos)];
+
+  # No legal combinations?
+
+  if (!combos.ne)
+    {
+      message (rt + "No allowable matrix characteristics given.");
+      exception ();
+    }
+
+  # Now just pick one.
+
+  spec = split (select (combos); ",");
+  type = spec [1];
+  symmetry = spec [2];
+  other = spec [3];
+
+  # Pick dimensions.
+
+  if (symmetry == ("symmetric", "hermitian"))
+    {
+      rows = cols = select (intersection (rows; cols));
+    else
+      rows = select (rows);
+      cols = select (cols);
+    }
+
+  # Pick density.
+
+  density = select (density);
+
+  # Finally, assemble the matrix.
+
+  if (symmetry == "general")
+    {
+      A = surprise.fill (rows; cols; type; density);
+
+    elseif (symmetry == "symmetric")
+
+      if (other == "diagonal")
+	{
+	  A = diag (vector (surprise.fill (1; cols; type; density)));
+	else
+          A = symmetric (surprise.fill (rows; cols; type; density/2));
+	  if (A.density == "sparse") { A = sparse (A); }
+
+	  if (other == "positive_definite")
+	    {
+	      d = diag (A);
+	      A += diag (1 + sum (abs (A)) - abs (d));
+	    }
+
+	  if (type == "integer") { A = integer (A); }
+	}
+
+    else # symmetry == "hermitian"
+
+      if (other == "diagonal")
+	{
+	  A = hermitian (diag (vector (surprise.fill (1;cols;type;density))));
+	else
+          A = hermitian (surprise.fill (rows; cols; type; density/2));
+	  if (A.density == "sparse") { A = sparse (A); }
+
+	  if (other == "positive_definite")
+	    {
+	      d = diag (A);
+	      A += diag (1 + sum (abs (A)) - abs (d));
+	    }
+	}
+    }
+
+  return A;
+};
+  
+surprise.disallowed = (
+  "integer,general,diagonal",
+  "integer,general,positive_definite",
+  "integer,hermitian,none",
+  "integer,hermitian,diagonal",
+  "integer,hermitian,positive_definite",
+  "real,general,diagonal",
+  "real,general,positive_definite",
+  "real,hermitian,none",
+  "real,hermitian,diagonal",
+  "real,hermitian,positive_definite",
+  "complex,general,diagonal",
+  "complex,general,positive_definite",
+  "complex,symmetric,positive_definite");
+
+surprise.fill = function (nr; nc; type; density)
+{
+  local (c; x; n; nn; N);
+
+  if (density == 1.0) { return surprise.rand (nr,nc; type); }
+
+  N = real(nr) * nc;
+  n = integer (N*density);
+
+  if (density < 0.5)
+    {
+      c = fill (0; 0);
+      while (1)
+	{
+	  c = set (c, integer (floor (rand ((n-c.ne)*1.2) * N)) + 1);
+	  if (c.ne >= n) { break; }
+	}
+      c = c [seq (n)];
+    else
+      nn = N - n;
+      c = fill (0; 0);
+      while (1)
+	{
+	  c = set (c, integer (floor (rand ((nn-c.ne)*1.2) * N)) + 1);
+	  if (c.ne >= nn) { break; }
+	}
+      c = c [seq (nn)];
+      c = lose (c; seq (N));
+    }
+
+    x = mksparse ({shape = 1,N;
+		   rows = fill (n; 1);
+		   cols = c;
+		   values = surprise.rand (n; type)});
+    return cram (nr,nc; x);
+};
+
+surprise.rand = function (shape; type)
+{
+  if (type == "integer")
+    {
+      return integer (floor ((rand (shape) * 2.0 - 1.0) * product (shape)));
+
+    elseif (type == "real")
+      return rand (shape) * 2.0 - 1.0;
+
+    else
+      return rand (shape) * 2 - 1 + sqrt(-1) * (rand (shape) * 2 - 1);
+    }
+};

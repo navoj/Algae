@@ -1,0 +1,125 @@
+
+# Natural cubic spline representation of given data.
+
+spline = function (A; B)
+{
+  local (n; x; y; s; d; u; w; i; c);
+
+  # If `B' is given, then we take it that the user wants
+  # to evaluate the spline `A' at the points in `B'.
+
+  if (B != NULL)
+  {
+    if (A.class != "spline") { A = self (A); }
+    return self.eval (A; B);
+  }
+
+  # Otherwise, we're to take data in `A' and return a spline.
+
+  s = {class = "spline"};
+
+  A = vector (A);  # Make sure input is a vector.
+  n = A.ne;
+
+  if (n < 2)
+  {
+    message ("run time error: At least two data points are required.");
+    exception ();
+  }
+
+  # Generate abscissa, if necessary.
+
+  if (A.eid == NULL)
+  {
+    A.eid = 1:n;
+
+  elseif (A.eid.type == "character")
+
+      A.eid = 1:n;
+  }
+
+  # Switch data and labels.
+
+  x = A.eid;
+  A.eid = NULL;
+  x.eid = A;
+
+  # Sort by abscissa values.  (Require them to be unique.)
+
+  x = set (x);
+  if (n != x.ne)
+  {
+    message ("run time error: Abscissa values must be unique.");
+    exception ();
+  }
+
+  # Get ordinate values.
+
+  y = x.eid;
+  x.eid = NULL;
+
+  # Go for it.
+
+  c = dense (zero (n));
+
+  if (n > 3)
+  {
+    d = 2.0*(x[3:n]-x[1:n-2]);
+    u = x[2:n]-x[1:n-1];
+    w = 6.0*((y[3:n]-y[2:n-1])/u[2:n-1]-(y[2:n-1]-y[1:n-2])/u[1:n-2]);
+
+    for (i in 2:n-2)
+    {
+      w[i] = w[i] - w[i-1]*u[i]/d[i-1];
+      d[i] = d[i] - u[i]*u[i]/d[i-1];
+    }
+
+    for (i in n-1:2)
+    {
+      c[i] = (w[i-1]-u[i]*c[i+1])/d[i-1];
+    }
+  }
+
+  s.knots = label (y; x);
+  s.curvatures = c;
+
+  return s;
+};
+
+spline.eval = function (s; v)
+{
+  local (x; y; t; i; u; sp; p; r; n);
+
+  v = vector (v);
+  y = s.knots;
+  x = y.eid;
+  x.eid = y.eid = NULL;
+  n = x.ne;
+  p = s.curvatures;
+  r = vector ();
+
+  for (u in v)
+  {
+    if (u < x[1])
+    {
+      sp = ( (y[2]-y[1])/(x[2]-x[1]) - (x[2]-x[1])*p[2]/6.0 );
+      r = r, y[1]-sp*(x[1]-u);
+
+    elseif (u >= x[n])
+
+      sp = ( (y[n]-y[n-1])/(x[n]-x[n-1]) - (x[n]-x[n-1])*p[n-1]/6.0 );
+      r = r, y[n]+sp*(u-x[n]);
+
+    else
+
+      i = find (1; u < x)[1] - 1;
+      t = (u-x[i])/(x[i+1]-x[i]);
+      r = r, ( t*y[i+1] + (1-t)*y[i] +
+               (x[i+1]-x[i])^2*((t^3-t)*p[i+1]+((1-t)^3-(1-t))*p[i])/6.0 );
+    }
+  }
+
+  r.eid = v;
+
+  return r;
+};

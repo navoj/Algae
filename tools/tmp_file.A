@@ -1,0 +1,30 @@
+
+# This function creates a temporary file and returns its name.  The
+# file will be deleted automatically when Algae exits.
+
+tmp_file = function()
+{
+    local( f );
+
+    # Generate a (hopefully) unique name.
+
+    f = tmp_file.TMPDIR + sprintf( "/algae%d.%d"; $pid; tmp_file.count += 1 );
+
+    # Open the file.
+
+    close( f );
+    fprintf( f; "" );
+
+    # Give it to "cleanup"
+
+    fprintf( tmp_file.cleanup; " %s"; f );
+
+    return f;
+
+};
+
+tmp_file.count = 0;
+tmp_file.cleanup = "!/bin/rm -f `cat`";
+
+tmp_file.TMPDIR = string( getenv( "TMPDIR" ) );
+if ( tmp_file.TMPDIR == "" ) { tmp_file.TMPDIR = "/tmp"; }

@@ -1,0 +1,7 @@
+
+# This function computes the base-10 logarithm of its argument.
+
+log10 = function( x )
+{
+    return log(x) / log(10);
+};

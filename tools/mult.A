@@ -1,0 +1,92 @@
+
+# This function multiplies together a series of matrices, performing
+# the multiplications in an order so as to minimize the total number
+# of operations.
+
+# At most 10 arguments are allowed.  They will be converted to matrices
+# if necessary (and possible), but in a context-free manner.  A scalar
+# becomes a 1x1 matrix, and a vector becomes a matrix with 1 row.  This
+# is in contrast to Algae's multiplication operator, which makes different
+# conversions according to the context.
+
+# As an example, consider an NxN matrix A and an N vector b.  If you
+# give Algae the product A'*A*b, it first multiplies A'*A which involves
+# an order of N^3 operations.  But if you do it as A'*(A*b), there are
+# only an order of N^2 operations.  The difference can be huge!  With
+# this function, you'd do it as mult(A';A;b').  (Note that we have to
+# explicitly convert b to a matrix with the right shape.)
+
+mult = function (x0; x1; x2; x3; x4; x5; x6; x7; x8; x9)
+{
+  local (i; j; k; N; s; t; r; y; z);
+
+  t = {};
+  t.(0) = x0;
+  t.(1) = x1;
+  t.(2) = x2;
+  t.(3) = x3;
+  t.(4) = x4;
+  t.(5) = x5;
+  t.(6) = x6;
+  t.(7) = x7;
+  t.(8) = x8;
+  t.(9) = x9;
+
+  for (i in 0:9)
+  {
+    if (t.(i) == NULL) { break; }
+    t.(i) = matrix (t.(i));
+  }
+
+  N = i;
+
+  if (N > 2)
+  {
+    r = fill (N+1; 0.0);
+    for (i in 1:N) { r[i] = t.(i-1).nr; }
+    r[N+1] = t.(N-1).nc;
+    y = triu (fill (N,N; 1e99); 1);
+    z = fill (N,N; 0);
+  
+    for (j in 1:N-1)
+    {
+      for (i in 1:N-j)
+      {
+	for (k in i+1:i+j)
+	{
+	  s = y[i;k-1] + y[k;i+j] + r[i]*r[k]*r[i+j+1];
+	  if (s < y[i;i+j])
+	  {
+	    y[i;i+j] = s;
+	    z[i;i+j] = k;
+	  }
+	}
+      }
+    }
+  
+    return self.ex (1; N; t; z);
+
+  elseif (N == 2)
+
+    return t.(0) * t.(1);
+
+  elseif (N == 1)
+
+    return t.(0);
+
+  else
+
+    return NULL;
+  }
+};
+
+mult.ex = function (i; j; t; z)
+{
+  if (i == j)
+  {
+    return t.(i-1);
+  else
+    return (self (i; z[i;j]-1; t; z) *
+	    self (z[i;j]; j; t; z));
+  }
+};

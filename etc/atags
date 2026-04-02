@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# This is a crude attempt at building an Emacs TAGS file for the
+# specified Algae source files.  It tags function assignments for which
+# names can be associated.
+
+mawk '
+BEGIN \
+{
+  id	= "[_A-Za-z\$][_A-Za-z0-9\$]*";
+  ws	= "[ \t]*";
+  lval	= "(" id ws "\." ws ")*" id;
+  func	= lval ws "=" ws "function[ \t\(]";
+}
+
+FNR == 1 \
+{
+  nc = 0;
+  printf( "\f\n%s,0\n", FILENAME );
+}
+
+match( $0, func ) \
+{
+  def = substr( $0, RSTART, RLENGTH );
+  c = RSTART - 1;
+  nam = substr( def, 1, match( def, ws "=" ) - 1 );
+  printf( "%s\177%s\001%d,%d\n", def, nam, FNR, c+nc );
+}
+
+{
+  nc += length( $0 ) + 1;
+}
+' $* > TAGS

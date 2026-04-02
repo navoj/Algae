@@ -1,0 +1,38 @@
+
+                           Welcome to Algae
+                           ----------------
+
+Copyright (C) 1994-2002  K. Scott Hunziker.
+Copyright (C) 1990-1994  The Boeing Company.
+
+See the file COPYING for license, warranty, and permission details.
+
+Algae is an interpreted language for numerical analysis.  Algae was
+developed because we needed a fast and versatile tool, capable of
+handling large problems.  Algae has been applied to interesting
+dynamics problems in aerospace and related fields for more than a
+decade.
+
+Algae was designed and implemented by Scott Hunziker and Mike Brennan.
+
+The file "doc/algae.ps" is the Algae User's Manual in postscript form.
+A list of known bugs is given in the "Bugs" section of the manual.
+Read the file "INSTALL" for installation instructions.  The file
+"NEWS" describes significant changes made between versions.  The
+"examples" directory contains some warped examples -- look at the
+files in the "tools" directory for more typical Algae code.
+
+The Algae source is available at ftp://algae.sourceforge.net/pub/algae
+and at ftp://ftp.eskimo.com/u/k/ksh/algae.  The Algae Home Page is on
+the WWW at "http://algae.sourceforge.net/index.html".
+
+Please send all comments and bug reports by electronic mail to:
+
+        K. Scott Hunziker <ksh@users.sourceforge.net>
+
+# 3/27/2026 #
+
+Configure for a modern gfortran system on Ubuntu using:
+
+F77=gfortran FFLAGS="-g -O2 -fallow-argument-mismatch" LIBS="-lgfortran -lm" CFLAGS="-g -O2 -std=gnu89" ./configure
+

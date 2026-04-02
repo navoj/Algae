@@ -1,0 +1,26 @@
+
+# This function returns the union of two vectors, except that it is
+# not sorted but instead returned in the original order.
+
+combine = function( a; b )
+{
+    local( ab; ab_eid; u; v; i; r );
+
+    # Append the vectors, and save a copy of their labels.
+
+    ab = vector( a ), vector( b );
+    if ( !ab.ne ) { return ab; }
+    ab_eid = ab.eid;
+    ab.eid = NULL;
+
+    # Get rid of duplicates.
+
+    u = set( ab );
+    v = 1:u.ne;
+    for ( i in 1:u.ne ) { v[i] = find( u[i]; ab )[1]; }
+    v = sort(v);
+    r = ab[v];
+    if ( ab_eid != NULL ) { r.eid = ab_eid[v]; }
+
+    return r;
+};

@@ -1,0 +1,72 @@
+
+# This function converts its argument to string type.
+
+string = function( x )
+{
+  return string.(class(x))( x );
+};
+
+( string.("function") =
+    strip( function( x )
+           {
+             message( "run time error:  Can't convert %s to string.";
+                      class(x) );
+             exception();
+           } )
+);
+
+string.("NULL") = function( x )
+{
+  return "";
+};
+
+string.scalar = function( x )
+{
+  return sprintf( "%s"; x );
+};
+
+string.vector = function( x )
+{
+  local( r; i );
+
+  r = fill( x.ne; "" );
+  r.eid = x.eid;
+
+  for ( i in seq( r.ne ) )
+  {
+    r[i] = sprintf( "%s"; x[i] );
+  }
+
+  return r;
+};
+
+string.matrix = function( x )
+{
+  local( r; i; j );
+
+  r = fill( x.nr,x.nc; "" );
+  r.rid = x.rid;
+  r.cid = x.cid;
+
+  for ( i in seq( r.nr ) )
+  {
+    for ( j in seq( r.nc ) )
+    {
+      r[i;j] = sprintf( "%s"; x[i;j] );
+    }
+  }
+
+  return r;
+};
+
+string.table = function( x )
+{
+  local( m );
+
+  for ( m in members( x ) )
+  {
+    x.(m) = string( x.(m) );
+  }
+
+  return x;
+};

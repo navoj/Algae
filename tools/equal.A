@@ -1,0 +1,7 @@
+
+# Test for equality.
+
+equal = function (a; b)
+{
+  return !test (a != b);
+};

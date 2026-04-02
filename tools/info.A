@@ -1,0 +1,75 @@
+
+# This function fires up the documentation browsing system.
+
+info = function (topic)
+{
+  local (cmd; ref; dir; display; m; i);
+
+  display = getenv ("DISPLAY");
+  if (display == NULL) { display = ""; }
+
+  if (topic != NULL &&
+      class (topic) == ("scalar", "vector", "matrix") &&
+      topic.type == "character")
+  {
+    topic = tolower (topic[1]);
+  else
+    topic = "";
+  }
+
+  # Which format (html or info)?
+
+  if ((display && $programs.xhtml) || $programs.html)
+  {
+    # Using html.
+
+    dir = $directories.html;
+
+    # Look for the first case-insensitive match for the given topic.
+
+    if (topic && self.db)
+    {
+      m = members (self.db);
+      i = find (tolower(topic); tolower(m));
+      if (i) { ref = self.db.(m[i]) + "#" + m[i]; }
+    }
+
+    if (ref == NULL) { ref = "index.html"; }
+
+    if (display && $programs.xhtml)
+    {
+      system (sprintf ("%s file:%s/%s &"; $programs.xhtml; dir; ref));
+    else
+      system (sprintf ("%s file:%s/%s"; $programs.html; dir; ref));
+    }
+
+  elseif ($programs.info)
+
+    if (topic == "") { topic = "Top"; }
+
+    if (display && $programs.xterm)
+    {
+       system (sprintf ("%s -e %s -f "+$directories.info+"/algae.info -n \"%s\" &";
+	      $programs.xterm; $programs.info; topic));
+    else
+      system (sprintf ("%s -f "+$directories.info+"/algae.info -n \"%s\"";
+	               $programs.info; topic));
+    }
+
+  else
+
+    message ("run time error: Info browser not available -- talk to your system administrator.");
+    exception ();
+  }
+};
+
+# Read in the HTML index, if it's there.
+
+if ($directories &&
+    $directories.html &&
+    !system ("test -f " + $directories.html + "/info.db"))
+{
+  info.fn = $directories.html + "/info.db";
+  info.db = get (info.fn);
+  close (info.fn);
+}

@@ -1,0 +1,53 @@
+
+#  This function computes the product of the elements of an array.  If
+#  `x' is a scalar, it is returned unchanged.  If `x' is a vector, the
+#  product of all of its elements is returned.  If `x' is a matrix, a
+#  vector is returned, each element of which is the product of the
+#  elements in the corresponding column of `x'.  If `x' is a table,
+#  the product function is applied to each of its members.
+
+#  A product with zero terms is unity, by definition.
+
+product = function (x)
+{
+  local (c; s; v; i; n; r);
+
+  c = class (x);
+
+  if (c == "vector")
+  {
+    s = 1;
+    for (x in x) { s @= x; }
+
+  elseif  (c == "matrix")
+
+    n = x.nc;
+    s = fill (n; 0);
+    if (x.nc)
+    {
+      for (i in seq (n))
+      {
+        r = 1;
+        for (v in x[;i]) { r @= v; }
+        s[i] = r;
+      }
+    }
+    s.eid = x.cid;
+
+  elseif (c == "scalar")
+
+    s = x;
+
+  elseif (c == "table")
+
+    for (v in members (x)) { x.(v) = self (x.(v)); }
+    s = x;
+
+  else
+
+    message ("Invalid argument type to product.");
+    exception ();
+  }
+
+  return s;
+};

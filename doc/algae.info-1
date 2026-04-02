@@ -1,0 +1,1315 @@
+This is algae.info, produced by makeinfo version 4.3 from algae.texinfo.
+
+INFO-DIR-SECTION Programming Languages
+START-INFO-DIR-ENTRY
+* algae: (algae).		Another Matrix Programming Language
+END-INFO-DIR-ENTRY
+
+
+File: algae.info,  Node: Top,  Next: About Algae,  Prev: (dir),  Up: (dir)
+
+   For algae 4.3.6; February 22, 2004.
+
+   Typing "q" exits, "?" lists all INFO commands, "h" gives an INFO
+tutorial, "m" selects menu items, etc.  Items are selected by any unique
+case-insensitive abbreviation of their name.  For example, type "m" and
+then "prim" to select the `Primer' item in the menu below.
+
+* Menu:
+
+* About Algae::			History and acknowledgments.
+* Primer::			An introduction to Algae.
+* Examples::			Some example programs in Algae.
+* Language::			Variables, operators, and expressions.
+* Data::        		Scalars, vectors, matrices, ...
+* Standard Functions::  	Reference guide for the standard functions.
+* Running Algae::	        Starting and running the Algae interpreter.
+* Projects::			The Algae wish list.
+* Bugs::			Bugs, and how to report them.
+* Concept Index::		An item for each concept.
+* Function Index::		An item for each standard function.
+
+Copyright (C) 1994-2004  K. Scott Hunziker.
+Copyright (C) 1990-1994  The Boeing Company.
+
+   Algae is free software.  You may redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.
+
+   Algae is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+for more details.
+
+   You should have received a copy of the GNU General Public License
+along with Algae; see the file `LICENSE'.  If not, write to the Free
+Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+   The copyright to major portions of Algae belongs to The Boeing
+Company.  The following permission notice and warranty disclaimer
+pertain to those portions of the code:
+
+     Permission to use, copy, modify, and distribute this software and
+     its documentation for any purpose is hereby granted, provided that
+     the above copyright notice appear in all copies, that both the
+     copyright notice and this permission notice and warranty
+     disclaimer appear in supporting documentation, and that the names
+     of Boeing or any of its entities not be used in advertising or
+     publicity pertaining to distribution of the software without
+     specific, written, prior permission.
+
+     BOEING DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+     INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS, AND
+     NONINFRINGEMENT.  IN NO EVENT SHALL BOEING BE LIABLE FOR ANY
+     SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+     WHATSOEVER RESULTING FROM LOSS OF USE, DATA, OR PROFITS, WHETHER
+     IN AN ACTION OF CONTRACT, NEGLIGENCE, OR OTHER TORTIOUS ACTION,
+     ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
+     THIS SOFTWARE.
+
+   Caution: Use of this product as a substitute for a healthy physical,
+emotional, and spiritual life is not recommended and could be harmful.
+
+
+File: algae.info,  Node: About Algae,  Next: Primer,  Prev: Top,  Up: Top
+
+About Algae
+***********
+
+   Algae is an interpreted language for numerical analysis.  Algae was
+developed because we needed a fast and versatile tool, capable of
+handling large problems.  Algae has been applied to interesting dynamics
+problems in aerospace and related fields for more than a decade.
+
+   This document describes both Algae, the programming language, and
+`algae', the interpreter.  Neither one of them is complete.  Even so,
+they offer some unique capabilities that we hope you'll find useful.
+
+   Algae was designed and implemented by Scott Hunziker and Mike
+Brennan.
+
+   Algae grew up in the "Structures Outback" of the Boeing Aerospace
+Company (now the Boeing Defense & Space Group).  Way back in 1989, Bill
+Russell convinced Bob Vos, the head of Boeing's ISM project, that ISM
+needed an interactive language.  With Dave Beste's help, Bill put
+together a crude system (it looked a lot like MATLAB) with a recursive
+descent parser.  They called it ISMLAB.  After Bill got a real job,
+Scott Hunziker took over and made major changes.  ISMLAB, along with the
+entire ISM project, was cancelled ignominiously in 1991.
+
+   Scott Hunziker and Mike Brennan began work on a successor to ISMLAB
+called AMPL (A Matrix Programming Language) with internal Boeing
+funding.  (The author remembers well the first day of their
+collaboration, when he inadvertently showed Mike that AMPL could
+multiply two matrices and get the wrong answer.)  As AMPL took shape,
+the internal funding dried up, leaving Scott to maintain it in his spare
+time.  Boeing generously released AMPL to the public in 1994.  The name
+was changed to Alki in 1995 because, by then, an unrelated package
+called AMPL was being distributed through netlib.  That name also had a
+conflict, and it was finally changed to Algae in early 1997.
+
+   Thanks to Don Morris for contributing the plotting code (not to
+mention countless bug reports), and Ian Searle for advice, constructive
+criticism, and pizza.
+
+
+File: algae.info,  Node: Primer,  Next: Examples,  Prev: About Algae,  Up: Top
+
+Primer
+******
+
+   What follows is a quick introduction to Algae.  It shows many simple
+examples, but leaves out the detailed descriptions.  *Note Language::,
+for more details about the Algae language.
+
+   The first thing that you'll need to know is how to get Algae
+started.  If your system is properly set up, it's a simple matter of
+typing the command `algae'.  This brings Algae up in interactive mode;
+a prompt is displayed and it waits for you to start typing statements.
+Later we'll discuss other options, such as giving Algae a file of
+statements to execute in "batch" mode.
+
+   This manual is available on-line through the `info' function; type
+`info()' to view it.  You can go to a specific topic by naming it as an
+argument.  For example, `info("operators")' takes you directly to the
+description of Algae's operators.
+
+   An Algae "statement" describes the operations to be performed.  For
+example, the statement
+
+     1+sin(2)
+
+tells Algae to add 1 to the sine of 2.  Statements may be terminated
+with a newline, a semicolon, or a question mark; the results are printed
+unless a semicolon is used.
+
+   The statement
+
+     printf ("hello, world\n");
+
+prints a hopeful little "hello, world" message to the terminal.  This
+is exactly like the C language, right down to the `\n' escape sequence
+to indicate a newline.  If you know C, you'll probably notice many
+other similarities between its syntax and that of Algae.
+
+   Like most computer languages, Algae has "variables" to which values
+can be assigned.  In Algae, these variables need not be declared before
+being used, and may be created or destroyed during a session.  If you
+type the statement `x=1', the variable `x' will be created if it
+doesn't already exist.  If `x' already had a value, then assignment to
+`x' destroys its previous contents.
+
+   The values taken on by variables are known as "entities", which have
+various "classes" such as `scalar', `vector', `matrix', `table', etc.
+A builtin function called `class' returns the class of its argument, so
+if you make the assignment `x=1' then the statement `class(x)' returns
+`"scalar"'.
+
+   Notice that a scalar is not the same thing as a one-element vector
+or as a one-by-one matrix.  The builtin functions `scalar', `vector',
+and `matrix' may be used to convert from one to another.  For example,
+`matrix(7)' returns a matrix with one row and one column, its single
+element having the value 7.  Algae will often make these conversions
+between classes automatically.  In the code
+
+     x = [ 3, 2, 1 ];
+     y = sort (x);
+
+the `sort' function first converts its matrix argument `x' into a
+vector and then returns another vector with the same elements but
+sorted in increasing order.  (An expression enclosed in brackets defines
+a matrix, as we'll discuss later.)
+
+   Besides its class, an entity may have other attributes which are
+stored as its "members".  For example, the number of rows in a matrix is
+stored in a member called "nr".  Members are referenced with the "dot"
+operator, so if `M' is a matrix, then `M.nr' returns its row size.
+Most entities have one or more predefined members (such as `nr' in
+matrices) that you cannot directly modify.  You can create new members
+simply by assignment.
+
+   A function called `show' prints information about an entity and its
+members.  Another function, `members', returns a vector containing the
+names of all the members of its argument.
+
+   When a non-existent variable or member is referenced, the special
+value `NULL' is returned.  For example, the line
+
+     a = 1; a.nr
+
+(which consists of two statements) prints "NULL", since scalars do not
+start life with a member `nr'.
+
+   The NULL constant may be used on the right-hand side of assignments,
+effectively deleting the previous value of an entity.  Actually, the
+entity still exists, but it has the value NULL.  You can perform a
+number of other operations on NULL, such as in
+
+     if (x != NULL) { x.class? }
+
+   All array entities (and that includes scalars) have a member called
+`type', which may have one of these values: "integer", "real",
+"complex", or "character".  The constant `1' is an integer, but `1.0'
+has real type.  Algae has no complex constant like Fortran does--you
+have to use an expression such as `sqrt(-1)'.  Users often make the
+assignment `i=sqrt(-1)' when they first start up Algae and then use
+expressions like `1+2*i' for their complex numbers.
+
+   The "character" type refers to a string of characters.  It is
+specified using double-quotes as we did for `"hello world"' above.  A
+character scalar like `"1"' is different than an integer scalar like
+`1', and an expression like `1+"1"' is not allowed.
+
+   A "vector" is a one-dimensional array of values.  For example,
+`x=1,2,3' specifies a vector with three elements.  The elements in a
+vector are numbered starting at one, and the total number of elements
+is given by its `ne' member.  All of the elements have the same type.
+
+   Actually, the comma character is Algae's "append" operator.  You can
+put several expressions together in a vector, as in
+
+     v = 1, sin(2), 3+4;
+
+   A "subvector" expression may be used to specify a particular element
+or elements.  You do that simply by following the vector with a
+"specifier" enclosed in brackets.  For example, `v[3]' gives a scalar
+having the value of the third element of `v'.  If the specifier is a
+scalar, then the result is a scalar; otherwise, the result is a vector.
+
+   A more complicated example is
+
+     aset = 3, 9, 15;
+     x = v[aset][2];
+
+Here, `x' gets the value of the ninth element of `v'.  You can also
+assign to a subvector, so `v[1]=0' sets the first element of `v' to
+zero.
+
+   Vectors have a member `eid' (it stands for element id) that contains
+labels for its elements.  You don't need labels (`eid' may be NULL),
+but they can be pretty useful.  For one thing, they can help you to
+avoid errors by not allowing you to perform certain operations unless
+the labels match.  If you try to add two vectors and they both have
+labels, then the labels must be identical.
+
+   You can also use labels instead of element numbers in a subvector
+expression.  You do this by using character strings as the specifier.
+For example, the code
+
+     weight =        172,    216,     188;
+     weight.eid =  "Tom", "Dick", "Harry";
+
+sets up the vector `weight' with character string labels.  Then
+`weight["Dick"]' gives Dick's weight of 216.
+
+   Vectors can be generated by using the colon operator.  The expression
+`1:5:2' gives a vector whose first element is `1', last element is no
+more than `5', and has a difference of `2' between each successive
+element.  In other words, `1:5:2' is the same as `1,3,5'.  If you leave
+off the second colon and the third operand, then Algae infers a `1' for
+the third operand.  Thus, if `n=100', then `1:n' is the vector
+containing all the integers from `1' through `100'.
+
+   A "matrix" is a two-dimensional array of values.  The expression
+`[1,2;3,4;5,6]' specifies a matrix with three rows and two
+columns--rows are given as vectors and are separated by semicolons.
+
+   Submatrix expressions work just like subvector expressions, but with
+a semicolon to separate the row specifier from the column specifier.
+The expression `M[3;2,3]' gives a vector containing the elements of `M'
+in its third row and second and third columns.  If both specifiers are
+scalars, then the result is a scalar.  If only one specifier is a
+scalar, then the result is a vector.  Otherwise, the result is a
+matrix.  The members `nr' and `nc' give the number of rows and columns
+of a matrix.
+
+   Matrices have both row and column labels.  They're stored in the
+members `rid' and `cid', respectively.  As with vectors, character
+strings used as specifiers in submatrix expressions refer to the labels.
+
+   A "table" is an entity that simply holds a collection of other
+entities.  For example, the statements
+
+     x = 1; y = "foo", "bar";
+     t = { x; y };
+
+result in a table `t' that contains the scalar `x' and the vector `y'.
+Instead, we could write
+
+     t = { x = 1; y = "foo", "bar" };
+
+and get the same table.  In the latter case, though, `x' and `y' exist
+only inside the table.
+
+   You can put any class of entity into a table, even another table.
+The members are referenced with the "dot" operator, just like the other
+entities.  The line `a={u=1;v=2}; a.u+a.v' prints the value 3.  You can
+add two tables (the members of the right-hand table are inserted into
+the left-hand table) and subtract two tables (the members of the
+left-hand table having the same name as a member of the right-hand table
+are removed).
+
+   Algae normally executes statements in the order that it receives
+them, but the control-flow statements `if', `for', `while', and `try'
+can change that.  The code
+
+     if (x > 0) { y = 1/x; }
+
+is an example of an `if' statement.  The parentheses are required
+around the test expression.  If that expression is "true", then the
+statements following it are executed.  The `if' statement may also have
+an `elseif' part, an `else' part, or both, so
+
+     if (x > 0)
+     {
+         printf ("positive");
+     elseif (x < 0)
+         printf ("negative");
+     else
+         printf ("zero");
+     }
+
+prints the sign of `x'.  (But you should use the `sign' function,
+instead.)
+
+   As long as only scalars are involved, Algae's relational, equality,
+and logical operators probably won't surprise you.  An expression is
+`1' if it's true and `0' if it's false.  The relational operators are
+`>', `>=', `<', `<='.  The equality operators are `==' and `!='.  The
+logical operators are `&', `|', and `!'.  Two additional logical
+operators, `&&' and `||', are special; they are described later.
+
+   Where these operators might surprise you is when vectors and matrices
+are involved.  Like most Algae operators, they work on an
+element-by-element basis.  For example, if `A' and `B' are both
+matrices, then the expression `A==B' has several features:
+
+   * `A' and `B' must have the same size.
+
+   * Their labels must match.
+
+   * The expression returns a matrix with the same size as `A' and `B',
+     every element of which is either `1' or `0' depending on whether
+     the corresponding elements of `A' and `B' are equal.
+
+You can see, then, that `A==B' doesn't give you a simple true or false
+answer but rather a matrix of answers.
+
+   The `if' statement, however, does need a simple true or false in
+order to decide whether to execute its statements or not.  It does this
+by recognizing certain entities as false--all others are true.  The
+"false" entities are as follows:
+
+   * NULL.
+
+   * Numeric entities in which every element is zero.
+
+   * Character entities in which every element is `""'.
+
+   * Vectors and matrices with no elements.
+
+   * Tables with no members.
+
+   What gets new users into trouble is a statement like
+
+     if (A == B) { done = 1; }
+
+If `A' and `B' are matrices, then `A==B' returns a matrix of ones and
+zeros.  The `if' statement interprets that as "true" if even one of its
+elements is nonzero.  In words, the above statement starts out "If any
+element of `A' is equal to the corresponding element of `B', then ..."
+The difficulty is that the element-by-element "equality" operation is
+not the same as a test of the equality of two arrays.  If the latter
+test is what you really want, then you should use the `equal' function
+instead.
+
+   On the other hand, the statement
+
+     if (A != B) { done = 0; }
+
+does work in both senses.  The expression `A!=B' returns a matrix that
+has nonzero elements where the corresponding elements of `A' and `B'
+are unequal.  Thus this expression also serves as a test of the
+inequality of the two arrays.
+
+   The `&&' ("and") and `||' ("or") operators are special in two ways:
+they don't perform element-by-element like the other operators in this
+section, and they "short-circuit" by skipping evaluation of the second
+operand if the result is already established by the first operand.
+
+   Each operand of `&&' and `||' is evaluated for "truth" in the same
+way that the `if' test does.  For `&&', if the first operand evaluates
+to "false" then the second operand is not evaluated and the result of
+the operation is 0.  For `||', if the first operand evaluates to "true"
+then the second operand is not evaluated and the result of the
+operation is 1.
+
+   For example, in the expression
+
+     x != NULL && x.type == "integer"
+
+`x' is first checked to see if it's NULL.  If it is, then the first
+operand of `&&' is 0 and that's also the result of the entire
+expression.  In that case, the member reference `x.type' is never
+evaluated.  This is convenient, since that would otherwise be an error.
+
+   An `if' statement such as
+
+     if (x < tol) { x = tol; }
+
+could be written instead as
+
+     x < tol && (x = tol);
+
+   The parentheses are required in the second version, since the
+precedence of `=' is lower than that of `&&'.  Although they accomplish
+the same thing, the first version is recommended; it is easier to read
+and executes a bit faster.
+
+   Algae has two control-flow statements that perform looping: `while'
+and `for'.  The `while' statement executes a set of statements over and
+over, as long as a given condition is true.  For example, the code
+
+     a=0; b=1;
+     while (b < 10000)
+     {
+       c = b;
+       b = a+b;
+       a = c;
+     }
+     c?
+
+computes and prints the largest Fibonacci number less than 10000.  The
+interpreter checks to make sure that `b<10000', executes the statements
+in the `while' block, and then repeats.  The first time that the
+expression `b<10000' evaluates false, the loop terminates.
+
+   The `for' statement also causes looping, but in a different way.
+Assuming that `v' is a numeric vector, the code
+
+     for (i in 1:v.ne) { v[i] = 1 / v[i]; }
+
+inverts each of its members.  Inside the parentheses, the keyword `in'
+separates an identifier on the left and a vector expression on the
+right.  In this example, the vector expression is `1:v.ne' which
+contains the integers from 1 to the length of `v'.  The `for' loop sets
+`i' equal to the first element, 1, and then executes the statement
+`v[i]=1.0/v[i];'.  Then `i' is set equal to the second element, and the
+statement is executed again.  This cycle repeats until all of the
+elements of `1:v.ne' are used.
+
+   The previous example also illustrates an important topic concerning
+both `while' loops and `for' loops.  Essentially the same results would
+be obtained with the statement `v=1/v'.  This obviously takes less
+typing and is easier to read.  The really important difference, though,
+is that it is far more efficient.  With the `for' loop, all of the
+operations (assignment, division, etc.) are performed by the
+interpreter.  Although Algae is fast, it can't possibly compete with
+doing the same job in C, as `v=1/v' is.  On my computer, it's about 60
+times faster.
+
+   Sometimes it's convenient to interrupt the execution of `while' and
+`for' loops.  The `continue' statement causes another iteration of the
+loop to begin immediately.  If we wanted to invert the nonzero elements
+of a vector, we could write
+
+     for (i in 1:v.ne)
+     {
+       if (v[i] == 0) { continue; }
+       v[i] = 1 / v[i];
+     }
+
+   The `break' statement goes even further, exiting the loop
+altogether.  For example, we could have written our Fibonacci routine as
+
+     a=0; b=1;
+     while (1)
+     {
+       c = b;
+       if ((b = a+b) > 10000) { break; }
+       a = c;
+     }
+     c?
+
+The `continue' and `break' statements affect execution of only the
+innermost enclosing loop.
+
+   It's important to note that `continue' and `break' are statements,
+not expressions.  The code
+
+     x < 0 && break;
+
+is not valid, since the operands of `&&' must be expressions.
+
+   The `try' statement is the remaining control-flow statement.  It is
+used to modify Algae's response to something called an "exception".
+When an exception occurs, we say that it has been "raised".  Many error
+conditions (dividing by zero, running out of memory, etc.) cause an
+exception to be raised.  You may also raise an exception directly by
+calling the `exception' function.
+
+   When an exception is raised, Algae's default action is to stop
+execution.  If it's running interactively, it returns to the command
+line prompt; otherwise it exits completely.  This action can be modified
+by using the `try' statement.  If an exception is raised within the
+`try' block, execution continues at the point immediately following
+that block.  For example, the statement
+
+     try { i += 1; }
+
+increments `i' by one if possible.  If an error occurs (say `i' was
+NULL), then Algae just moves on to execute the next line.  Although
+it's probably not a good idea, we could use this instead of `break' in
+the previous Fibonacci example:
+
+     a=0; b=1;
+     try
+     {
+       while (1)
+       {
+         c = b;
+         if ((b = a+b) > 10000) { exception (); }
+         a = c;
+       }
+     }
+     c?
+
+There's a real difference between these approaches, though.  In the
+version using the `break' statement, the result is printed only when
+the correct value is reached.  In the `try' version, the result is
+printed regardless of why the exception was raised--if Algae received
+an interrupt signal while in the middle of the loop, it would jump out
+of the `try' block and then print an incorrect value.
+
+   The `try' statement has an optional `catch' clause, which is
+something like the `else' clause of an `if' statement.  Any statements
+that follow `catch' are executed only if an exception is raised while
+in the preceding part of the `try' block.  Also, exceptions that occur
+within the `catch' block are not handled specially.  For example,
+
+     try
+     {
+       v = 1/v;
+     catch
+       message ("I can't do that, Dave.");
+       exception ();
+     }
+
+   would print a message if it had trouble performing the inverse and
+then stop execution.  If no exception occurs prior to the `catch'
+clause, then execution continues following the end of the `try'
+statement.
+
+   The language syntax does not allow a `break' or `continue' statement
+to be positioned such that it would cause execution to jump out of the
+`try' block.
+
+   Like other computer languages, Algae has "functions".  Some functions
+(like `sin' and `printf') are "builtin", meaning that they are part of
+the Algae executable file.  Others, called "user functions", are those
+written in the Algae language.  A function is called by giving its name
+followed by a parenthesized list of "arguments".  The arguments are
+separated by semicolons, and their values are passed to the function.
+Since only the values are passed, the function cannot modify the
+variables that you pass it.
+
+   For example, let's assume that you're calling the function `shady'.
+
+     x = 1;
+     y = shady (x);
+
+The value returned by `shady' is assigned to `y'.  You can't tell by
+looking at it what class of entity (scalar, matrix, etc.)  `shady'
+returns.  In fact, that might even change from one call to the next.
+Rest assured, though, the value of `x' is still 1, no matter what
+happened in `shady'.
+
+   Algae functions are entities--just like scalars and matrices.  That
+means that you can perform operations on them as you do with other
+entities.  For example, the statement
+
+     my_sin = sin
+
+creates a new function called `my_sin' that works just like the
+original `sin' function.  Of course,
+
+     sin = NULL;
+
+gets rid of the `sin' function completely--probably not a very good
+idea in most cases.
+
+   Functions may be defined during an interactive session or simply
+included from files.  As an example, consider writing a function called
+"findit" that will look through the elements of a vector for a given
+value, returning the locations where it found it.  The following
+function should do the job:
+
+     findit = function (s; v)
+     {
+       local (w; i);
+       w = vector ();
+       for (i in 1:v.ne)
+       {
+         if (v[i] == s) { w = w, i; }
+       }
+       return w;
+     }
+
+(The builtin function `find' does this job much more efficiently.)  The
+`local' statement declares its arguments as having local scope.  For
+example, the assignment to `w' would have no effect outside this
+function.  Without the `local' declaration, the assignment would change
+the value of `w' globally.
+
+   The `return' statement causes execution of the function to terminate
+and passes it's expression as the function's return value.  Recursive
+calls to a function are no problem.  For example, we could write a
+function to compute factorials as
+
+     fact = function (n)
+     {
+       if (n < 2) { return 1.0; else return n * fact (n-1); }
+     }
+
+   This function has one slight problem.  (Several, really, if you
+consider that it does no error checking.)  If we later decide to change
+its name by typing `factorial=fact', it still calls function `fact'
+internally.  Now if we're really mean-spirited we can change `fact' as
+in `fact=sin'; now `factorial' gives wrong answers.  The way to handle
+this is to call the function `self' when you make a recursive function
+call, as in
+
+     fact = function (n)
+     {
+       if (n < 2) { return 1.0; else return n * self (n-1); }
+     }
+
+   The `self' keyword refers to the current function.  Besides
+recursive function calls, it's also useful for keeping data local to a
+function.  For example, consider a function that returns the "shape" of
+its argument:
+
+     shape = function (x)
+     {
+       return self.(class(x)) (x);
+     };
+     
+     shape.scalar = function (x) { return NULL; };
+     shape.vector = function (x) { return x.ne; };
+     shape.matrix = function (x) { return x.nr, x.nc; };
+
+   This `shape' function determines the class of its argument and then
+calls the appropriate member function.  (The standard `shape' function
+additionally provides some error checking.)
+
+
+File: algae.info,  Node: Examples,  Next: Language,  Prev: Primer,  Up: Top
+
+Example Programs
+****************
+
+   Following are several examples designed to show off Algae's
+capabilities as well as to give you a feel for how it is used.  The
+`examples' directory in the source distribution of Algae contains some
+additional code for perusal.
+
+* Menu:
+
+* Temperatures::        Fahrenheit to Celsius conversions
+* Reading Numbers::     Reading and summing numbers
+* Powers::              Integer powers
+
+
+File: algae.info,  Node: Temperatures,  Next: Reading Numbers,  Prev: Examples,  Up: Examples
+
+Temperature Conversion
+======================
+
+   This Algae program prints a table of Fahrenheit temperatures and
+their Celsius equivalents:
+
+     # Print temperature conversions
+     fahr = sort (0:300:20, 32, 212);
+     celsius = (5/9)*(fahr-32);
+     [fahr;celsius]'?
+
+Its output looks like this:
+
+     [         0.000       -17.78 ]
+     [         20.00       -6.667 ]
+     [         32.00        0.000 ]
+     [         40.00        4.444 ]
+     [         60.00        15.56 ]
+     [         80.00        26.67 ]
+     [         100.0        37.78 ]
+     [         120.0        48.89 ]
+     [         140.0        60.00 ]
+     [         160.0        71.11 ]
+     [         180.0        82.22 ]
+     [         200.0        93.33 ]
+     [         212.0        100.0 ]
+     [         220.0        104.4 ]
+     [         240.0        115.6 ]
+     [         260.0        126.7 ]
+     [         280.0        137.8 ]
+     [         300.0        148.9 ]
+
+   This program does quite a bit in only four lines.  The entire first
+line is a "comment" (because it starts with `#') and is ignored by
+Algae.
+
+   In the second line we define the Fahrenheit temperatures for our
+table.  The expression `0:300:20' gives a vector that goes from 0 to
+300 in steps of 20.  We add two more elements, 32 and 212, to that
+vector by using the comma operator.  Then we use the `sort' function to
+sort it in increasing order.  Finally, our vector of Fahrenheit
+temperatures is assigned to the variable `fahr'.  Nothing is printed by
+this statement, since it ends with a semicolon.
+
+   The third line computes the Celsius equivalents using the familiar
+conversion formula.  First 32 is subtracted from each element of
+`fahr'.  Then each element is multiplied by 5/9.  The result is
+assigned to the variable `celsius'.  Here, again, nothing is printed.
+
+   Even though all of the terms so far have been integers, `celsius' is
+a real-valued vector.  Unlike some programming languages, integer
+division in Algae does not result in truncation--the expression `5/9'
+returns a real value that is approximately 0.556.
+
+   The last line prints the temperatures out as a matrix, with the
+Fahrenheit temperatures in the first column and their Celsius
+equivalents in the second column.  We do that by using brackets to form
+a matrix with `fahr' in the first row and `celsius' in the second row
+and then transposing the matrix with the `'' operator.  The question
+mark on the end is not necessary, since the matrix would also be
+printed without it, but it does call attention to the line as one that
+prints.
+
+
+File: algae.info,  Node: Reading Numbers,  Next: Powers,  Prev: Temperatures,  Up: Examples
+
+Reading and Summing Numbers
+===========================
+
+   This Algae program reads a bunch of numbers, adds them up, and
+prints the result:
+
+     # Read and sum some numbers
+     sum = 0;
+     $read = 1;
+     while ($read) { sum += readnum(); }
+     sum?
+
+   The program reads numbers one at a time and adds them to `sum', so
+in the first line `sum' is initialized to zero.  The `readnum' function
+is used to read the numbers.  This function is one of the few standard
+functions that has a side effect:  it assigns to the variable `$read'
+the number of values that it read.  It will be less than the number you
+asked for if `readnum' runs out of data.
+
+   The `while' loop executes its statements repeatedly until its
+condition tests true.  We set `$read' to 1 (true) first, so we know
+that the `while' loop will execute at least once.  After that, the
+`while' loop continues until `$read' is eventually set to 0 by the
+`readnum' function.  When the `while' loop is done, the last line
+prints `sum'.
+
+   Usually, we give the `readnum' function two arguments: a "shape"
+vector and a file name.  The "shape" vector describes the number of
+values to read and in what form (vector, matrix, etc.) they should be
+returned.  The values are read from the named file.  Since the program
+above gives neither argument, `readnum' simply reads one value from the
+standard input device.
+
+   The `+=' operator adds the value on the right to the variable on the
+left; the expression `sum+=readnum()' does the same thing as
+`sum=sum+readnum()'.  Every time the `while' loop repeats, `sum' is
+increased by the value returned by `readnum'.  When `readnum' runs out
+of data, it returns 0 (so `sum' isn't changed) and sets `$read' to 0
+(so the `while' loop quits looping).
+
+   Unless you redirect standard input, this program will quietly read
+what you type until you signal an end-of-file (`C-d' on UNIX systems and
+`C-z' on VMS).
+
+
+File: algae.info,  Node: Powers,  Prev: Reading Numbers,  Up: Examples
+
+Integer Powers
+==============
+
+   This program illustrates the use of a function.  In it, we define the
+function `power' that computes integer powers of its argument.  We also
+show some Algae code that calls `power'.
+
+     # power:  raise `x' to the `n'-th power
+     power = function (x; n)
+     {
+       local (y);
+       y = x;
+       while (n > 1)
+       {
+         y = y * x;
+         n -= 1;
+       }
+       return y;
+     };
+     
+     power (2; 8)?
+     power ([ 1, 2; 2, 3 ]; 4)?
+
+   The first line of this program is an ordinary assignment statement,
+which assigns the function on its right side to the variable `power'.
+The function's arguments are defined in the parentheses that follow the
+`function' keyword.  In this case, there are two arguments:  `x' and
+`n'.
+
+   In Algae, all function arguments are called "by value".  When a
+function is called, it gets copies of what the calling program gave as
+arguments and can modify them without changing the values retained by
+the calling program.  In the `power' function we decrement `n' each
+time through the `while' loop, but this has no effect on the calling
+program.
+
+   The `local' statement defines its argument, the variable `y', as
+having local scope.  This means that `power' has its own temporary
+variable called `y' that is defined only within that function.  This
+`y' is first given the value of `x' and then, inside the `while' loop,
+repeatedly multiplied by `x' until `n' is no longer greater than 1.
+
+   The value that `power' computes is returned to its caller by the
+`return' statement.  Any expression may follow `return', and any number
+of `return' statements may appear in a function.  If the function has
+no return statement, it returns NULL to its caller.
+
+   The first time we call `power', it returns (and the calling program
+prints) the value 256.  In this case `power' is really not very useful,
+since we could have obtained the same result with the expression `2^8'
+using Algae's exponentiation operator.
+
+   The `power' function does have a use, though, as the second call to
+it shows.  Algae's exponentiation operator performs in an
+element-by-element sense, so `[1,2;2,3]^4' returns
+
+     [           1         16 ]
+     [          16         81 ]
+
+In contrast, `power' performs in a matrix sense.  In the program above,
+it returns
+
+     [          89        144 ]
+     [         144        233 ]
+
+   The algorithm used in the `power' function above can be improved
+upon by using successive squaring:
+
+     power = function (x; n)
+     {
+       if (n == 1)
+       {
+         return x;
+       elseif (n%2)
+         return x * self (x; n-1);
+       else
+         x = self (x; n/2);
+         return x * x;
+       }
+     };
+
+   This `power' function might be useful, but it's certainly not ready
+for prime-time.  Notice that it gives wrong answers if `n' is 0 or a
+negative integer.  What happens for the expression `power(4;1/2)', in
+which `n' is not an integer?  To make `power' more robust you'd
+probably want to add some `if' statements to check for illegal
+arguments.
+
+
+File: algae.info,  Node: Language,  Next: Data,  Prev: Examples,  Up: Top
+
+The Algae Language
+******************
+
+   In Algae, variables and operators combine to form expressions and
+statements.  The rules for this are mostly conventional; for example,
+the statement `a=b+c' means that the sum of `b' and `c' is assigned to
+the variable `a'.  In Algae, however, the concept of addition (as well
+as many other operations) is expanded to include operations between a
+variety of data classes.
+
+* Menu:
+
+* Entities::
+* Variables::
+* Operators::
+* Expressions::
+* Statements::
+* Functions::
+
+
+File: algae.info,  Node: Entities,  Next: Variables,  Prev: Language,  Up: Language
+
+Entities
+========
+
+   The basic unit of data in Algae is the "entity".  Every entity has
+an attribute called its "class" which describes it as a "scalar",
+"vector", "matrix", etc.  The built-in function `class' returns the
+class of its argument as a character string.  Thus
+
+     x = 1.2E3; class(x)?
+
+prints "scalar" and
+
+     class (cos)?
+
+prints "function".  Naturally, the statement
+
+     class (class (log))?
+
+prints "scalar", since `class' returns a scalar character string.
+
+   Entities also contain "members", in which various additional
+attributes of the entity are stored.  For example, matrix entities have
+members such as `type', `density', and `symmetry'.  These members are
+themselves entities, so it is not unusual to have several levels of
+membership (a member of a member of a member).  *Note Data::, for a
+description of the various classes.
+
+   The "dot" operator is used to refer to members.  The statements
+
+     x = 1; x.type?
+
+print "integer", the value of the `type' member in `x'.  The line
+
+     foo = 1492; foo.bar?
+
+prints "NULL", since scalars don't contain a `bar' member when they're
+created.  You could give it one, of course:
+
+     foo.bar = "Columbus"
+
+
+File: algae.info,  Node: Variables,  Next: Operators,  Prev: Entities,  Up: Language
+
+Variables
+=========
+
+   A "variable" is a symbol that refers to a named entity; the entity
+is known as the symbol's "value".  A variable comes into being when a
+value is assigned to it; there are no explicit declarations.
+
+* Menu:
+
+* Variable Names::
+* Evaluation::
+* Scope::
+* Predefined Variables::
+
+
+File: algae.info,  Node: Variable Names,  Next: Evaluation,  Prev: Variables,  Up: Variables
+
+Variable Names
+--------------
+
+   Variables have names consisting of letters, digits, dollar signs
+(`$') and underscores (`_').  A variable name cannot begin with a
+digit.  Variable names are case sensitive, so the variables `foo' and
+`Foo' are distinct.
+
+   We generally use names that begin with `$' to refer to global
+variables that are set at startup or that have some kind of side effect.
+For example, the variable `$beep' acts like any other variable, but
+also control's Algae's sound effects.  The `who' function does not
+report variables that begin with `$' unless you give it the argument
+`"$"'.
+
+   One variable name is special--the variable `$$' refers to the global
+symbol table.  For example,
+
+     a = "x";
+     $$.(a)
+
+prints the value of the global variable `x'.  You can use `$$' like any
+other variable, except that you cannot reassign its value.
+
+   The only limitation on the length of a variable name is that it must
+have at least one character.  Short names are convenient for interactive
+work, but longer, descriptive names have advantages in functions and
+scripts.
+
+
+File: algae.info,  Node: Evaluation,  Next: Scope,  Prev: Variable Names,  Up: Variables
+
+Evaluation of Variables
+-----------------------
+
+   When a variable name is encountered in an expression, it is
+evaluated by replacing the variable name with the corresponding named
+entity.  If it is an argument to a function, then a copy is made
+(conceptually, if not in fact) and passed to the function.  Thus, in a
+function call like `func(a)' (*note Functions::), the function `func'
+only gets a copy of `a' and can't modify the `a' belonging to its
+caller.
+
+   There is one exceptional case, involving the "dot" operator, in which
+an identifier is not evaluated as a variable name.  An identifier on the
+right side of a member expression is taken literally as the name of the
+member.  For example, the statement
+
+     v.type
+
+prints the value of `v''s member called `type'.  You could well have a
+variable named `type', but it would not affect the member expression
+above.
+
+   Alternatively, the statement
+
+     v.(type)
+
+   has an expression to the right of the "dot" operator, not a simple
+identifier, and so prints the value of the member of `v' named by the
+variable `type'.
+
+
+File: algae.info,  Node: Scope,  Next: Predefined Variables,  Prev: Evaluation,  Up: Variables
+
+Scope of Variables
+------------------
+
+   Variables referenced from within functions are global in scope unless
+they are arguments to the function or are declared local with the
+`local' statement.  For example, the function
+
+     init = function ()
+     {
+       i = sqrt (-1);
+       e = exp (1);
+       pi = acos (-1);
+     };
+
+could be used to initialize some commonly used variables.  Once you
+executed `init()', the variables `i', `e', and `pi' would be globally
+defined.
+
+   At the same time, you could have another function
+
+     egg_hunt = function (v)
+     {
+       local (i);
+       for (i in 1:v.ne)
+       {
+         if (v[i] == 0) { return i; }
+       }
+     }
+
+in which `i' has local scope.  Here, you can't modify or even get the
+value of the global variable `i'.
+
+   The form of the `local' statement is similar to a function call, and
+multiple variables may be specified by separating them by semicolons.
+
+   The `local' statement is unusual, in that it is a directive to the
+parser rather than something that is coded.  This means that it takes
+effect when the parser sees it, not when it's executed.  In the code
+
+     f = function ()
+     {
+       a = 1;
+       if (0) { local (a); }
+       a = 2;
+     }
+
+the global variable `a' gets set to 1.  Even though the code in the
+`if' block is not executed, after seeing it the parser considers `a' to
+be a local variable.  Normally, one simply puts `local' statements at
+the beginning of a function.
+
+   The `veil' statement allows you to make a temporary change to a
+global variable which will remain active from that point until the end
+of the current dynamic scope, typically until the function ends.  For
+example, the function
+
+     prt = function (x)
+     {
+       veil (pi);
+       pi = "apple";
+       bake ();
+     };
+
+changes the value of the global variable `pi' while it's executing, but
+`pi' reverts to its previous value when `prt' finishes.  If the
+function `bake' referred to `pi', it would use or modify the temporary
+value.
+
+   By dynamic scope, we refer to the current execution unit.  Within a
+function, that lasts as long as the function is executing.  Otherwise,
+the dynamic scope is the current file, except that for the `eval' and
+`exec' functions it is the argument string itself.  Also, if executing
+in interactive mode and not in a function, then the dynamic scope
+extends only to the end of the last statement on a line.
+
+   Unlike the `local' statement, the effect of the `veil' statement
+takes place at the time it is executed.  Once a variable is veiled (and
+before you set it to something else), it has the same value as the
+associated global variable.
+
+
+File: algae.info,  Node: Predefined Variables,  Prev: Scope,  Up: Variables
+
+Predefined Variables
+--------------------
+
+   Several variables are already defined for you when Algae starts up.
+Some of these are used to control Algae, and some provide you
+information.  The predefined variables are:
+
+`$beep'
+     If this variable is "true" (that is, `test($beep)' returns 1),
+     then error messages include a BEL character.  This causes most
+     terminals to beep.  On startup, `$beep' is 0.
+
+`$digits'
+     This variable specifies the number of significant digits that
+     Algae prints for real and complex numbers.  On startup, `$digits'
+     is 4.
+
+`$pid'
+     On startup, `$pid' contains the "process id" of the Algae process.
+
+`$program'
+     On startup, `$program' gives the name of the current Algae
+     program.  This will normally be `"algae"'.  It would be different
+     if, for example, you had changed the name of the Algae executable.
+
+`$prompt'
+     This variable controls Algae's interactive prompt.  It is expected
+     to be a character vector with two elements--on startup it is
+
+          (  "> ", "  " )
+
+     The first element is Algae's first-level prompt.  When Algae is
+     waiting for another line of input before it executes what it has
+     already seen, it presents its second-level prompt.  The second
+     element of `$prompt' defines this second-level prompt.  If Algae
+     can't make sense of `$prompt''s value, it does without a prompt.
+
+`$read'
+     The `$read' variable is set as a side-effect of the `readnum'
+     function.  It reports the number of values read in the last call to
+     `readnum'.
+
+`$term_width'
+     This variable tells Algae the width of your terminal in
+     characters.  Algae will attempt to adjust its display to fit
+     within this width.  On startup, Algae will attempt to sense this
+     on its own.  If `term_width' is set to 0, Algae will not wrap
+     lines.
+
+`help'
+     This is simply a character scalar that provides a few basic
+     instructions for using Algae.
+
+   You may wish to set some of these variables (like `$beep' or
+`$prompt') every time you use Algae.  This is conveniently done by
+putting the assignments in the `.algae' file in your home directory.
+
+
+File: algae.info,  Node: Operators,  Next: Expressions,  Prev: Variables,  Up: Language
+
+Operators
+=========
+
+   Algae has unary, binary, and ternary operators to perform a variety
+of operations.  The standard arithmetic operators (`+', `-', `*', `/',
+etc.) are available and have the usual precedence.  The caret `^' is
+for exponentiation: 8^2 equals 64.  The single quote character `''
+denotes the conjugate transpose.
+
+   With a few exceptions, all operators work in the "element by element"
+sense.  For example, if `A' and `B' are matrices with the same size,
+then `A/B' returns a matrix, each element of which is the quotient of
+the corresponding elements of `A' and `B'.  The `*' operator works in
+an "inner product" sense, so `A*B' is a matrix multiplication.  The `@'
+operator is Algae's "element by element" multiplication operator.
+
+   When an operator has array operands of different types, one will be
+automatically converted so that they have a common type, if possible.
+An `integer' may be converted to `real' or `complex', and a `real' may
+be converted to `complex'.  No conversion to or from `character' type
+is possible.
+
+   Unlike some other languages, the result of an operation in Algae may
+have a type that is different than its operands.  For example, the
+result of `1/2' has `real' type, even though its operands have type
+`integer'.  Another example is `(-1)^0.5', which returns a complex
+number.
+
+   With the exception of `*', if a binary operator has both a `vector'
+and a `matrix' as its operands the `vector' is converted to a `matrix'
+before the operation is performed.  Upon conversion, a vector becomes a
+matrix with one row.  For example, in the statement
+
+     ( 1, 2 ) + [ 3, 4 ]
+
+   the left-hand operand of `+' is the vector `(1,2)'.  This is
+converted to a `matrix' before being added to `[3,4]'.
+
+   The following table summarizes the precedence and associativity of
+Algae's operators.  Those shown on the same line have equal precedence,
+and the rows are in order of decreasing precedence.
+
+*operators*
+     *associativity*
+
+`()'  `[]'  `.'
+     left to right
+
+`''
+     right to left
+
+`^'
+     right to left
+
+`!'  `+'  `-'
+     (unary) left to right
+
+`*'  `/'  `%'  `@'
+     left to right
+
+`+'  `-'
+     (binary) left to right
+
+`<'  `>'  `<='  `>='  `=='  `!='
+     left to right
+
+`&'
+     left to right
+
+`|'
+     left to right
+
+`&&'
+     left to right
+
+`||'
+     left to right
+
+`:'
+     left to right
+
+`,'
+     left to right
+
+`='  `+='  `-='  `*='  `/='  `@='  `%='
+     right to left
+
+* Menu:
+
+* Call::		`()'
+* Element::		`[]'
+* Member::		`.'
+* Transpose::		`''
+* Power::		`^'
+* Not::			`!'
+* Negation::		`+' and `-' (unary)
+* Multiplication::	`*', `/', `%', and `@'
+* Addition::		`+' and `-' (binary)
+* Relation::		`<', `>', `<=', `>=', `==', and `!='
+* And::			`&'
+* Or::			`|'
+* Short And::		`&&'
+* Short Or::		`||'
+* Generate::		`:'
+* Append::		`,'
+* Assign::		`=', `+=', `-=', `*=', `/=', `@=', and `%='
+
+
+File: algae.info,  Node: Call,  Next: Element,  Prev: Operators,  Up: Operators
+
+Function Calls
+--------------
+
+   Functions are called in the usual way:  the function reference is
+followed by a list of arguments.  For example,
+
+     w = union (u; v);
+
+calls the function `union', passing it the values of `u' and `v' for
+arguments.  The value returned by the function's `return' statement (or
+NULL if it doesn't have one) is the value of the function call.
+
+   The arguments may be any expressions, and are separated by
+semicolons.  The called function gets only the values of the
+expressions you give it as arguments, so it can't modify the variables
+that you give it.
+
+   From its definition, the function knows how many arguments to expect.
+Passing too many arguments is an error.  If you pass fewer arguments
+than the function definition calls for, NULL's are passed in place of
+the missing ones.
+
+   Besides their use in function calls, parentheses are used for several
+other purposes, including grouping expressions, `if', `for', and
+`while' conditions, function definitions, etc.
+

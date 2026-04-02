@@ -1,0 +1,102 @@
+
+printf( "Starting the lqr test...\n" );
+
+lqr = function( a; b; q; r; nn ) {
+    local( k; s );
+    local( m; n; mb; nb; mq; nq );
+    local( e; v; d );
+
+    m = a.nr; n = a.nc;
+    mb = b.nr; nb = b.nc;
+    mq = q.nr; nq = q.nc;
+    
+    if ( m != mq | n != nq ) {
+	fprintf( "/dev/stderr"; "A and Q must be the same size.\n" );
+	exception();
+    }
+    
+    mr = r.nr; nr = r.nc;
+    if ( mr != nr | nb != mr ) {
+	fprintf( "/dev/stderr"; "B and R must be consistent.\n" );
+	exception();
+    }
+    
+    if ( nn ) {
+	mn = nn.nr; nnn = nn.nc;
+	if ( mn != m | nnn != nr ) {
+	    fprintf( "/dev/stderr"; "N must be consistent with Q and R.\n" );
+	    exception();
+        }
+	q = q - solve(r';n')'*nn';
+	a = a - solve(r';b')'*nn';
+    else
+	nn = zero( m, nb );
+    }
+    
+    # Check if q is positive semi-definite and symmetric
+    
+    if ( eig(dense(q)).values < 0 | norm( q'-q; 1 ) / norm( q; 1 ) > eps ) {
+	fprintf( "/dev/stderr"; "Q must be symmetric and positive semi-definite.\n" )
+	exception();
+    }
+    
+    # Check if r is positive definite and symmetric
+    
+    if ( eig(r).values <= 0 | norm( r'-r; 1 ) / norm( r; 1 ) > eps ) {
+	fprintf( "/dev/stderr"; "R must be symmetric and positive definite.\n" );
+	exception();
+    }
+    
+    # Start eigenvector decomposition by finding eigenvectors of Hamiltonian:
+    
+    e = eig( dense( [ a, solve(r';b')'*b'; q, -a' ] ) );
+    v = e.vectors; d = e.values;
+    
+    index = isort( real( d ) );
+    d = real( d[ index ] );
+    
+    if ( !( d[n] < 0 & d[n+1] > 0 ) ) {
+	fprintf( "/dev/stderr"; "Can't order eigenvalues.\n" );
+	exception();
+    }
+    
+    chi = v[ 1:n; index[1:n] ];
+    lambda = v[ (n+1):(2*n); index[1:n] ];
+    s = -real(solve(chi';lambda')');
+    k = solve( r; nn'+b'*s );
+    
+    return { k; s };
+
+};
+
+
+# Now run a little test problem.
+
+k = 1; m = 1; c = .1;
+a = [    0,    1,    0,    0;
+      -k/m, -c/m,  k/m,  c/m;
+         0,    0,    0,    1;
+       k/m,  c/m, -k/m, -c/m ];
+b = [ 0; 1/m; 0; 0 ];
+qxx = diag( 0, 0, 100, 0 );
+ruu = [1];
+
+eps = 1; while ( 1 + eps > 1 ) { eps = eps/2; }; eps = 2*eps;
+K = lqr( a; b; qxx; ruu; NULL ).k;
+
+dot = function( t; x ) {
+    return vector( (a-b*K)*x + b*K*(1,0,1,0) );
+};
+
+x = ode4( dot; 0; 10; 0,0,0,0; NULL );
+
+m = imax( x[1;] );
+
+if ( m != 22 |
+     test( abs( x[1;m] - 1.192 ) > 0.001 ) |
+     test( abs( x[1,3;x.nc] - 1 ) > 0.001 ) ) {
+    printf( "...failed.\a\n" );
+    exception();
+else
+    printf( "...passed.\n" );
+}

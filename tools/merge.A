@@ -1,0 +1,75 @@
+
+# This function merges two numeric entities based on their labels.
+# If both are vectors, for example, then the result is a vector that
+# has as its labels the combination of the two original vectors.  Its
+# elements come from the corresponding elements in the original
+# vectors; if the same label appears in both vectors then the
+# corresponding element is the sum of the original two.
+
+# Maybe an example would make this more clear...
+
+# > x = 1, 2, 3;
+# > x.eid = "a", "b", "c";
+# > y = 4, 5, 6;
+# > y.eid = "b", "c", "d";
+# > z = merge( x; y );
+# > z?
+#	( 1, 6, 8, 6 )
+# > z.eid?
+#	( "a", "b", "c", "d" )
+
+merge = function( a; b ) {
+
+    local( c; v1; v2 );
+
+    if ( a.class == "matrix" ) {
+	b = matrix( b );
+    elseif ( b.class == "matrix" )
+	a = matrix( a );
+    elseif ( a.class == "vector" )
+	b = vector( b );
+    elseif ( b.class == "vector" )
+	a = vector( a );
+    }
+
+    if ( a.class == "vector" ) {
+
+	if ( a.eid == NULL | b.eid == NULL )
+	{
+	    message( "run time error: Missing labels." );
+	    exception();
+	}
+
+	v1 = combine( a.eid; b.eid );
+	c = cram (v1.ne; fill (0; a));
+	c.eid = v1;
+
+	c[ find( a.eid; v1 ) ] = a;
+	c[ find( b.eid; v1 ) ] += b;
+
+    elseif ( a.class == "matrix" )
+
+	if ( a.rid == NULL | a.cid == NULL | b.rid == NULL | b.cid == NULL )
+	{
+	    message( "run time error: Missing labels." );
+	    exception();
+	}
+
+	v1 = combine( a.rid; b.rid );
+	v2 = combine( a.cid; b.cid );
+	c = cram (v1.ne, v2.ne; fill (0; a));
+	c.rid = v1;
+	c.cid = v2;
+
+	c[ find( a.rid; v1 ); find( a.cid; v2 ) ] = a;
+	c[ find( b.rid; v1 ); find( b.cid; v2 ) ] += b;
+
+    else
+
+	c = a + b;
+
+    }
+
+    return c;
+
+};

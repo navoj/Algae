@@ -1,0 +1,22 @@
+
+printf( "Starting the ssi test...\n" );
+
+for ( nr in 10:90:20 ) {
+    m = magic( nr );
+    m = - m @ ( m > 0.75*nr^2 );
+    m = sparse( symmetric( m+m'+diag( fill( nr; nr^3/1.8 ) ) ) );
+    e = eig( m );
+    ve = sort( abs( e.values ) );
+    ve.eid = NULL;
+    s = ssi( m; diag( fill( nr; 1 ) ); e.vectors[;1:8]+rand(nr,8)/nr^2; 1e-8 );
+    vs = sort( abs( s.values ) );
+    vs.eid = NULL;
+    
+    norm( ve[1:4] - vs[1:4] ) / norm( ve[1:4] )?
+    if ( norm( ve[1:4] - vs[1:4] ) / norm( ve[1:4] ) > 1e-6 ) {
+	printf( "...failed.\a\n" );
+	exception();
+    }   
+}
+
+printf( "...passed.\n" );

@@ -1,0 +1,17 @@
+
+# This routine runs some timing tests.
+
+timeit = function( fname ) {
+    local( t );
+    t = time();
+    source( fname );
+    t = time() - t;
+    printf( "%s:  \t%8.1f\n"; fname; t );
+};
+
+timeit( "assign.A" );
+timeit( "calls.A" );
+timeit( "euler.A" );
+timeit( "loop.A" );
+timeit( "mult.A" );
+timeit( "ssi.A" );

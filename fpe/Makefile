@@ -1,0 +1,45 @@
+
+#---------------------------------------------------------------------
+# This file is a Makefile (or its template) for the fpe directory
+# of Algae.  It is run by the Makefile in the parent directory.
+#---------------------------------------------------------------------
+
+srcdir = .
+
+
+# ============================ Targets ============================
+
+all:
+.PHONY:	all
+
+install:
+.PHONY:	install
+
+uninstall:
+.PHONY:	uninstall
+
+# ========================== Distribution =========================
+
+DISTFILES = Makefile.in *.c
+BINDISTFILES = Makefile *.c
+
+dist:
+	for file in $(DISTFILES); do \
+	  ln $$file $(distdir) > /dev/null 2>&1 || cp $$file $(distdir); \
+	done
+.PHONY:	dist
+
+binaries:
+	for file in $(BINDISTFILES); do \
+	  ln $$file $(distdir) > /dev/null 2>&1 || cp $$file $(distdir); \
+	done
+.PHONY:	binaries
+
+# ========================== Cleaning Up ==========================
+
+.PHONY:	clean mostlyclean distclean maintainer-clean
+
+clean mostlyclean distclean maintainer-clean::
+
+distclean maintainer-clean::
+	rm -f Makefile

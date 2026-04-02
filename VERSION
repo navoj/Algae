@@ -1,0 +1,20 @@
+
+# Version info for Algae.
+
+# Copyright (C) 1994-2004  K. Scott Hunziker.
+
+# See the file COPYING for license, warranty, and permission details.
+
+# The version is designated by major, minor, and patch numbers.
+
+VERSION_NUMBER	= 4.3.6
+VERSION_DATE	= February 22, 2004
+
+# The Algae library's major version number is the same as that of the
+# Algae package itself, but it's minor number increments independently.
+# The library version changes only when the interface changes.
+
+# (Algae doesn't really have a library, but if it ever gets one we'll
+# be ready.)
+
+LIB_VERSION	= 4.0

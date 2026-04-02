@@ -1,0 +1,301 @@
+/*
+   builtin.h -- Built-in functions.
+
+   Copyright (C) 1994-2003  K. Scott Hunziker.
+   Copyright (C) 1990-1994  The Boeing Company.
+
+   See the file COPYING for license, warranty, and permission details.
+ */
+
+/* $Id: builtin.h,v 1.17 2003/11/24 23:59:02 ksh Exp $ */
+
+/* This file holds info the parser needs to load
+   builtin functions into its symbol table 
+ */
+
+#ifndef  BUILTIN_H
+#define  BUILTIN_H	1
+
+#include "function.h"
+
+struct builtin
+  {
+    int min_args;
+    int max_args;
+    unsigned int arg_flags;
+    /* A 1 bit means NULL allowed for that arg. */
+    ENTITY *(*bi) ();
+  };
+
+ENTITY *bi_abs ();
+ENTITY *bi_acos ();
+ENTITY *bi_acosh ();
+ENTITY *bi_asin ();
+ENTITY *bi_asinh ();
+ENTITY *bi_atan ();
+ENTITY *bi_atanh ();
+ENTITY *bi_atan2 ();
+ENTITY *bi_atof ();
+ENTITY *bi_backsub ();
+ENTITY *bi_band ();
+ENTITY *bi_bdiag ();
+ENTITY *bi_btrans ();
+ENTITY *bi_builtin ();
+ENTITY *bi_cd ();
+ENTITY *bi_ceil ();
+ENTITY *bi_char ();
+ENTITY *bi_chol ();
+ENTITY *bi_class ();
+ENTITY *bi_close ();
+ENTITY *bi_complement ();
+ENTITY *bi_conjugate ();
+ENTITY *bi_cram ();
+ENTITY *bi_cos ();
+ENTITY *bi_cosh ();
+ENTITY *dense_entity ();
+ENTITY *bi_diag ();
+ENTITY *bi_dice ();
+ENTITY *bi_digits ();
+ENTITY *bi_eig ();
+ENTITY *bi_equilibrate ();
+ENTITY *bi_erf ();
+ENTITY *bi_erfc ();
+ENTITY *bi_exception ();
+ENTITY *bi_exec ();
+ENTITY *bi_exit ();
+ENTITY *bi_exp ();
+ENTITY *bi_exsparse ();
+ENTITY *bi_factor ();
+ENTITY *bi_fft ();
+#if HAVE_FFTW
+ENTITY *bi_fftw ();
+#endif
+ENTITY *bi_file ();
+ENTITY *bi_fill ();
+ENTITY *bi_filter ();
+ENTITY *bi_find ();
+ENTITY *bi_floor ();
+ENTITY *bi_form ();
+ENTITY *bi_fprintf ();
+ENTITY *bi_fread ();
+ENTITY *bi_full ();
+ENTITY *bi_fwrite ();
+ENTITY *bi_get ();
+ENTITY *bi_getdyn ();
+ENTITY *bi_getenv ();
+ENTITY *bi_getmat ();
+ENTITY *bi_gpskca ();
+ENTITY *bi_hermitian ();
+ENTITY *bi_ifft ();
+#if HAVE_FFTW
+ENTITY *bi_ifftw ();
+#endif
+ENTITY *bi_imag ();
+ENTITY *bi_integer ();
+ENTITY *bi_intersection ();
+ENTITY *bi_iram ();
+ENTITY *bi_isort ();
+ENTITY *bi_leastsq ();
+ENTITY *bi_line ();
+ENTITY *bi_log ();
+ENTITY *bi_lose ();
+ENTITY *bi_matrix ();
+ENTITY *bi_max ();
+ENTITY *member_names ();
+ENTITY *bi_min ();
+ENTITY *bi_mksparse ();
+ENTITY *bi_norm ();
+
+#if HAVE_NPSOL
+ENTITY *bi_npsol ();
+#endif
+
+ENTITY *bi_print ();
+ENTITY *bi_printf ();
+ENTITY *bi_put ();
+ENTITY *bi_putdyn ();
+ENTITY *bi_putmat ();
+ENTITY *bi_rand ();
+ENTITY *bi_read ();
+ENTITY *bi_readnum ();
+ENTITY *bi_real ();
+ENTITY *bi_round ();
+ENTITY *bi_scalar ();
+ENTITY *bi_set ();
+ENTITY *bi_sin ();
+ENTITY *bi_sinh ();
+ENTITY *bi_sort ();
+ENTITY *bi_source ();
+ENTITY *sparse_entity ();
+ENTITY *bi_split ();
+ENTITY *bi_sprintf ();
+ENTITY *bi_sqrt ();
+ENTITY *bi_srand ();
+ENTITY *bi_strip ();
+ENTITY *bi_substr ();
+ENTITY *bi_svd ();
+ENTITY *bi_symmetric ();
+ENTITY *bi_system ();
+ENTITY *bi_tan ();
+ENTITY *bi_tanh ();
+ENTITY *bi_test ();
+ENTITY *bi_time ();
+ENTITY *bi_tolower ();
+ENTITY *bi_toupper ();
+ENTITY *bi_transform ();
+ENTITY *tril_entity ();
+ENTITY *triu_entity ();
+ENTITY *bi_union ();
+ENTITY *bi_vector ();
+ENTITY *bi_zero ();
+
+/* this macro must be turned on only once (in function.c) */
+#ifdef BI_FUNCTION_INIT
+
+static struct bi_init
+  {
+    char *name;
+    BUILTIN bi;
+  }
+builtin_init_data[] =
+{
+  "abs", 1, 1, 0, bi_abs,
+  "acos", 1, 1, 0, bi_acos,
+  "acosh", 1, 1, 0, bi_acosh,
+  "asin", 1, 1, 0, bi_asin,
+  "asinh", 1, 1, 0, bi_asinh,
+  "atan", 1, 1, 0, bi_atan,
+  "atanh", 1, 1, 0, bi_atanh,
+  "atan2", 2, 2, 0, bi_atan2,
+  "atof", 1, 1, 0, bi_atof,
+  "backsub", 2, 2, 0, bi_backsub,
+  "band", 1, 1, 0, bi_band,
+  "bdiag", 3, 3, 0, bi_bdiag,
+  "btrans", 3, 3, 0, bi_btrans,
+  "builtin", 2, 2, 0, bi_builtin,
+  "cd", 0, 1, 01, bi_cd,
+  "ceil", 1, 1, 0, bi_ceil,
+  "char", 1, 1, 0, bi_char,
+  "chol", 1, 1, 0, bi_chol,
+  "class", 0, 1, 01, bi_class,
+  "close", 1, 1, 0, bi_close,
+  "complement", 2, 2, 0, bi_complement,
+  "conj", 1, 1, 0, bi_conjugate,
+  "cram", 2, 2, 01, bi_cram,
+  "cos", 1, 1, 0, bi_cos,
+  "cosh", 1, 1, 0, bi_cosh,
+  "dense", 1, 1, 0, dense_entity,
+  "diag", 1, 1, 0, bi_diag,
+  "dice", 1, 1, 0, bi_dice,
+  "digits", 0, 1, 01, bi_digits,
+  "eig", 1, 3, 06, bi_eig,
+  "equilibrate", 1, 1, 0, bi_equilibrate,
+  "erf", 1, 1, 0, bi_erf,
+  "erfc", 1, 1, 0, bi_erfc,
+  "exception", 0, 0, 0, bi_exception,
+  "exec", 1, 1, 0, bi_exec,
+  "exit", 0, 1, 01, bi_exit,
+  "exp", 1, 1, 0, bi_exp,
+  "exsparse", 1, 1, 0, bi_exsparse,
+  "factor", 1, 1, 0, bi_factor,
+#if HAVE_FFTW
+#if USE_BOTH_FFT
+  "fft", 1, 2, 02, bi_fft,
+  "fftw", 1, 2, 02, bi_fftw,
+#else
+  "fft", 1, 2, 02, bi_fftw,
+#endif
+#else
+  "fft", 1, 2, 02, bi_fft,
+#endif
+  "file", 0, 0, 0, bi_file,
+  "fill", 2, 2, 01, bi_fill,
+  "filter", 3, 4, 010, bi_filter,
+  "find", 2, 2, 0, bi_find,
+  "floor", 1, 1, 0, bi_floor,
+  "form", 2, 2, 01, bi_form,
+  "fprintf", 2, 99, ~(unsigned) 0, bi_fprintf,
+  "fread", 0, 3, 07, bi_fread,
+  "full", 1, 1, 0, bi_full,
+  "fwrite", 0, 3, 05, bi_fwrite,
+  "get", 0, 1, 0, bi_get,
+  "getdyn", 0, 1, 01, bi_getdyn,
+  "getenv", 1, 1, 0, bi_getenv,
+  "getmat", 0, 1, 01, bi_getmat,
+  "gpskca", 1, 2, 02, bi_gpskca,
+  "hermitian", 1, 1, 0, bi_hermitian,
+#if HAVE_FFTW
+#if USE_BOTH_FFT
+  "ifft", 1, 2, 02, bi_ifft,
+  "ifftw", 1, 2, 02, bi_ifftw,
+#else
+  "ifft", 1, 2, 02, bi_ifftw,
+#endif
+#else
+  "ifft", 1, 2, 02, bi_ifft,
+#endif
+  "imag", 1, 1, 0, bi_imag,
+  "integer", 1, 1, 0, bi_integer,
+  "intersection", 2, 2, 0, bi_intersection,
+  "iram", 5, 5, 034, bi_iram,
+  "isort", 1, 1, 0, bi_isort,
+  "leastsq", 2, 2, 0, bi_leastsq,
+  "line", 0, 0, 0, bi_line,
+  "log", 1, 1, 0, bi_log,
+  "lose", 2, 2, 0, bi_lose,
+  "matrix", 0, 1, 01, bi_matrix,
+  "imax", 1, 1, 0, bi_max,
+  "members", 1, 1, 0, member_names,
+  "imin", 1, 1, 0, bi_min,
+  "mksparse", 0, 1, 01, bi_mksparse,
+  "norm", 1, 2, 0, bi_norm,
+#if HAVE_NPSOL
+  "npsol", 4, 5, 0, bi_npsol,
+#endif
+  "print", 1, 2, 0, bi_print,
+  "printf", 1, 99, ~(unsigned) 0, bi_printf,
+  "put", 1, 2, 0, bi_put,
+  "putdyn", 1, 2, 02, bi_putdyn,
+  "putmat", 1, 2, 02, bi_putmat,
+  "rand", 0, 1, 01, bi_rand,
+  "read", 0, 1, 01, bi_read,
+  "readnum", 0, 2, 03, bi_readnum,
+  "real", 1, 1, 0, bi_real,
+  "round", 1, 1, 0, bi_round,
+  "scalar", 0, 1, 01, bi_scalar,
+  "set", 0, 1, 0, bi_set,
+  "sin", 1, 1, 0, bi_sin,
+  "sinh", 1, 1, 0, bi_sinh,
+  "sort", 1, 1, 0, bi_sort,
+  "source", 1, 1, 0, bi_source,
+  "sparse", 1, 1, 0, sparse_entity,
+  "split", 1, 2, 02, bi_split,
+  "sprintf", 1, 99, ~(unsigned) 0, bi_sprintf,
+  "sqrt", 1, 1, 0, bi_sqrt,
+  "srand", 0, 1, 0, bi_srand,
+  "strip", 1, 1, 0, bi_strip,
+  "substr", 2, 3, 04, bi_substr,
+  "svd", 1, 2, 02, bi_svd,
+  "symmetric", 1, 1, 0, bi_symmetric,
+  "system", 1, 1, 0, bi_system,
+  "tan", 1, 1, 0, bi_tan,
+  "tanh", 1, 1, 0, bi_tanh,
+  "test", 1, 1, 01, bi_test,
+  "time", 0, 0, 0, bi_time,
+  "tolower", 1, 1, 0, bi_tolower,
+  "toupper", 1, 1, 0, bi_toupper,
+  "transform", 2, 2, 0, bi_transform,
+  "tril", 1, 2, 02, tril_entity,
+  "triu", 1, 2, 02, triu_entity,
+  "union", 2, 2, 0, bi_union,
+  "vector", 0, 1, 01, bi_vector,
+  "zero", 0, 1, 01, bi_zero,
+  NULL, 0, 0, 0, NULL
+};
+
+#endif /* BI_FUNCTION_INIT */
+
+
+ENTITY *PROTO (execute_bi, (BUILTIN *, int, DATUM *));
+
+#endif

@@ -1,0 +1,35 @@
+
+# Greatest Common Divisor
+
+# This function computes the greatest common divisor (GCD) of the elements
+# of its vector argument.  (The input is rounded to integer type.)  The
+# scalar return value is the GCD.  Its member "factors" contains an integer
+# vector such that gcd(a).factors*a is equal to gcd(a).
+
+# This was adapted from the Octave script written by Kurt Hornik.
+
+gcd = function (a)
+{
+  local (g; v; k; x; y; r);
+
+  a = integer (vector (a));
+  g = abs (a[1]);
+  v = sign (a[1]);
+
+  for (k in seq(a.ne-1)+1)
+  {
+    x = g, 1, 0;
+    y = abs (a[k]), 0, 1;
+    while (y[1] > 0)
+    {
+      r = x - y * integer (floor (x[1] / y[1]));
+      x = y;
+      y = r;
+    }
+    g = x[1];
+    v = x[2] * v, x[3] * sign (a[k]);
+  }
+
+  g.factors = v;
+  return g;
+};

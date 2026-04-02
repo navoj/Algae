@@ -1,0 +1,61 @@
+
+# This function finds the elements of a vector `v' which match the
+# pattern `expr' (a character scalar).  The pattern is an extended
+# regular expression which is given to egrep(1) to do the searching.
+
+# The character strings in `v' must not contain a newline.
+
+# Here are some examples:
+#
+#     > grep( "a"; "ab", "ac", "bc" )
+#         ( 1, 2 )
+#
+#     > grep( "9$"; 1:40 )
+#         ( 9, 19, 29, 39 )
+#
+#     > m = magic( 3 )
+#         [ 8  1  6 ]
+#         [ 3  5  7 ]
+#         [ 4  9  2 ]
+#     > m.rid = "top", "middle", "bottom";
+#     > m[ grep( "top|bottom"; m.rid ); ]
+#         [ 8  1  6 ]
+#         [ 4  9  2 ]
+
+# NOTE:  This is a terribly inefficient implementation (maybe someday
+#        Algae will have builtin regular expressions), but maybe you'll
+#        find it useful.
+
+grep = function( expr; v )
+{
+    local( fin; fout; s );
+
+    # make sure args are what we expect
+
+    expr = scalar( expr );
+    v = vector( v );
+
+    if ( v.ne < 1 ) { return vector(); }
+
+    # write the vector out to a temporary file
+
+    fout = tmp_file();
+    for ( s in v ) { fprintf( fout; "%s\n"; s ); }
+    close( fout );
+
+    # read it, using egrep and cut filters
+
+    fin = sprintf( "!egrep -n '%s' %s | cut -f1 -d':'"; expr; fout );
+    v = integer( readnum( v.ne; fin ) );
+    close( fin );
+
+    # discard trailing zeros
+
+    if ( v ) { v = v[1:last(v)]; else v = vector(); }
+
+    # remove the temporary file
+
+    system( "/bin/rm -f " + fout );
+
+    return v;
+};

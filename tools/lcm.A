@@ -1,0 +1,29 @@
+
+# Least Common Multiple
+
+# This function computes the least common multiple (LCM) of the elements
+# of its vector argument.  (The input is rounded to integer type.)  The
+# scalar return value is the LCM.
+
+# This was adapted from the Octave script written by Kurt Hornik.
+
+lcm = function (a)
+{
+  local (r; k);
+
+  a = integer (vector (a));
+
+  if (!a)
+  {
+    r = 0;
+  else
+    a = abs (a);
+    r = a [1];
+    for (k in seq(a.ne-1)+1)
+    {
+      r *= integer (a[k] / gcd (r, a[k]));
+    }
+  }
+
+  return r;
+};

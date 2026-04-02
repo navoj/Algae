@@ -1,0 +1,60 @@
+
+# This function sums elements of an array.  If `x' is a scalar, it is
+# returned unchanged.  If `x' is a vector, the sum of all of its
+# elements is returned.  If `x' is a matrix, a vector is returned
+# each element of which is the sum of the elements in the
+# corresponding column.
+
+sum = function( x )
+{
+    return sum.(class(x))(x);
+};
+
+sum.scalar = function( x ) { return x; };
+
+( sum.table =
+  sum.("function") =
+  sum.("NULL") = strip( 
+    function( x )
+    {
+	message( "Invalid argument to sum." );
+	exception();
+    } )
+);
+
+sum.vector = function( v )
+{
+    local( s );
+
+    if ( v.type == "character" )
+    {
+	s = "";
+	for ( v in v ) { s += v; }
+
+    else
+
+	s = fill( v.ne; 1 ) * v;
+
+    }
+
+    return s;
+};
+
+sum.matrix = function( m )
+{
+    local( c; s );
+
+    if ( m.type == "character" )
+    {
+	s = fill( m.nc; m );
+	for ( c in seq(m.nc) ) { s[c] = sum.vector( m[;c] ); }
+	s.eid = m.cid;
+
+    else
+
+	s = fill( m.nr; 1 ) * m;
+
+    }
+
+    return s;
+};

@@ -1,0 +1,15 @@
+
+# This function causes Algae to parse and execute specified files.
+# The character scalar `files' is passed through sh(1) to ls(1), so
+# file name generation is available and multiple names may be given.
+# The "pipe" capability normally available to Algae I/O routines is
+# not permitted.
+
+sources = function( files )
+{
+    local( f; names );
+
+    names = "!" + $programs.ls + " " + files;
+    while ( f = read( names ) ) { source( f ); }
+    close( names );
+};

@@ -1,0 +1,123 @@
+
+# Upper and lower triangles.
+
+printf( "Starting the triangle tests...\n" );
+
+xtriu = function( x; k )
+{
+  local( n );
+
+  x = matrix( x );
+  n = max( shape( x ) );
+  if ( k == NULL ) { k = 0; else k = integer( scalar( k ) ); }
+
+  return x @ ( fill( n,2*n-1; -n+1:n )[1:x.nr;n:n+x.nc-1] >= k );
+};
+
+xtril = function( x; k )
+{
+  local( n );
+
+  x = matrix( x );
+  n = max( shape( x ) );
+  if ( k == NULL ) { k = 0; else k = integer( scalar( k ) ); }
+
+  return x @ ( fill( n,2*n-1; -n+1:n )[1:x.nr;n:n+x.nc-1] <= k );
+};
+
+assert = strip (function (t)
+{
+  if (!test(t))
+  {
+    message ("...failed.\a");
+    exception ();
+  }
+});
+
+srand (42);
+
+for (i in seq(40))
+{
+  A = surprise (1:10; 1:10;
+		"integer", "real", "complex";
+		1;
+		"general");
+  j = max (shape (A));
+  for (k in -j:j)
+  {
+    assert (equal (triu (A; k); xtriu (A; k)));
+    assert (equal (tril (A; k); xtril (A; k)));
+  }
+}
+
+for (i in seq(40))
+{
+  A = surprise (1:10; 1:10;
+		"integer", "real", "complex";
+		1;
+		"symmetric");
+  j = max (shape (A));
+  for (k in -j:j)
+  {
+    assert (equal (triu (A; k); xtriu (A; k)));
+    assert (equal (tril (A; k); xtril (A; k)));
+  }
+}
+
+for (i in seq(40))
+{
+  A = surprise (1:10; 1:10;
+		"integer", "real", "complex";
+		1;
+		"hermitian");
+  j = max (shape (A));
+  for (k in -j:j)
+  {
+    assert (equal (triu (A; k); xtriu (A; k)));
+    assert (equal (tril (A; k); xtril (A; k)));
+  }
+}
+
+for (i in seq(40))
+{
+  A = surprise (1:10; 1:10;
+		"integer", "real", "complex";
+		i/100;
+		"general");
+  j = max (shape (A));
+  for (k in -j:j)
+  {
+    assert (equal (triu (A; k); xtriu (A; k)));
+    assert (equal (tril (A; k); xtril (A; k)));
+  }
+}
+
+for (i in seq(40))
+{
+  A = surprise (1:10; 1:10;
+		"integer", "real", "complex";
+		i/100;
+		"symmetric");
+  j = max (shape (A));
+  for (k in -j:j)
+  {
+    assert (equal (triu (A; k); xtriu (A; k)));
+    assert (equal (tril (A; k); xtril (A; k)));
+  }
+}
+
+for (i in seq(40))
+{
+  A = surprise (1:10; 1:10;
+		"integer", "real", "complex";
+		i/100;
+		"hermitian");
+  j = max (shape (A));
+  for (k in -j:j)
+  {
+    assert (equal (triu (A; k); xtriu (A; k)));
+    assert (equal (tril (A; k); xtril (A; k)));
+  }
+}
+
+printf ("...passed.\n");

@@ -1,0 +1,99 @@
+#
+#	This Algae routine computes the eigenvalues and eigenvectors
+#	of a small matrix the hard way, using Jacobi iteration.  Then
+#	it compares the result to that of the `eig' function.
+#
+
+printf( "Starting the jacobi test...\n" );
+n = 5;
+srand(997); A = rand(n,n); A += A'; i=0;
+while ( (i+=1) <= n ) { A[i;i] = A[i;i] + n; }
+A = symmetric( A ); oldA = A;
+V = dense( zero( n, n ) );
+i=0; while ( (i+=1) <= n ) { V[i;i] = 1.0; }
+D = B = Z = 1:n;
+i=0; while ( (i+=1) <= n ) { B[i] = D[i] = A[i;i]; Z[i] = 0; }
+nrot = 0;
+i=0; while ( (i+=1) <= 50 ) {
+    i?
+    sm = 0.0;
+    ip=0; while ( (ip+=1) <= n-1 ) {
+        iq=ip; while ( (iq+=1) <= n ) {
+            sm += abs( scalar( A[ip;iq] ) );
+        }
+    }
+    sm?
+    if ( !sm ) { break; }
+    if ( i < 4 ) { tresh = 0.2*sm/n/n; else tresh = 0.0; }
+    ip=0; while ( (ip+=1) <= n-1 ) {
+        iq=ip; while ( (iq+=1) <= n ) {
+            g = 100 * abs( scalar( A[ip;iq] ) );
+            if ( i > 4 & abs(D[ip])+g == abs(D[ip]) &
+                         abs(D[iq])+g == abs(D[iq]) ) {
+                A[ip;iq] = 0.0;
+            else
+                if ( abs(A[ip;iq]) > tresh ) {
+                    h = scalar( D[iq]-D[ip] );
+                    if ( abs(h)+g == abs(h) ) {
+                        t = scalar(A[ip;iq])/h;
+                    else
+                        theta = h/scalar(A[ip;iq])/2;
+                        t = 1.0/(abs(theta)+sqrt(1.0+theta*theta));
+                        if ( theta < 0 ) { t = -t; }
+                    }
+                    c = 1.0/sqrt(1.0+t*t);
+                    s = t*c;
+                    tau = s/(1.0+c);
+                    h = t*scalar(A[ip;iq]);
+                    Z[ip] = Z[ip] - h;
+                    Z[iq] = Z[iq] + h;
+                    D[ip] = D[ip] - h;
+                    D[iq] = D[iq] + h;
+                    A[ip;iq] = 0.0;
+                    j=0; while ( (j+=1) <= ip-1 ) {
+                        g = scalar( A[j;ip] );
+                        h = scalar( A[j;iq] );
+                        A[j;ip] = g - s * ( h + g * tau );
+                        A[j;iq] = h + s * ( g - h * tau );
+                    }
+                    j=ip; while ( (j+=1) <= iq-1 ) {
+                        g = scalar( A[ip;j] );
+                        h = scalar( A[j;iq] );
+                        A[ip;j] = g - s * ( h + g * tau );
+                        A[j;iq] = h + s * ( g - h * tau );
+                    }
+                    j=iq; while ( (j+=1) <= n ) {
+                        g = scalar( A[ip;j] );
+                        h = scalar( A[iq;j] );
+                        A[ip;j] = g - s * ( h + g * tau );
+                        A[iq;j] = h + s * ( g - h * tau );
+                    }
+                    j=0; while ( (j+=1) <= n ) {
+                        g = scalar( V[j;ip] );
+                        h = scalar( V[j;iq] );
+                        V[j;ip] = g - s * ( h + g * tau );
+                        V[j;iq] = h + s * ( g - h * tau );
+                    }
+                    nrot += 1;
+                }
+            }
+        }
+    }
+    ip=0; while( (ip+=1) <= n ) {
+        B[ip] = B[ip] + Z[ip];
+        D[ip] = B[ip];
+        Z[ip] = 0.0;
+    }
+}
+
+ind = isort( D ); D = D[ind]; V = V[;ind];
+
+e = eig( oldA );
+
+if ( norm( D - e.values ) < 1.0E-10 &
+     norm(abs(V'*e.vectors)-diag((1:5)*0+1);"inf") < 1.0E-10 ) {
+    printf( "...passed.\n" );
+else
+    printf( "...failed.\a\n" );
+    exception();
+}

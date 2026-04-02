@@ -1,0 +1,14 @@
+
+		      An LAPACK subset for Algae
+
+This directory contains a subset of the LAPACK package distributed by
+netlib (at "http://www.netlib.org/lapack").  If your system already
+has an LAPACK library, it's probably best to use it.  In particular,
+packages for GNU/Linux systems are widely available.
+
+When Algae is configured, the system is searched for a suitable LAPACK
+library.  If none is found, or if you've given the `--without-lapack'
+option, then the routines here are used.
+
+The routines included in this directory are from the May 31, 2000
+update for LAPACK v. 3.0, including errata updates from July 10, 2001.

@@ -1,0 +1,37 @@
+#! /bin/sh
+
+# usage: algae2to3 [file]
+
+# This shell script converts old Algae input files to the new (version 3)
+# syntax.  Algae files must have a ".A" suffix.  If `file' is an Algae
+# file, then it is converted to the new syntax.  If `file' is a
+# directory, then all Algae files in that directory and, recursively,
+# all of its subdirectories are converted.  If `file' is not given,
+# then the current directory is inferred.
+
+# Careful!  This script can turn valid version 3 files into mush.  You
+# can, though, run it more than once on the same version 2 file
+# without any trouble.
+
+tmp_dir=${TMPDIR:-/tmp}/tmp.algae$$
+mkdir $tmp_dir || exit 1
+trap "rm -rf $tmp_dir" EXIT
+cat > $tmp_dir/a2to3.l <<EOF
+%{
+#define P()	printf ("%s", yytext)
+%}
+%x S
+%%
+\"			{P(); BEGIN(S);}
+<S>([^\\\"\n]|\\.)*[\"]	{P(); BEGIN(0);}
+#			{printf ("@");}
+#[#!][^\n]*		{P();}
+EOF
+cat > $tmp_dir/cvt <<EOF
+#! /bin/sh
+cp \$1 $tmp_dir/in
+$tmp_dir/a2to3 < $tmp_dir/in > \$1
+EOF
+chmod +x $tmp_dir/cvt
+(cd $tmp_dir; flex a2to3.l && cc -o a2to3 lex.yy.c -lfl) && \
+find $1 -name '*.A' -exec $tmp_dir/cvt {} \;

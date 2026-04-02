@@ -1,0 +1,71 @@
+
+# Copyright (C) 1994-2003  K. Scott Hunziker.
+# Copyright (C) 1990-1994  The Boeing Company.
+
+# See the file COPYING for license, warranty, and permission details.
+
+# @configure_input@
+
+# This file is intended to be read by Algae on startup, setting any
+# system-wide defaults and directing it to read its standard user
+# functions.
+
+#####################################################################
+
+# Set path names to some programs Algae might need.
+
+$programs = {
+
+  # Here's where to find the documentation browsers.  Algae uses an
+  # HTML browser (netscape, mosaic, or lynx) if it can, otherwise it
+  # uses Info.  If any of these programs are unwanted or unavailable,
+  # just set them to a zero-length string.
+
+  xhtml = "@XHTML@";	# An X-based HTML browser (like netscape or mosaic).
+  html = "@HTML@";	# A character-based HTML browser (like lynx).
+  info = "@INFO@";	# A texinfo browser (like info).
+
+  # We try to work around info's deficiencies with xterm.
+
+  xterm = "@XTERM@";
+
+  # gnuplot is our plotting package.
+
+  gnuplot = "@GNUPLOT@";
+
+  # Other tools.
+
+  awk = "@AWK@";	# This must be a "new" awk (mawk, gawk, or nawk).
+  ls = "@LS@";
+  tr = "@TR@";
+  sed = "@SED@";
+
+};
+
+# Take a guess at width if terminal is "dumb".
+
+if (getenv ("TERM") == "dumb") { $term_width = 79; }
+
+# Directories we might need.
+
+$directories = {
+
+  info = "@info_dir@";
+  html = "@htmldir@";
+  lib = "@lib_dir@";
+
+};
+
+# Read the standard user functions.
+
+source ("@tooldir@/load.A");
+load ("@tooldir@/tools.algae");
+
+# Set the source path.
+
+$src_path = get_path ("ALGAE_SRC_PATH"; "~/algae:@sitedir@");
+
+# Set the temporary directory.
+
+tmp_file.TMPDIR = string (getenv ("TMPDIR"));
+if (tmp_file.TMPDIR == "") { tmp_file.TMPDIR = "/tmp"; }

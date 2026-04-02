@@ -1,0 +1,118 @@
+
+printf( "Starting the append tests...\n" );
+
+single_row = {
+	is = 777;
+	rs = 62.4;
+	cs = 1.2 + 3.4*sqrt(-1);
+	ss = "Scott";
+	iv0 = fill(0;1);
+	rv0 = fill(0;3.1415);
+	cv0 = fill(0;sqrt(-1));
+	sv0 = fill(0;"");
+	iv = 7:4;
+	rv = 1.2:7.77:.9;
+	cv = 1,sqrt(-1),2,sqrt(-2);
+	sv = "Arizona", "Utah", "Idaho";
+	im0 = fill(1,0;99);
+	rm0 = fill(1,0;8.765);
+	cm0 = fill(1,0;sqrt(-1));
+	sm0 = fill(1,0;"");
+	im = [9:20];
+	rm = [1/(9:25)];
+	cm = asin(2:6);
+	sm = [ "bottles", "of", "beer", "on", "the", "wall" ];
+};
+
+multiple_row = {
+	im00 = fill(0,0;1);
+	im0x = fill(0,6;1);
+	imx0 = fill(22,0;1);
+	imxx = fill(22,4;magic(5));
+	rm00 = fill(0,0;1.23);
+	rm0x = fill(0,6;1.23);
+	rmx0 = fill(22,0;1.23);
+	rmxx = fill(22,4;magic(5)+1.23);
+	cm00 = fill(0,0;sqrt(-4));
+	cm0x = fill(0,6;sqrt(-4));
+	cmx0 = fill(22,0;sqrt(-4));
+	cmxx = fill(22,4;magic(5)+sqrt(-4));
+	sm00 = fill(0,0;"");
+	sm0x = fill(0,6;"");
+	smx0 = fill(22,0;"");
+	smxx = fill(22,4;members($$));
+};
+
+assert = function( t ) {
+    if ( !test(t) ) {
+        printf( "...failed.\a\n" );
+        exception();
+    }
+};
+
+rev = function( x )
+{
+    if ( class(x) == "matrix" )
+    {
+	if ( x.nc > 0 )
+	{
+	    return x[;x.nc:1];
+	else
+	    return x;
+	}
+
+    elseif ( class(x) == "vector" )
+
+	if ( x.ne > 0 )
+	{
+	    return x[x.ne:1];
+	else
+	    return x;
+	}
+
+    else
+
+	return x;
+    }
+};
+
+cks = function( a; b )
+{
+    if ( sum((a.type,b.type)=="character")%2 ) { return }
+    assert( equal( a,b; rev(rev(b),rev(a)) ) );
+    if ( a.type == "character" ) {
+	assert( equal( a+"z",b; rev(rev(b),rev(a+"z")) ) );
+	assert( equal( a,"*"+b; rev(rev("*"+b),rev(a)) ) );
+    else
+	assert( equal( a+1,b; rev(rev(b),rev(a+1)) ) );
+	assert( equal( a,1+b; rev(rev(1+b),rev(a)) ) );
+    }
+};
+
+ckm = function( a; b )
+{
+    if ( a.nr != b.nr ) { return }
+    if ( sum((a.type,b.type)=="character")%2 ) { return }
+    assert( equal( a,b; rev(rev(b),rev(a)) ) );
+    if ( a.type == "character" ) {
+	assert( equal( a+"z",b; rev(rev(b),rev(a+"z")) ) );
+	assert( equal( a,"*"+b; rev(rev("*"+b),rev(a)) ) );
+    else
+	assert( equal( a+1,b; rev(rev(b),rev(a+1)) ) );
+	assert( equal( a,1+b; rev(rev(1+b),rev(a)) ) );
+    }
+};
+
+for ( a in members( single_row ) ) {
+    for ( b in members( single_row ) ) {
+	cks( single_row.(a); single_row.(b) );
+    }
+}
+
+for ( a in members( multiple_row ) ) {
+    for ( b in members( multiple_row ) ) {
+	ckm( multiple_row.(a); multiple_row.(b) );
+    }
+}
+
+printf( "...passed.\n" );

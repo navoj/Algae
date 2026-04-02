@@ -1,0 +1,524 @@
+
+# Test the iram (Implicitly Restarted Arnoldi Method) function.
+
+printf ("Starting the iram tests...\n");
+
+assert = strip (function (t)
+{
+  if (!test(t))
+  {
+    message ("...failed.\a");
+    exception ();
+  }
+});
+
+srand (51159);
+
+# Some real, symmetric, standard problems using mode 1.
+
+fa = function (v; p) { return p.A*v; };
+
+ck = function (n; density)
+{
+  A = surprise (n; n; "real"; density; "symmetric");
+  rs = iram (n; fa; ; {A};
+	       {type = "real"; symmetry = "symmetric"; mxiter=300;
+		which = "LM"; mode=1; vectors=1; basis=1});
+  nev = rs.values.ne;
+  assert (rs.nconv == nev);
+  assert (norm (A*rs.vectors - rs.vectors*diag(rs.values)) < 1e-10);
+  assert (norm (rs.vectors'*rs.vectors - ident(nev)) < 1e-10);
+  b = rs.basis[;seq(nev)];
+  assert (norm (tril (b'*A*b; -2)) < 1e-10);
+
+  if (n > 2)
+  {
+    rn = iram (n; fa; ; {A};
+		{type = "real"; symmetry = "general";
+		 which = "LM"; mode=1; vectors=1; basis=1});
+    nev = rn.values.ne;
+    assert (rn.nconv == nev);
+    assert (norm (A*rn.vectors - rn.vectors*diag(rn.values)) < 1e-6);
+    assert (norm (rn.vectors'*rn.vectors - ident(nev)) < 1e-10);
+    b = rn.basis[;seq(nev)];
+    assert (norm (tril (b'*A*b; -2)) < 1e-10);
+  }
+
+  if (n > 2)
+  {
+    rz = iram (n; fa; ; {A};
+	      {type = "complex"; symmetry = "general";
+	       which = "LM"; mode=1; vectors=1; basis=1});
+    nev = rz.values.ne;
+    assert (rz.nconv == nev);
+    assert (norm (A*rz.vectors - rz.vectors*diag(rz.values)) < 1e-10);
+    assert (norm (rz.vectors'*rz.vectors - ident(nev)) < 1e-10);
+    b = rz.basis[;seq(nev)];
+    assert (norm (tril (b'*A*b; -2)) < 1e-10);
+  }
+};
+
+for (i in 2:10,20,40) { ck (i; 1.0); }
+for (i in 25,73) { ck (i; 0.4); }
+
+# Some real, symmetric, generalized problems using mode 2.
+
+fa = function (v; p) { return solve (p.Bf; p.A*v); };
+fb = function (v; p) { return p.B*v; };
+
+ck = function (n; density)
+{
+  A = surprise (n; n; "real"; density; "symmetric");
+  B = symmetric (fill (n,n+2; fill (n,n+3; form (n+3; (1,2,1)/4))) [;2:n+1]);
+  Bf = factor (B);
+
+  #  No symmetric mode 2.
+
+  if (n > 2)
+  {
+    rn = iram (n; fa; fb; {A; B; Bf};
+	       {type = "real"; symmetry = "general"; bmat="G";
+		which = "LM"; mode=2; vectors=1; basis=1});
+    nev = rn.values.ne;
+    assert (rn.nconv == nev);
+    assert (norm (A*rn.vectors - B*rn.vectors*diag(rn.values)) < 1e-10);
+    assert (norm (rn.vectors'*B*rn.vectors - ident(nev)) < 1e-10);
+    b = rn.basis[;seq(nev)];
+    assert (norm (tril (b'*A*b; -2)) < 1e-10);
+  }
+
+  if (n > 2)
+  {
+    rz = iram (n; fa; fb; {A; B; Bf};
+  	     {type = "complex"; symmetry = "general"; bmat="G";
+  	      which = "LM"; mode=2; vectors=1; basis=1});
+    nev = rz.values.ne;
+    assert (rz.nconv == nev);
+    assert (norm (A*rz.vectors - B*rz.vectors*diag(rz.values)) < 1e-10);
+    assert (norm (rz.vectors'*B*rz.vectors - ident(nev)) < 1e-10);
+    b = rz.basis[;seq(nev)];
+    assert (norm (tril (b'*A*b; -2)) < 1e-10);
+  }
+};
+
+for (i in 2:5,18) { ck (i; 1.0); }
+for (i in 42,47) { ck (i; 0.5); }
+
+# Some real, symmetric, standard problems using mode 3.
+
+fa = function (v; p) { return solve (p.Af; v); };
+
+ck = function (n; density)
+{
+  A = surprise (n; n; "real"; density; "symmetric");
+  Af = factor (A - ident(n));
+
+  rs = iram (n; fa; ; {Af};
+	     {type = "real"; symmetry = "symmetric"; shift = 1.0;
+	      which = "LM"; mode=3; vectors=1; basis=1});
+  nev = rs.values.ne;
+  assert (rs.nconv == nev);
+  assert (norm (A*rs.vectors - rs.vectors*diag(rs.values)) < 1e-10);
+  assert (norm (rs.vectors'*rs.vectors - ident(nev)) < 1e-10);
+  b = rs.basis[;seq(nev)];
+  assert (norm (tril (b'*A*b; -2)) < 1e-10);
+
+  if (n > 2)
+  {
+    rn = iram (n; fa; ; {Af};
+	       {type = "real"; symmetry = "general"; shift = 1.0;
+		which = "LM"; mode=3; vectors=1; basis=1});
+    nev = rn.values.ne;
+    assert (rn.nconv == nev);
+    assert (norm (A*rn.vectors - rn.vectors*diag(rn.values)) < 1e-7);
+    assert (norm (rn.vectors'*rn.vectors - ident(nev)) < 1e-10);
+    b = rn.basis[;seq(nev)];
+    assert (norm (tril (b'*A*b; -2)) < 1e-10);
+  }
+
+  if (n > 2)
+  {
+    rz = iram (n; fa; ; {Af};
+  	     {type = "complex"; symmetry = "general"; shift = 1.0;
+  	      which = "LM"; mode=3; vectors=1; basis=1});
+    nev = rz.values.ne;
+    assert (rz.nconv == nev);
+    assert (norm (A*rz.vectors - rz.vectors*diag(rz.values)) < 1e-10);
+    assert (norm (rz.vectors'*rz.vectors - ident(nev)) < 1e-10);
+    b = rz.basis[;seq(nev)];
+    assert (norm (tril (b'*A*b; -2)) < 1e-10);
+  }
+};
+
+for (i in 2:5,30) { ck (i; 1.0); }
+for (i in 67,79) { ck (i; 0.4); }
+
+# Some real, symmetric, generalized problems using mode 3.
+
+fa = function (v; p) { return solve (p.Af; p.B*v); };
+fb = function (v; p) { return p.B*v; };
+
+ck = function (n; density)
+{
+  A = surprise (n; n; "real"; density; "symmetric");
+  B = symmetric (fill (n,n+2; fill (n,n+3; form (n+3; (1,2,1)/4))) [;2:n+1]);
+  Af = factor (A - B);
+
+  rs = iram (n; fa; fb; {Af; B};
+	     {type = "real"; symmetry = "symmetric"; shift = 1.0;
+	      which = "LM"; mode=3; vectors=1; basis=1; bmat="G"});
+  nev = rs.values.ne;
+  assert (rs.nconv == nev);
+  assert (norm (A*rs.vectors - B*rs.vectors*diag(rs.values)) < 1e-10);
+  assert (norm (rs.vectors'*B*rs.vectors - ident(nev)) < 1e-10);
+  b = rs.basis[;seq(nev)];
+  assert (norm (tril (b'*A*b; -2)) < 1e-10);
+
+  if (n > 2)
+  {
+    rn = iram (n; fa; fb; {Af; B};
+	       {type = "real"; symmetry = "general"; shift = 1.0;
+		which = "LM"; mode=3; vectors=1; basis=1; bmat="G"});
+    nev = rn.values.ne;
+    assert (rn.nconv == nev);
+    assert (norm (A*rn.vectors - B*rn.vectors*diag(rn.values)) < 1e-10);
+    assert (norm (rn.vectors'*B*rn.vectors - ident(nev)) < 1e-10);
+    b = rn.basis[;seq(nev)];
+    assert (norm (tril (b'*A*b; -2)) < 1e-10);
+  }
+
+  if (n > 2)
+  {
+    rz = iram (n; fa; fb; {Af; B};
+  	     {type = "complex"; symmetry = "general"; shift = 1.0;
+  	      which = "LM"; mode=3; vectors=1; basis=1; bmat="G"});
+    nev = rz.values.ne;
+    assert (rz.nconv == nev);
+    assert (norm (A*rz.vectors - B*rz.vectors*diag(rz.values)) < 1e-10);
+    assert (norm (rz.vectors'*B*rz.vectors - ident(nev)) < 1e-10);
+    b = rz.basis[;seq(nev)];
+    assert (norm (tril (b'*A*b; -2)) < 1e-10);
+  }
+};
+
+for (i in 2:5,17) { ck (i; 1.0); }
+for (i in 33,38) { ck (i; 0.5); }
+
+# Some real, symmetric, generalized problems using mode 4.
+
+fa = function (v; p) { return solve (p.Af; p.A*v); };
+fb = function (v; p) { return p.A*v; };
+
+ck = function (n; density)
+{
+  A = symmetric (fill (n,n+2; fill (n,n+3; form (n+3; (1,2,1)/4))) [;2:n+1]);
+  B = surprise (n; n; "real"; density; "symmetric");
+  Af = factor (A - B);
+
+  rs = iram (n; fa; fb; {A; Af};
+	     {type = "real"; symmetry = "symmetric"; shift = 1.0;
+	      which = "LM"; mode=4; vectors=1; basis=1; bmat="G"});
+  nev = rs.values.ne;
+  assert (rs.nconv == nev);
+  assert (norm (A*rs.vectors - B*rs.vectors*diag(rs.values)) < 1e-10);
+  assert (norm (rs.vectors'*A*rs.vectors - ident(nev)) < 1e-10);
+  b = rs.basis[;seq(nev)];
+  assert (norm (tril (b'*A*b; -2)) < 1e-10);
+};
+
+for (i in 2:5,27) { ck (i; 1.0); }
+for (i in 41,55) { ck (i; 0.5); }
+
+# Some real, symmetric, generalized problems using mode 5.
+
+fa = function (v; p) { return solve (p.Af; (p.A+p.B)*v); };
+fb = function (v; p) { return p.B*v; };
+
+ck = function (n; density)
+{
+  A = surprise (n; n; "real"; density; "symmetric");
+  B = symmetric (fill (n,n+2; fill (n,n+3; form (n+3; (1,2,1)/4))) [;2:n+1]);
+  Af = factor (A - B);
+
+  rs = iram (n; fa; fb; {A; Af; B};
+	     {type = "real"; symmetry = "symmetric"; shift = 1.0;
+	      which = "LM"; mode=5; vectors=1; basis=1; bmat="G"; mxiter=300});
+  nev = rs.values.ne;
+  assert (rs.nconv == nev);
+  assert (norm (A*rs.vectors - B*rs.vectors*diag(rs.values)) < 1e-10);
+  assert (norm (rs.vectors'*B*rs.vectors - ident(nev)) < 1e-10);
+  b = rs.basis[;seq(nev)];
+  assert (norm (tril (b'*A*b; -2)) < 1e-10);
+};
+
+for (i in 2:5,17) { ck (i; 1.0); }
+for (i in 34,68) { ck (i; 0.5); }
+
+# Some real, general, standard problems using mode 1.
+
+fa = function (v; p) { return p.A*v; };
+
+ck = function (n; density)
+{
+  A = surprise (n; n; "real"; density; "general");
+
+  rn = iram (n; fa; ; {A};
+	       {type = "real"; symmetry = "general"; mxiter=500;
+		which = "LM"; mode=1; vectors=1; basis=1});
+  nev = rn.values.ne;
+  assert (rn.nconv >= nev);
+  assert (norm (A*rn.vectors - rn.vectors*diag(rn.values)) < 1e-10);
+  assert (norm (diag (rn.vectors'*rn.vectors) - 1) < 1e-10);
+  b = rn.basis[;seq(nev)];
+  assert (norm (tril (b'*A*b; -2)) < 1e-10);
+
+  rz = iram (n; fa; ; {A};
+	     {type = "complex"; symmetry = "general";
+	      which = "LM"; mode=1; vectors=1; basis=1; mxiter=300});
+  nev = rz.values.ne;
+  assert (rz.nconv == nev);
+  assert (norm (A*rz.vectors - rz.vectors*diag(rz.values)) < 1e-10);
+  assert (norm (diag (rz.vectors'*rz.vectors) - 1) < 1e-10);
+  b = rz.basis[;seq(nev)];
+  assert (norm (tril (b'*A*b; -2)) < 1e-10);
+};
+
+for (i in 3:10,20,40) { ck (i; 1.0); }
+for (i in 25,73) { ck (i; 0.4); }
+
+# Some real, general, generalized problems using mode 2.
+
+fa = function (v; p) { return solve (p.Bf; p.A*v); };
+fb = function (v; p) { return p.B*v; };
+
+ck = function (n; density)
+{
+  A = surprise (n; n; "real"; density; "general");
+  B = symmetric (fill (n,n+2; fill (n,n+3; form (n+3; (1,2,1)/4))) [;2:n+1]);
+  Bf = factor (B);
+
+  if (n > 2)
+  {
+    rn = iram (n; fa; fb; {A; B; Bf};
+	       {type = "real"; symmetry = "general"; bmat="G";
+		which = "LM"; mode=2; vectors=1; basis=1});
+    nev = rn.values.ne;
+    assert (rn.nconv >= nev);
+    assert (norm (A*rn.vectors - B*rn.vectors*diag(rn.values)) < 1e-7);
+    assert (norm (diag (rn.vectors'*B*rn.vectors - ident(nev))) < 1e-10);
+    b = rn.basis[;seq(nev)];
+    assert (norm (tril (b'*A*b; -2)) < 1e-10);
+  }
+
+  if (n > 2)
+  {
+    rz = iram (n; fa; fb; {A; B; Bf};
+  	     {type = "complex"; symmetry = "general"; bmat="G";
+  	      which = "LM"; mode=2; vectors=1; basis=1; mxiter=300});
+    nev = rz.values.ne;
+    assert (rz.nconv == nev);
+    assert (norm (A*rz.vectors - B*rz.vectors*diag(rz.values)) < 1e-10);
+    assert (norm (diag (rz.vectors'*B*rz.vectors - ident(nev))) < 1e-10);
+    b = rz.basis[;seq(nev)];
+    assert (norm (tril (b'*A*b; -2)) < 1e-10);
+  }
+};
+
+for (i in 3:7,12) { ck (i; 1.0); }
+for (i in 39,40) { ck (i; 0.5); }
+
+# Some real, general, standard problems using mode 3.
+
+fa = function (v; p) { return solve (p.Af; v); };
+
+ck = function (n; density)
+{
+  A = surprise (n; n; "real"; density; "general");
+  Af = factor (A - ident(n));
+
+  if (n > 2)
+  {
+    rn = iram (n; fa; ; {Af};
+	       {type = "real"; symmetry = "general"; shift = 1.0;
+		which = "LM"; mode=3; vectors=1; basis=1});
+    nev = rn.values.ne;
+    assert (rn.nconv >= nev);
+    assert (norm (A*rn.vectors - rn.vectors*diag(rn.values)) < 1e-10);
+    assert (norm (diag (rn.vectors'*rn.vectors - ident(nev))) < 1e-10);
+    b = rn.basis[;seq(nev)];
+    assert (norm (tril (b'*A*b; -2)) < 1e-10);
+  }
+
+  if (n > 2)
+  {
+    rz = iram (n; fa; ; {Af};
+  	     {type = "complex"; symmetry = "general"; shift = 1.0;
+  	      which = "LM"; mode=3; vectors=1; basis=1});
+    nev = rz.values.ne;
+    assert (rz.nconv >= nev);
+    assert (norm (A*rz.vectors - rz.vectors*diag(rz.values)) < 1e-10);
+    assert (norm (diag (rz.vectors'*rz.vectors - ident(nev))) < 1e-10);
+    b = rz.basis[;seq(nev)];
+    assert (norm (tril (b'*A*b; -2)) < 1e-10);
+  }
+};
+
+for (i in 3:7,36) { ck (i; 1.0); }
+for (i in 46,55) { ck (i; 0.4); }
+
+# Some real, general, generalized problems using mode 3.
+
+fa = function (v; p) { return solve (p.Af; p.B*v); };
+fb = function (v; p) { return p.B*v; };
+
+ck = function (n; density)
+{
+  A = surprise (n; n; "real"; density; "symmetric");
+  B = symmetric (fill (n,n+2; fill (n,n+3; form (n+3; (1,2,1)/4))) [;2:n+1]);
+  Af = factor (A - B);
+
+  if (n > 2)
+  {
+    rn = iram (n; fa; fb; {Af; B};
+	       {type = "real"; symmetry = "general"; shift = 1.0;
+		which = "LM"; mode=3; vectors=1; basis=1; bmat="G"});
+    nev = rn.values.ne;
+    assert (rn.nconv >= nev);
+    assert (norm (A*rn.vectors - B*rn.vectors*diag(rn.values)) < 1e-10);
+    assert (norm (diag (rn.vectors'*B*rn.vectors - ident(nev))) < 1e-10);
+    b = rn.basis[;seq(nev)];
+    assert (norm (tril (b'*A*b; -2)) < 1e-10);
+  }
+
+  if (n > 2)
+  {
+    rz = iram (n; fa; fb; {Af; B};
+  	     {type = "complex"; symmetry = "general"; shift = 1.0;
+  	      which = "LM"; mode=3; vectors=1; basis=1; bmat="G"});
+    nev = rz.values.ne;
+    assert (rz.nconv == nev);
+    assert (norm (A*rz.vectors - B*rz.vectors*diag(rz.values)) < 1e-10);
+    assert (norm (diag (rz.vectors'*B*rz.vectors - ident(nev))) < 1e-10);
+    b = rz.basis[;seq(nev)];
+    assert (norm (tril (b'*A*b; -2)) < 1e-10);
+  }
+};
+
+for (i in 3:9,16) { ck (i; 1.0); }
+for (i in 34,35) { ck (i; 0.5); }
+
+# Some complex, standard problems using mode 1.
+
+fa = function (v; p) { return p.A*v; };
+
+ck = function (n; density)
+{
+  A = surprise (n; n; "complex"; density; "hermitian");
+
+  rz = iram (n; fa; ; {A};
+	       {type = "complex"; symmetry = "hermitian";
+		which = "LM"; mode=1; vectors=1; basis=1});
+  nev = rz.values.ne;
+  assert (rz.nconv == nev);
+  assert (norm (A*rz.vectors - rz.vectors*diag(rz.values)) < 1e-10);
+  assert (norm (diag (rz.vectors'*rz.vectors) - 1) < 1e-10);
+  b = rz.basis[;seq(nev)];
+  assert (norm (tril (b'*A*b; -2)) < 1e-10);
+
+  A = surprise (n; n; "complex"; density; "general");
+
+  rz = iram (n; fa; ; {A};
+	     {type = "complex"; symmetry = "general";
+	      which = "LM"; mode=1; vectors=1; basis=1; mxiter=300});
+  nev = rz.values.ne;
+  assert (rz.nconv == nev);
+  assert (norm (A*rz.vectors - rz.vectors*diag(rz.values)) < 1e-10);
+  assert (norm (diag (rz.vectors'*rz.vectors) - 1) < 1e-10);
+  b = rz.basis[;seq(nev)];
+  assert (norm (tril (b'*A*b; -2)) < 1e-10);
+};
+
+for (i in 3:9,19,39) { ck (i; 1.0); }
+for (i in 28,33) { ck (i; 0.5); }
+
+# Some complex, generalized problems using mode 2.
+
+fa = function (v; p) { return solve (p.Bf; p.A*v); };
+fb = function (v; p) { return p.B*v; };
+
+ck = function (n; density)
+{
+  A = surprise (n; n; "complex"; density; "general");
+  B = symmetric (fill (n,n+2; fill (n,n+3; form (n+3; (1,2,1)/4))) [;2:n+1]);
+  Bf = factor (B);
+
+  if (n > 2)
+  {
+    rz = iram (n; fa; fb; {A; B; Bf};
+  	     {type = "complex"; symmetry = "general"; bmat="G";
+  	      which = "LM"; mode=2; vectors=1; basis=1});
+    nev = rz.values.ne;
+    assert (rz.nconv == nev);
+    assert (norm (A*rz.vectors - B*rz.vectors*diag(rz.values)) < 1e-10);
+    assert (norm (diag (rz.vectors'*B*rz.vectors - ident(nev))) < 1e-10);
+    b = rz.basis[;seq(nev)];
+    assert (norm (tril (b'*A*b; -2)) < 1e-10);
+  }
+};
+
+for (i in 3:6,13) { ck (i; 1.0); }
+for (i in 36,37) { ck (i; 0.5); }
+
+# Some complex, standard problems using mode 3.
+
+fa = function (v; p) { return solve (p.Af; v); };
+
+ck = function (n; density)
+{
+  A = surprise (n; n; "complex"; density; "hermitian");
+  Af = factor (A - ident(n));
+
+  if (n > 2)
+  {
+    rz = iram (n; fa; ; {Af};
+  	     {type = "complex"; symmetry = "hermitian"; shift = 1.0;
+  	      which = "LM"; mode=3; vectors=1; basis=1});
+    nev = rz.values.ne;
+    assert (rz.nconv >= nev);
+    assert (norm (A*rz.vectors - rz.vectors*diag(rz.values)) < 1e-10);
+    assert (norm (diag (rz.vectors'*rz.vectors - ident(nev))) < 1e-10);
+    b = rz.basis[;seq(nev)];
+    assert (norm (tril (b'*A*b; -2)) < 1e-10);
+  }
+};
+
+for (i in 3:11,25) { ck (i; 1.0); }
+for (i in 41,42) { ck (i; 0.4); }
+
+# Some complex, generalized problems using mode 3.
+
+fa = function (v; p) { return solve (p.Af; p.B*v); };
+fb = function (v; p) { return p.B*v; };
+
+ck = function (n; density)
+{
+  A = surprise (n; n; "complex"; density; "general");
+  B = symmetric (fill (n,n+2; fill (n,n+3; form (n+3; (1,2,1)/4))) [;2:n+1]);
+  Af = factor (A - B);
+
+  if (n > 2)
+  {
+    rz = iram (n; fa; fb; {Af; B};
+  	     {type = "complex"; symmetry = "general"; shift = 1.0;
+  	      which = "LM"; mode=3; vectors=1; basis=1; bmat="G"});
+    nev = rz.values.ne;
+    assert (rz.nconv == nev);
+    assert (norm (A*rz.vectors - B*rz.vectors*diag(rz.values)) < 1e-10);
+    assert (norm (diag (rz.vectors'*B*rz.vectors - ident(nev))) < 1e-10);
+    b = rz.basis[;seq(nev)];
+    assert (norm (tril (b'*A*b; -2)) < 1e-10);
+  }
+};
+
+for (i in 3:6,15) { ck (i; 1.0); }
+for (i in 27,28) { ck (i; 0.5); }

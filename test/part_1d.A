@@ -1,0 +1,166 @@
+
+printf( "Starting the vector partition test...\n" );
+
+assert = function( t ) {
+    if ( !test(t) ) {
+        printf( "...failed.\a\n" );
+        exception();
+    }
+};
+
+drop = function( x ) {
+    x.eid = NULL;
+    return x;
+};
+
+ck = function( v ) {
+
+    # `v' is a vector for which the following expressions are true:
+    #     v[i] == v[v.ne-i+1]
+    #     v.ne > 16
+
+    assert( v[3] == v[v.ne-2] & v[7].class == "scalar" );
+    assert( equal( drop(v[5:7]); drop(v[v.ne-(5:7)+1]) ) );
+    assert( v[13,1].class == "vector" );
+    assert( equal( drop(v[6,2]); drop(v[[6,2]]) ) );
+    assert( v[2] == v[vector(2)] );
+    assert( v[8] == v[8.1] & v[15] == v[15+sqrt(-1)] );
+    assert( equal( drop(v[v.ne:1]); drop(v) ) );
+
+    if ( v.eid != NULL ) {
+
+        assert( v[sprintf("%s";v.eid[7]),sprintf("%s";v.eid[9])] == v[7] );
+        assert( v[vector(sprintf("%s";v.eid[3]))].class == "vector" );
+        assert( v[vector(sprintf("%s";v.eid[3]))].ne > 0 );
+        assert( v[vector(sprintf("%s";v.eid[8]))].eid[1] == v[vector(8)].eid );
+        assert( v[vector(sprintf("%s";v.eid[14]))].eid[1] == v[vector(14)].eid );
+        assert( equal( drop(v[10:4].eid); drop(v.eid[10:4]) ) );
+
+    }
+
+};
+
+# dense, integer
+
+ck( abs(-9:9) );
+v = (1:9),(9:1);
+ck( v );
+v.eid = v;
+ck( v );
+v.eid += acos(-1);
+ck( v );
+v.eid = fill( v.ne; "abc" );
+ck( v );
+v.eid = v.ne:1;
+ck( v );
+v.eid = ( "a", "bb", "ccc", "dddd", "eee", "ff", "g", "", "1",
+          "a", "bb", "ccc", "dddd", "eee", "ff", "g", "", "1" );
+ck( v );
+
+# sparse, integer
+
+v = zero(45);
+v[3,6,7] = v[46-(3,6,7)] = 2:4;
+ck( v );
+v.eid = v;
+ck( v );
+v.eid += acos(v/10);
+ck( v );
+v.eid = fill( v.ne; "abc" );
+ck( v );
+v.eid = v.ne:1;
+ck( v );
+v.eid = fill( 45; "a", "bb", "cc", "d", "" );
+ck( v );
+
+# dense, real
+
+ck( abs(-9.5:9.5:.5) );
+v = 1.1:9.1;
+v = v, v[v.ne:1];
+ck( v );
+v.eid = v;
+ck( v );
+v.eid += acos(-1);
+ck( v );
+v.eid = fill( v.ne; "abc" );
+ck( v );
+v.eid = v.ne:1;
+ck( v );
+v.eid = fill( v.ne; "a", "bb", "ccc", "dddd", "eee", "ff", "g", "", "1" );
+ck( v );
+
+# sparse, real
+
+v = zero(45);
+v[3,6,7] = v[46-(3,6,7)] = 2.3:4.3;
+ck( v );
+v.eid = v;
+ck( v );
+v.eid += acos(v/10);
+ck( v );
+v.eid = fill( v.ne; "abc" );
+ck( v );
+v.eid = v.ne:1;
+ck( v );
+v.eid = fill( v.ne; "a", "bb", "cc", "d", "" );
+ck( v );
+
+# dense, complex
+
+ck( abs(-9.5:9.5:.5)+sqrt(-1) );
+v = acos( 1.1:9.1 );
+v = v, v[v.ne:1];
+ck( v );
+v.eid = real( v );
+ck( v );
+v.eid = fill( v.ne; "abc" );
+ck( v );
+v.eid = v.ne:1;
+ck( v );
+v.eid = fill( v.ne; "a", "bb", "ccc", "dddd", "eee", "ff", "g", "", "1" );
+ck( v );
+
+# sparse, real
+
+v = zero(45);
+v[3,6,7] = v[46-(3,6,7)] = 2.3:4.3+sqrt(-1);
+ck( v );
+v.eid = imag( v );
+ck( v );
+v.eid = fill( v.ne; "abc" );
+ck( v );
+v.eid = v.ne:1;
+ck( v );
+v.eid = fill( v.ne; "a", "bb", "cc", "d", "" );
+ck( v );
+
+# dense, character
+
+v = members(1,2),"","1";
+v = v, v[v.ne:1];
+ck( v );
+v.eid = v;
+ck( v );
+v.eid = fill( v.ne; "abc" );
+ck( v );
+v.eid = v.ne:1;
+ck( v );
+v.eid = fill( v.ne; "a", "bb", "ccc", "dddd", "eee", "ff", "g", "", "1" );
+ck( v );
+
+# sparse, character
+
+v = sparse( fill( 45; "" ) );
+v[3,6,7] = v[46-(3,6,7)] = "b", "c", "d";
+ck( v );
+v.eid = v;
+ck( v );
+v.eid = fill( v.ne; "abc" );
+ck( v );
+v.eid = v.ne:1;
+ck( v );
+v.eid = fill( 45; "a", "bb", "cc", "d", "" );
+ck( v );
+
+printf( "...passed.\n" );

@@ -1,0 +1,167 @@
+
+# This file contains Algae functions that return cardinal and ordinal
+# numbers corresponding to their integer or real arguments.  For example,
+#
+# 	cardinal (1)?
+#		"one"
+#	ordinal (1)?
+#		"first"
+#
+# The American system of numeration is used.  The magnitude of the argument
+# must be less than 1e66.  Real arguments are rounded to the nearest
+# integer.  Remember, very large integers may silently overflow.
+
+cardinal = function (n)
+{
+  local (s);
+
+  n = scalar (n);
+
+  if (n.type != "integer" & n.type != "real")
+  {
+    message ("run time error: Invalid type.");
+    exception ();
+
+  elseif (round (n) == 0)
+
+    s = "zero ";
+
+  elseif (abs (n) >= 10.0^(3*self.recur.names.ne))
+
+    message ("run time error: Domain error.");
+    exception ();
+
+  else
+
+    if (n < 0) { s = "negative "; else s = ""; }
+    s += self.recur (abs (n); 1);
+  }
+
+  return substr (s; 1; dice(s).ne-1);
+};
+
+cardinal.recur = function (n; k)
+{
+  local (s);
+
+  if (n != 0)
+  {
+    if (n < 20)
+    {
+      s = self.ones[n];
+
+    elseif (n < 100)
+
+      s = self.tens[ (n - n%10) / 10 ] + self (n%10; 1);
+
+    elseif (n < 1000)
+
+      s = self ((n - n%100) / 100; 1) + "hundred " + self (n%100; 1);
+
+    else
+
+      s = self ((n - n%1000) / 1000; k+1) + self (n%1000; k);
+      return s;
+    }
+
+    return s + self.names[k];
+
+  else
+
+    return "";
+  }
+};
+
+cardinal.recur.ones = (
+  "one ",
+  "two ",
+  "three ",
+  "four ",
+  "five ",
+  "six ",
+  "seven ",
+  "eight ",
+  "nine ",
+  "ten ",
+  "eleven ",
+  "twelve ",
+  "thirteen ",
+  "fourteen ",
+  "fifteen ",
+  "sixteen ",
+  "seventeen ",
+  "eighteen ",
+  "nineteen " );
+
+cardinal.recur.tens = (
+  "tendy ",	# a joke, Son
+  "twenty ",
+  "thirty ",
+  "forty ",
+  "fifty ",
+  "sixty ",
+  "seventy ",
+  "eighty ",
+  "ninety " );
+
+cardinal.recur.names = (
+  "",
+  "thousand ",
+  "million ",
+  "billion ",
+  "trillion ",
+  "quadrillion ",
+  "quintillion ",
+  "sextillion ",
+  "septillion ",
+  "octillion ",
+  "nonillion ",
+  "decillion ",
+  "undecillion ",
+  "duodecillion ",
+  "tredecillion ",
+  "quattuordecillion ",
+  "quindecillion ",
+  "sexdecillion ",
+  "septendecillion ",
+  "octodecillion ",
+  "novemdecillion ",
+  "vigintillion " );
+
+ordinal = function (n)
+{
+  local (s; i; t);
+
+  s = split (cardinal (n));
+  i = find (s[s.ne]; self.oddballs.eid);
+  if (i) { s[s.ne] = self.oddballs[i]; else s[s.ne] += "th"; }
+  t = s[s.ne];
+  s += " ";
+  s[s.ne] = t;
+  return sum (s);
+};
+
+ordinal.oddballs = function ()
+{
+  local (x);
+
+  x = [
+    "one",	"first";
+    "two",	"second";
+    "three",	"third";
+    "five",	"fifth";
+    "eight",	"eighth";
+    "twelve",	"twelfth";
+    "twenty",	"twentieth";
+    "thirty",	"thirtieth";
+    "forty",	"fortieth";
+    "fifty",	"fiftieth";
+    "sixty",	"sixtieth";
+    "seventy",	"seventieth";
+    "eighty",	"eightieth";
+    "ninety",	"ninetieth" ];
+
+    return label (x[;2]; x[;1]);
+} ();
+
+provide ("numbers");

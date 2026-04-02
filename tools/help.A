@@ -1,0 +1,16 @@
+
+help = ( "\n" +
+"This is Algae, an interpreted language for numerical analysis.\n" +
+"\n" +
+"EXITING:   To exit Algae, type `exit()'.\n" +
+"\n" +
+"INFO:      The manual is available on-line through the `info' function.  Type\n" +
+"           `info()' to view it or `info(\"abs\")', for example, to go to a\n" +
+"           description of the `abs' function.\n" +
+"\n" +
+"READLINE:  Command line editing and history is available on most systems.\n" +
+"           The arrow keys on your keyboard allow basic editing -- more\n" +
+"           sophisticated commands are also available. \n" +
+"\n" +
+"SOURCE:    Algae is free software.  See the documentation for license,\n" +
+"           warranty, and permission details.\n" );

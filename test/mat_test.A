@@ -1,0 +1,48 @@
+
+printf( "Starting the mat test...\n" );
+
+i = sqrt(-1);
+
+assert = strip( function( t ) {
+    if ( !test(t) ) {
+        message( "...failed.\a" );
+        exception();
+    }
+});
+
+near = function( a; b ) {
+  return norm( a - b ) / ( norm( a ) + norm( b ) ) < 1e-10;
+};
+
+ck = function()
+{
+  assert( t.a == 42 );
+  assert( equal( t.b; 1,2,3,5,7,11,13,17,19 ) );
+  assert( equal( t.c; magic(5) ) );
+
+  assert( near( t.d; t.a+.1 ) );
+  assert( near( t.e; t.b+.2 ) );
+  assert( near( t.f; t.c+.3 ) );
+
+  assert( near( t.g; t.a+.1*i ) );
+  assert( near( t.h; t.b+.2*i ) );
+  assert( near( t.i; t.c+.3*i ) );
+
+  assert( equal( t.s; ["MATLAB  ";"strings ";
+		       "are     ";"really  ";"pathetic"] ) );
+};
+
+# Read in and check a MATLAB file.
+
+fn = "DATA.mat";
+t = getmat( fn ); close( fn );
+ck();
+
+# Write it, read it, and check it again.
+
+fn = tmp_file();
+putmat( t; fn ); close( fn );
+t = getmat( fn ); close( fn );
+ck();
+
+printf( "...passed.\n" );

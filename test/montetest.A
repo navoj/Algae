@@ -1,0 +1,9 @@
+
+printf( "Starting the monte test...\n" );
+
+if ( abs( monte( sin; [ 0, acos(-1) ]; 0.01 ) - 2 ) > 0.2 ) {
+    printf( "failed!\a\n" );
+    exception();
+else
+    printf( "...passed.\n" );
+}

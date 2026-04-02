@@ -1,0 +1,29 @@
+
+# Trapezoidal numerical integration of a vector.  Abscissae are
+# provided by the vector's labels, if they exist; otherwise, unit
+# spacing is assumed.  For the result to make sense, you'll probably
+# want the labels to be in monotonically increasing order.
+
+trapz = function (y)
+{
+  local (n; x);
+
+  y = vector (y);
+
+  n = y.ne;
+  if (n < 2)
+  {
+    message ("At least 2 elements required for numerical integration.");
+    exception ();
+  }
+
+  x = unlabel (y.eid);
+  if (x == NULL)
+  {
+    return 0.5 * sum (y[1:n-1] + y[2:n]);
+  else
+    y = unlabel (y);
+    return 0.5 * sum ((y[1:n-1] + y[2:n]) @ diff (x));
+  }
+};
+

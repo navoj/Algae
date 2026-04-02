@@ -1,0 +1,16 @@
+
+# This function generates an integer vector, like `1:n' if `n' is an
+# integer, except that a zero-length vector is returned if `n' is
+# less than 1.  This makes it especially useful in for loops.
+
+seq = function (n)
+{
+    n = integer (scalar (n));
+
+    if (n < 1)
+    {
+      return fill (0; 0);
+    else
+      return 1:n;
+    }
+};

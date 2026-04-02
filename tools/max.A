@@ -1,0 +1,80 @@
+
+# Maximum value.
+
+max = strip (function (x)
+{
+  local (c; n; v; e);
+
+  c = class (x);
+  if (c == "matrix")
+  {
+    n = x.nc;
+    e = x.cid;
+    x = btrans(x;x.nr;1)[(imax(x)-1)*n+seq(n)];
+    x.eid = e;
+
+  elseif (c == "table")
+
+    for (v in members (x)) { x.(v) = self (x.(v)); }
+
+  else
+    x = x[imax(x)];
+  }
+
+  return x;
+});
+
+$imax = imax;
+imax = strip (function (x)
+{
+  local (v);
+
+  if (class (x) == "table")
+  {
+    for (v in members (x)) { x.(v) = self (x.(v)); }
+  else
+    x = $imax (x);
+  }
+
+  return x;
+});
+
+# Minimum value.
+
+min = strip (function (x)
+{
+  local (c; n; v; e);
+
+  c = class (x);
+  if (c == "matrix")
+  {
+    n = x.nc;
+    e = x.cid;
+    x = btrans(x;x.nr;1)[(imin(x)-1)*n+seq(n)];
+    x.eid = e;
+
+  elseif (c == "table")
+
+    for (v in members (x)) { x.(v) = self (x.(v)); }
+
+  else
+    x = x[imin(x)];
+  }
+
+  return x;
+});
+
+$imin = imin;
+imin = strip (function (x)
+{
+  local (v);
+
+  if (class (x) == "table")
+  {
+    for (v in members (x)) { x.(v) = self (x.(v)); }
+  else
+    x = $imin (x);
+  }
+
+  return x;
+});

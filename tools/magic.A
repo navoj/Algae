@@ -1,0 +1,189 @@
+
+# What programming language would be complete without magic squares?
+
+# This function generates magic squares.  A magic square is a square
+# matrix of order N whose elements consist of the consecutive whole
+# numbers from 1 to N^2, arranged so that the sums of each row, each
+# column, and each diagonal are all equal.
+
+# Note that magic(2) is undefined and returns NULL.
+
+# This code is taken from Octave (http://www.octave.org/), replacing
+# Algae's original implementation because it's faster.  For sentimental
+# reasons, the original is included as comments at the bottom.
+
+magic = function (n)
+{
+  local (shift; c; r; A; I; J; m; n2; k; n2s; m2);
+
+  n = scalar (integer (n));
+  n2 = n^2;
+
+  if (n == 1)
+  {
+    return [1];
+
+  elseif (n < 3)
+
+    return NULL;
+
+  elseif (n % 2)
+
+    n2s = 1:n2;
+    shift = floor ((n2s-1)/n);
+    c = (n2s - shift + (n-3)/2) % n;
+    r = ((n2:1) + 2*shift) % n;
+    A = fill (n2; 0);
+    A [c*n+r+1] = n2s;
+    A = fill (n,n; A);
+
+  elseif (n % 4)
+
+    m = n/2;
+    m2 = m^2;
+    A = magic (m);
+    A = [A, A+2*m2; A+3*m2, A+m2 ];
+    k = (m-1)/2;
+    if (k > 1)
+    {
+      I = 1:m;
+      J = 2:k, n-k+2:n;
+      A [I,I+m; J] = A [I+m,I; J];
+    }
+    I = 1:k, k+2:m;
+    A [I,I+m; 1] = A [I+m,I; 1];
+    I = k + 1;
+    A [I,I+m; I] = A [I+m,I; I];
+
+  else
+
+    A = fill (n,n; 1:n2);
+    I = 1:n:4, 4:n:4; J = I[;I.ne:1];
+    A [I;I] = A [J;J];
+    I = 2:n:4, 3:n:4; J = I[;I.ne:1];
+    A [I;I] = A [J;J];
+
+  }
+
+  return A;
+};
+
+# # I hacked this up one night when I should have been working on the
+# # house.  (That's my excuse for this mess.)
+# 
+# # Copyright (C) 1994-96  K. Scott Hunziker.
+# 
+# magic = function (n)
+# {
+#   local (x; i; j; r; c; v);
+# 
+#   n = scalar (integer (n));
+# 
+#   if (n == 1) { return [1]; }
+#   if (n < 3) { return NULL; }
+# 
+#   if (n % 2)
+#   {
+#     x = fill (n,n; 0);
+#     for (i in 1:n)
+#     {
+#       v = (i-1)*n + 1 : i*n;
+#       r = 2*i-1:2*i-n; r -= n*(r>n); r += n*(r<1);
+#       c = (n+3)/2-i:(n+3)/2-i+n-1; c -= n*(c>n); c+= n*(c<1);
+#       for (j in 1:n) { x[r[j];c[j]] = v[j]; }
+#     }
+# 
+#   elseif (n % 4)
+# 
+#     x = self (n/2);
+#     x = [ x, x+n^2/2; x+n^2*3/4, x+n^2/4 ];
+# 
+#     for (i in 1:(n/2-1)/2)
+#     {
+#         c=x[1:n/2;i];
+#         x[1:n/2;i] = x[n/2+1:n;i];
+#         x[n/2+1:n;i] = c;
+#     }
+# 
+#     if (n > 6)
+#     {
+#       for (i in 1:(n/2-1)/2-1)
+#       {
+#         j = n-i+1;
+#         c = x[1:n/2;j];
+#         x[1:n/2;j] = x[n/2+1:n;j];
+#         x[n/2+1:n;j] = c;
+#       }
+#     }
+# 
+#     j = (n+2)/4;
+# 
+#     c = x[j;1];
+#     x[j;1] = x[j+n/2;1];
+#     x[j+n/2;1] = c;
+# 
+#     c = x[j;j];
+#     x[j;j] = x[j+n/2;j];
+#     x[j+n/2;j] = c;
+# 
+#   else
+# 
+#     x = ( self.block (n; 1) [2,1;n:1] +
+#           self.block (n; n^2-n+1) [;n:1] );
+# 
+#     for (i in 2:n/2)
+#     {
+#       if (i%4 > 1)
+#       {
+#         r = (self.block (n; (i-1)*n+1) +
+#              self.block (n; n^2-i*n+1) [2,1;]);
+#       else
+#         r = (self.block (n; (i-1)*n+1) [2,1;n:1] +
+#              self.block( n; n^2-i*n+1) [;n:1]);
+#       }
+#       x = [ r[1;]; x; r[2;] ];
+#     }
+#   }
+# 
+#   return x;
+# };
+# 
+# magic.block = function (n; s)
+# {
+#   local (i; j; x)
+# 
+#   x = fill (2,n; 0);
+#   x[2;1] = s;
+#   s += 1;
+#   i = 1;
+# 
+#   for (j in n-1:2:2)
+#   {
+#     if (i == 1)
+#     {
+#       x[1;j] = s;
+#       x[1;j-1] = s+1;
+#       i=2;
+#     else
+#       x[2;j-1] = s;
+#       x[2;j] = s+1;
+#       i=1;
+#     }
+#     s += 2;
+#   }
+#   x[2;n] = s;
+# 
+#   return x;
+# };
+# 
+# magic.check = function (x)
+# {
+#   local (ones; sum; i);
+# 
+#   ones = (1:x.nr)*0+1;
+#   sum = 0;
+#   for (i in 1:x.nr) { sum += x[i;i]; }
+#   return (!test (diag(x)*ones != sum) &
+#           !test (x*ones != sum) &
+#           !test (ones*x != sum));
+# };

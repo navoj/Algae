@@ -1,0 +1,41 @@
+
+#  Generate a vector of prime numbers that are less than or equal to the
+#  scalar argument.  The argument is rounded to an integer, if necessary.
+#  If the argument is less than 2, a zero length vector is returned.
+
+primes = function (n)
+{
+  local (v; i);
+
+  n = integer (scalar (n));
+  v = seq (n);
+
+  for (i in seq (floor (sqrt (n)) - 1) + 1)
+  {
+    if (v[i]) { v[i^2:n:i] = 0; }
+  }
+
+  return pick (v > 1);
+};
+
+# Compute the prime factors of a positive integer.
+
+primef = function (n)
+{
+  local (v; r);
+
+  n = integer (scalar (n));
+  r = fill (0; 1);
+
+  v = primes (floor (sqrt (n)));
+
+  while (n > 1)
+  {
+    v = v [pick (!(n%v))];
+    if (!v.ne) { v = n; }
+    r = r, v;
+    n = n / product (v);
+  }
+
+  return sort (r);
+};

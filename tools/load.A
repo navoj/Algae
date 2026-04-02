@@ -1,0 +1,30 @@
+
+# This function reads a table from the named file and assigns its
+# members as global variables.  This can be used to "restore" an
+# Algae session that was saved with the `save' function.
+
+load = function( file )
+{
+    local( name; t );
+
+    # Read in the table.
+
+    if ( ( t = get( file ) ) != NULL )
+    {
+	if ( class(t) != "table" )
+	{
+	    message( "run time error: Not a table." );
+	    exception();
+	}
+    
+	# Make the global assignments.
+	      
+	for ( name in members( t ) ) { $$.(name) = t.(name); }
+
+	return 1;
+
+    else
+
+	return 0;
+    }
+};

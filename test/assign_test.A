@@ -1,0 +1,86 @@
+
+printf( "Starting the assignment test...\n" );
+
+assert = function( t ) {
+    if ( !test(t) ) {
+        printf( "...failed.\a\n" );
+        exception();
+    }
+};
+
+ck = function( a; b )
+{
+  ck1( a; 1:a.nr; 1:a.nc; b );
+  ck1( a; a.nr:1; 1:a.nc; b );
+  ck1( a; 1:a.nr; a.nc:1; b );
+};
+
+ck1 = function( a; r; c; b )
+{
+  local( d );
+  a[r;c] = b;
+  d = a[r;c]-b;
+  if ( d )
+  {
+    for ( i in seq(d.nr) )
+    {
+      if ( norm( d[i;] ) )
+      {
+        q = find( r[i]; r );
+        assert( q.ne > 1 & i != q[q.ne] );
+      }
+    }
+    for ( j in seq(d.nc) )
+    {
+      if ( norm( d[;j] ) )
+      {
+        q = find( c[j]; c );
+        assert( q.ne > 1 & i != q[q.ne] );
+      }
+    }
+  }
+};
+
+ck( rand(5,3); rand(5,3) );
+ck( magic(10); diag(1:10) );
+ck( sparse(bdiag(diag(1:12);4;4));bdiag(diag(101:112);4;4) );
+
+v=1:5; v[3,2,3]=9;
+assert( equal( v; 1,9,9,4,5 ) );
+
+v=zero(9); v[2]=1; v[8,4]=2,3;
+assert( equal( v; 0,1,0,3,0,0,0,2,0 ) );
+
+m = { i = { y = 1, 2 } };
+m.i.y.eid = 1, 2;
+
+d = function( v ) {
+    v.eid[1] = v.eid[1] + 1;
+    return v.eid;
+};
+
+t = function() {
+    local( i );
+    i = m.i;
+    d( i.y );
+};
+
+t();
+
+a = { v = 1,2 };
+q = a;
+q.v[1] = 99;
+
+b = { m = [ 1, 2 ] };
+q = b;
+q.m[1;1] = 99;
+
+if ( m.i.y.eid[1] != 1 |
+     a.v[1] != 1 |
+     b.m[1;1] != 1 ) {
+    printf( "...failed!\a\n" );
+    exception();
+else
+    printf( "...passed.\n" );
+}
+

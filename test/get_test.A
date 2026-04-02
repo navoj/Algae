@@ -1,0 +1,109 @@
+
+# This file tests Algae's get and put functions.
+
+printf( "Starting the get test...\n" );
+
+require ("OLDmagic"; "./OLDmagic");
+
+rnd_pos = 0;
+rnd_vec = fill( 2500; (magic(50)-0.5)/2500 );
+rnd = function( n )
+{
+    local( r );
+
+    if ( n == NULL )
+    {
+        r = rnd_vec[ rnd_pos += 1 ];
+    else
+        r = rnd_vec[ rnd_pos+1 : rnd_pos+n ];
+        rnd_pos += n;
+    }
+
+    return r;
+};
+
+si = 12345; si.ss = "scalar integer"; si.vr = rnd(13);
+sr = acos(-1); sr.si = si;
+sc = sqrt(-1) * sr;
+ss = "this is a string"; ss.vs = split( ss );
+
+vi = 77:81; vi.eid = "ss", "se", "sn", "e", "eo"; vi.ss = "vector integer";
+vr = rnd(33); vr.eid = rnd(33);
+vc = rnd(21) + sqrt(-1)*rnd(21);
+vs = dice( "abcdefghijklmnopqrstuvwxyz" ); vs.vs = vs;
+vrs = zero(100); vrs[7,19,13,82,70] = rnd(5); vrs.eid = 1:100;
+vrz = vector();
+
+mi = magic(19); mi.rid = vs[1:19]; mi.cid = rnd(19);
+mr = fill(13,3;rnd(13*3)); mr.si = si;
+mc = fill(7,9;rnd(7*9)) + sqrt(-1)*fill(7,9;rnd(7*9));
+ms = [ vs; vs+vs ]; ms.cid = vs;
+mrs = zero(88,23); mrs[16,41,66;9,16,19] = fill(3,3;rnd( 3*3 ));
+mry = sparse(symmetric([mrs,mrs,mrs,mrs][;1:88]));
+
+t = { si; vi; mi };
+tt = { sr; vr; mr; t; sin };
+
+assert = function( t ) {
+    if ( !test(t) ) {
+        printf( "...failed.\a\n" );
+        exception();
+    }
+};
+
+near = function( a; b ) {
+  return norm( a - unlabel(b) ) / ( norm( a ) + norm( b ) ) < 1e-10;
+};
+
+ck = function( t )
+{
+    assert( t.si == si );
+    assert( t.si.ss == class(si)+" "+si.type );
+    assert( near( t.si.vr; si.vr ) );
+    assert( near( t.sr; sr ) );
+    assert( t.sr.si == si );
+    assert( near( t.sc; sc ) );
+    assert( t.ss == ss );
+    assert( t.ss.vs == ss.vs );
+    assert( equal( t.vi["e","eo"]; unlabel(vi[4,5]) ) );
+    assert( t.vi.ss == "vector integer" );
+    assert( near( t.vr; vr ) );
+    assert( near( t.vc; vc ) );
+    assert( equal( t.vs; unlabel(vs) ) );
+    assert( near( t.vrs; vrs ) );
+    assert( t.vrz.ne == 0 );
+    assert( equal( t.mi; unlabel(mi) ) );
+    assert( near( mr; t.mr ) );
+    assert( t.mr.si == si );
+    assert( near( t.mc; mc ) );
+    assert( equal( t.ms; unlabel(ms) ) );
+    assert( near( t.mrs; mrs ) );
+    assert( mry.symmetry == "symmetric" );
+    assert( near( mry; t.mry ) );
+    assert( t.t.si == si );
+    assert( equal( t.tt.t.vi; unlabel(vi) ) );
+    assert( t.tt.sin(1) == sin(1) );
+};
+
+f = tmp_file();
+d = {si;sr;sc;ss;vi;vr;vc;vs;vrs;vrz;mi;mr;mc;ms;mrs;mry;t;tt;ck};
+assert( put( d; f ) );
+close( f );
+g = get( f );
+assert( g != NULL );
+ck( g );
+g.ck( g );
+
+g.ck( get( "../test/DATA" ) );		# old (version 0) binary format
+g.ck( get( "../test/DATA1" ) );		# version 1 binary format
+
+close( f );
+v = label( 1:3; "a","b","c" );
+t = {};
+for ( i in 1:100 ) { t.(i) = v; }
+assert( put( t; f ) );
+close( f );
+t = get( f );
+assert( t.(99).eid[3] == "c" );
+
+printf( "...passed.\n" );

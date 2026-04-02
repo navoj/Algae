@@ -1,0 +1,1138 @@
+This is algae.info, produced by makeinfo version 4.3 from algae.texinfo.
+
+INFO-DIR-SECTION Programming Languages
+START-INFO-DIR-ENTRY
+* algae: (algae).		Another Matrix Programming Language
+END-INFO-DIR-ENTRY
+
+
+File: algae.info,  Node: cd,  Next: eval,  Prev: builtin,  Up: Execution
+
+ - Function: cd ( path )
+     The `cd' function changes the current default directory to that
+     specified by the character scalar PATH.  If PATH is NULL, the
+     directory is changed to that given by the `HOME' environment
+     variable.
+
+     An exception is raised if an error occurs; otherwise, `cd' returns
+     the integer 1.
+
+
+File: algae.info,  Node: eval,  Next: exception,  Prev: cd,  Up: Execution
+
+ - Function: eval ( s )
+     The `eval' function evaluates the string S as an expression and
+     returns its value.  Variable references, if any, have global scope.
+     For example, consider the following interaction:
+
+          > x = 0.5;
+          > str = "sin(x)";
+          > eval (str)
+                  0.4794
+          > x = 1.0;
+          > eval (str)
+                  0.8415
+
+     Although the value of `str' remains `"sin(x)"', the result of
+     `eval(str)' changes when the value of `x' changes.
+
+     Unlike its prominent place in some matrix programming languages,
+     `eval' is rarely necessary in Algae.  Most examples of its use are
+     rather contrived.  Here's some code which evaluates an expression
+     typed in by the user:
+
+          x = eval (read ("!echo -n \"expression?  \" 1>&2 ; head -1"))
+
+     One use for `eval' that may not be quite so contrived involves
+     building a function within a function--something that you can't do
+     directly in Algae.  Here's an example:
+
+          add_const = function (c)
+          {
+            return eval (sprintf ("function (x) { return x+%g; }"; c));
+          };
+
+     This could then be used as follows:
+
+          > ten_more = add_const( 10 );
+          > ten_more(1)?
+                  11
+
+     Probably the most common mistake made with `eval' is giving it a
+     statement instead of an expression.  If that's really what you
+     want to do, use the `exec' function instead.
+
+     Remember, too, that all variable references are at global scope.
+     For example, the function
+
+          function( a; b ) { return eval( "a + b" ); }
+
+     returns the sum of the global variables `a' and `b'; it completely
+     ignores the function's arguments, as they are local variables.
+
+     See also `exec'.
+
+
+File: algae.info,  Node: exception,  Next: exec,  Prev: eval,  Up: Execution
+
+ - Function: exception ( )
+     This function "raises an exception", meaning that Algae makes an
+     error return.  If execution is interactive, control returns to the
+     user.  Otherwise, Algae exits.
+
+
+File: algae.info,  Node: exec,  Next: exit,  Prev: exception,  Up: Execution
+
+ - Function: exec ( s )
+     The `exec' function causes Algae to parse and execute the Algae
+     statements contained in the character string S.  Execution begins
+     at global scope, even if `exec' is called from a function.  It
+     returns a negative integer if an error occurs, and zero otherwise.
+
+     See also `eval' and `source'.
+
+
+File: algae.info,  Node: exit,  Next: file,  Prev: exec,  Up: Execution
+
+ - Function: exit ( status )
+     This function terminates Algae.  The optional argument STATUS
+     specifies the exit status that Algae returns.  On most computer
+     platforms, the exit status is expected to be a small, positive
+     integer.  The STATUS argument to `exit' should be numeric scalar.
+     If `exit' is called with anything else, Algae returns 0 as its exit
+     status.
+
+     A call to `exit' is not mandatory in your Algae programs.  Algae
+     terminates when it reaches the end of its input, returning exit
+     status 0.  If an error causes Algae to terminate, exit status 1 is
+     returned.
+
+
+File: algae.info,  Node: file,  Next: get_path,  Prev: exit,  Up: Execution
+
+ - Function: file ( )
+     The `file' function returns the name of the file from which
+     statements are currently being executed.
+
+
+File: algae.info,  Node: get_path,  Next: getenv,  Prev: file,  Up: Execution
+
+ - Function: get_path ( env; def )
+     The `get_path' function returns a path list, for use in file
+     searching.  The argument ENV, if it isn't NULL, gives the name of
+     an environment variable containing a colon-separated list of
+     paths.  The DEF argument gives a default value, in case ENV isn't
+     given or doesn't exist.
+
+     See also `search_path' and `src'.
+
+
+File: algae.info,  Node: getenv,  Next: line,  Prev: get_path,  Up: Execution
+
+ - Function: getenv ( ename )
+     The `getenv' function returns a character scalar that contains the
+     value of the environment variable named by ENAME.  If no such
+     variable exists, NULL is returned.
+
+
+File: algae.info,  Node: line,  Next: provide,  Prev: getenv,  Up: Execution
+
+ - Function: line ( )
+     The `line' function returns the line number from which it is
+     called.
+
+
+File: algae.info,  Node: provide,  Next: require,  Prev: line,  Up: Execution
+
+ - Function: provide ( feature )
+     A "feature" is simply a name that stands for a particular
+     collection of functions or other entities.  A program announces
+     that a feature is present by calling the `provide' function with
+     FEATURE, the name of that feature.  This means that the facilities
+     associated with FEATURE have been made available for other Algae
+     programs.
+
+     Programs that require a particular feature can source the
+     appropriate file with the `require' function.
+
+     The argument FEATURE must be a character scalar.  It is added to
+     the global variable `$features' if it is not already present in
+     that vector.  The `provide' function returns FEATURE.
+
+
+File: algae.info,  Node: require,  Next: search_path,  Prev: provide,  Up: Execution
+
+ - Function: require ( feature; filename )
+     A "feature" is simply a name that stands for a particular
+     collection of functions or other entities.  A program that needs
+     the collection may ensure that they are defined by calling
+     `require' with the name of that feature.  The use of named
+     features simplifies the task of determining whether required
+     assignments have been made.
+
+     The `require' function checks for the feature named FEATURE in the
+     current Algae session; if it isn't present, then `require' reads
+     the source file FILENAME with `src'.  If FILENAME is `NULL', then
+     the value of FEATURE is used as the file name.
+
+     Before it finishes, the source file read by `require' is expected
+     to call the `provide' function, indicating that the desired feature
+     has been provided.  An exception is raised if the source file
+     cannot be read or does not provide the feature named FEATURE.
+
+
+File: algae.info,  Node: search_path,  Next: source,  Prev: require,  Up: Execution
+
+ - Function: search_path ( fn; suffices; path )
+     The `search_path' function searches for a file in the directories
+     named in PATH.  The file name begins with the string given by FN,
+     with one of the suffices given by SUFFICES.
+
+
+File: algae.info,  Node: source,  Next: sources,  Prev: search_path,  Up: Execution
+
+ - Function: source ( fname )
+     This function causes Algae to parse and execute the file named
+     FNAME.  Execution begins at global scope, even if `source' is
+     called from a function.  It returns NULL if it has a problem
+     opening FNAME, a negative integer if a parse or run time error
+     occurs, and zero otherwise.
+
+     The file is closed after it is read.
+
+     See also `exec' and `sources'.
+
+
+File: algae.info,  Node: sources,  Next: src,  Prev: source,  Up: Execution
+
+ - Function: sources ( fname )
+     The `sources' function causes Algae to parse and execute specified
+     files.  The character scalar FNAME is passed through sh(1) to
+     ls(1), so file name generation is available and multiple names may
+     be given.  For example,
+
+          sources( "*.A" );
+
+     sources all of the files ending with `.A' in your working
+     directory.  Although you could use the `source' function to do this
+     as
+
+          source( "!cat *.A" );
+
+     using `sources' is preferable because it maintains the correct file
+     and line information for the interpreter.
+
+     The "pipe" capability normally available to Algae I/O functions is
+     not permitted in `sources'.  Command substitution works, though, as
+     demonstrated here:
+
+          sources( "`find $HOME -name '*.A' -print`" );
+
+     This example sources every file ending with `.A' found in any
+     subdirectory under your home directory.
+
+
+File: algae.info,  Node: src,  Next: strip,  Prev: sources,  Up: Execution
+
+ - Function: src ( filename )
+     The `src' function finds and opens a file of Algae code, executes
+     the statements within it at global scope, and then closes the file.
+     This function, rather than `source' or `sources', is intended to
+     be the normal way to source files directly.  Other functions that
+     may be used to source files are `require' and `autosrc'.
+
+     To find the file, `src' looks first for a file named `FILENAME.A',
+     that is, it appends `.A' to the name given by the argument
+     FILENAME.  If a file with that name exists, it is sourced;
+     otherwise, `src' looks for a file named FILENAME with nothing
+     appended, and sources it if it exists.
+
+     If FILENAME is a relative file name, such as `foo' or `foo/bar.A',
+     `src' searches for the file using the variable `$src_path'.  It
+     appends FILENAME to each of the directories listed in the
+     character vector `$src_path' (both with and without the `.A'), and
+     sources the first file it finds whose name matches.  The current
+     default directory is tried only if it is specified in `$src_path'.
+
+     No directory searching is performed if FILENAME is an absolute
+     file name.  File names that begin with `/', `./', `../', or `~/'
+     are absolute.  If the file name begins with `~/', the tilde is
+     replaced with the value of the `HOME' environment variable.
+
+     A file name that begins with the `!' character is a pipe; the rest
+     of the file name is given as a command line to the shell, the
+     standard output of which is then read by `src'.  For example,
+
+          src("!m4 foo.A")
+
+     runs the file `foo.A' through the `m4' macro preprocessor first
+     before `src' reads it.
+
+     The `$src_path' vector is initialized from the environment variable
+     `ALGAE_SRC_PATH', if it exists.  It may be modified in either of
+     the startup files `/usr/local/lib/algae/4.3.6/algae.A' or
+     `$HOME/.algae'.  (*Note Startup Files::.)
+
+     The syntax of `ALGAE_SRC_PATH' is the same as that of `PATH' for
+     the shell; fields are separated by `:', and `.' is used for the
+     current default directory.  To set `ALGAE_SRC_PATH' in the Bourne
+     shell, type something like the following:
+
+          export ALGAE_SRC_PATH
+          ALGAE_SRC_PATH=.:~/algae:/usr/local/lib/algae
+
+     Execution of the Algae code in FILENAME begins at global scope.
+     For example, if the source file contains the single statement
+     `x=1', the assignment is made to the global variable X regardless
+     of whether `src' was called from within a function or not.
+
+     The `src' function raises an exception if FILENAME cannot be
+     found. It returns `NULL' if it cannot be opened, a negative integer
+     if a parse or run-time error occurs, and 0 otherwise.
+
+
+File: algae.info,  Node: strip,  Next: system,  Prev: src,  Up: Execution
+
+ - Function: strip ( f )
+     The `strip' function removes all file and line information from the
+     given function F.  The parser ordinarily includes this information
+     so that, for example, run-time error messages can identify the
+     line on which they occurred.  If an error occurs in a function
+     that has been stripped, then the error is attributed instead to
+     the calling expression.
+
+     This function may also be useful in conjunction with profiling.
+     Any time spent in a call to a stripped function gets charged to
+     the file and line from which it was called.
+
+     All members of F are left unchanged as members of the return value.
+
+
+File: algae.info,  Node: system,  Prev: strip,  Up: Execution
+
+ - Function: system ( s )
+     This function passes the string S to the command processor for
+     execution.  On a UNIX system, for example, the statement
+     `system("ls")' lists the files in the current directory.  If the
+     call succeeds, the exit status is returned; otherwise a -1 is
+     returned.
+
+
+File: algae.info,  Node: Special Tools,  Next: Miscellaneous,  Prev: Execution,  Up: Standard Functions
+
+Special Tools
+=============
+
+* Menu:
+
+* npsol::	nonlinear optimization
+* plot::	plot curves
+* replot::      modify a plot
+* splot::       plot surfaces
+* umin::        unconstrained minimization
+* unplot::      terminate plots
+
+
+File: algae.info,  Node: npsol,  Next: plot,  Prev: Special Tools,  Up: Special Tools
+
+ - Function: npsol ( objective; start; constraints; options; state )
+     The `npsol' function uses a sequential quadratic programming method
+     to minimize a given objective function subject to given
+     constraints.  The domain of the objective function is called the
+     "design space", and the coordinates of the design space are called
+     "design variables".
+
+     This function uses the NPSOL package of Fortran routines developed
+     and sold by Stanford University.  Your version of Algae might not
+     have the `npsol' builtin function; if not, it probably means that
+     you don't have a license for NPSOL or that there was some problem
+     installing it on your computer.
+
+     The `npsol' function may not be called recursively.
+
+     The OBJECTIVE argument may be either a function or a table.  If a
+     function, then it's assumed to take one argument, a vector of
+     design variables, and return the value of the objective at that
+     point.  If OBJECTIVE is a table, it may have the following members:
+
+    `objf'
+          A function that returns the value of the objective function
+          for the vector of design variables given as its first
+          argument.  If the member `params' exists in OBJECTIVE, then
+          it is passed as a second argument to `objf'.
+
+    `objgrd'
+          A function that returns the sensitivities of the objective
+          function; that is, the first derivatives with respect to the
+          design variables.  Its arguments are the same as for `objf'.
+
+    `params'
+          This member, if it exists, is passed as the second argument to
+          `objf' and `objgrd', providing a means for passing additional
+          parameters to those functions.
+
+     Only the `objf' member is required.  If the objective derivatives
+     are not provided, you must ensure that `derivative_level' is set
+     accordingly.
+
+     The START argument is a vector that specifies the starting point.
+
+     The CONSTRAINTS argument is a table that may contain any of all of
+     the following members:
+
+    `side_constraints'
+          A matrix that specifies upper and lower constraints on values
+          of the design variables.  This matrix has two columns, the
+          first column giving lower bounds and the second column giving
+          upper bounds.  If this member is not given, then a default is
+          provided using 1.0E10 as "infinity".  In that case, you
+          should be aware that NPSOL will take these values literally
+          if you also use the "infinite_bound" option (in OPTIONS) with
+          a value greater than 1.0E10.
+
+    `linear_constraints'
+          A table that may contain any or all of the following members:
+
+         `coefficients'
+               A matrix of the linear constraint coefficients.  The
+               i-th row contains the coefficients for the i-th linear
+               constraint.
+
+         `bounds'
+               A matrix, like `side_constraints', that gives the upper
+               and lower bounds for the linear constraints.  If not
+               given, defaults are provided as with `side_constraints'.
+
+    `nonlinear_constraints'
+          A table that may contain any or all of the following members:
+
+         `values'
+               Either a function that computes the vector of nonlinear
+               constraint function values at the given point, or a
+               table in which member `conf' is a function returning the
+               values and `congrd' is a function returning the
+               gradients.  The constraint gradients, if provided,
+               should be given as a matrix in which the rows correspond
+               to the constraints and the columns correspond to the
+               design variables.  As in OBJECTIVES, a member called
+               `params' may also be included.
+
+         `bounds'
+               A matrix, like `side_constraints', that gives the upper
+               and lower bounds for the nonlinear constraints.  If not
+               given, defaults are provided as with `side_constraints'.
+
+          If the constraint derivatives are not provided, you must
+          ensure that `derivative_level' is set accordingly.
+
+          The OPTIONS argument is a table that may contain any of the
+          valid NPSOL options.  For example, `{ hessian = "yes" }'
+          specifies the corresponding option in NPSOL.  Use an
+          underscore instead of blanks between words, as in `{
+          major_print_level = 1 }'.  The valid options are:
+
+         `central_difference_interval'
+               If the algorithm switches to central differences because
+               the forward-difference approximation is not sufficiently
+               accurate, this value is used as the difference interval
+               for every variable.
+
+         `cold_start'
+         `warm_start'
+               These flags control the specification of the initial
+               working set in both the procedure for finding a feasible
+               point for the linear constraints and bounds, and in the
+               first QP subproblem thereafter.  With a `cold_start',
+               the first working set is chosen by `npsol' based on the
+               values of the variables and constraints at the initial
+               point.  Broadly speaking, the initial working set will
+               include equality constraints and bounds or inequality
+               constraints that violate or "nearly" satisfy their
+               bounds within `crash_tolerance'.  With a `warm_start',
+               the user must provide the `state' table.  A warm start
+               will be advantageous if a good estimate of the initial
+               working set is available--for example, when `npsol' is
+               called repeatedly to solve related problems.
+
+         `crash_tolerance'
+               This value is used in conjunction with the optional
+               parameter `cold_start', which is the default.  When
+               making a cold start, the QP algorithm in `npsol' must
+               select an initial working set.  The initial working set
+               will include, if possible, bounds or general inequality
+               constraints that lie within `crash_tolerance' of their
+               bounds.  The default value is 0.01.  If
+               `crash_tolerance' is less than zero or greater than one,
+               the default value is used.
+
+         `derivative_level'
+               This value indicates which objective and constraint
+               derivatives are provided by the user.  The choices are
+               as follows:
+
+              `0'
+                    Neither objective nor constraint derivatives are
+                    provided.
+
+              `1'
+                    The objective derivatives are provided by the
+                    `objgrd' function in argument OBJECTIVE.
+                    Constraint derivatives are not provided.
+
+              `2'
+                    The nonlinear constraint derivatives are provided
+                    by the `congrd' function in argument CONSTRAINTS.
+                    Objective derivatives are not provided.
+
+              `3'
+                    The objective derivatives are provided by the
+                    `objgrd' function in argument OBJECTIVE, and the
+                    nonlinear constraint derivatives are provided by
+                    the `congrd' function in argument CONSTRAINTS.
+
+               The value 3 is the default, and should be used whenever
+               possible, since `npsol' is more reliable and will
+               usually be more efficient when all derivatives are exact.
+
+               If `derivative_level' is 0 or 2, `npsol' will estimate
+               the objective gradients using finite differences.  The
+               computation of finite-difference approximations usually
+               increases the total run time, since a call to the
+               objective function is required for each constraint.
+               Furthermore, less accuracy can be attained in the
+               solution.
+
+               If `derivative_level' is 0 or 1, `npsol' will
+               approximate the constraint gradients.  One call to the
+               constraint function is required for each variable.  At
+               times, central differences are used rather than forward
+               differences, in which case twice as many calls to the
+               objective and constraint functions are needed.  The
+               switch to central differences is not under the user's
+               control.
+
+         `difference_interval'
+               This value defines an interval used to estimate
+               gradients by finite differences in the following
+               circumstances: (1) for verifying the objective and
+               constraint gradients, and (2) for estimating the
+               objective or constraint derivatives.  If a difference
+               interval is not specified by the user, a finite
+               difference interval will be computed automatically for
+               each variable by a procedure that requires up to six
+               calls of the objective and constraint functions for each
+               component.  This option is recommended if the function
+               is badly scaled or the user wishes to have `npsol'
+               determine constant elements in the objective and
+               constraint gradients.
+
+         `feasibility_tolerance'
+               This value defines the maximum acceptable absolute
+               violations in linear and nonlinear constraints at a
+               "feasible" point; i.e., a constraint is considered
+               satisfied if its violation does not exceed this value.
+               The default value is the square root of machine
+               precision.
+
+         `function_precision'
+               This value is intended to be a measure of the accuracy
+               with which the objective and constraint functions can be
+               computed.  It acts as a relative precision when the
+               magnitude is large, and as an absolute precision when
+               the magnitude is small.  For example, if the objective
+               function is typically on the order of 1000 and the first
+               6 digits are known to be correct, then
+               `function_precision' should be set to 1.0E-6. In
+               contrast, if the objective function is typically on the
+               order of 1.0E-4 and the first 6 digits are known to be
+               correct, then `function_precision' should be set to
+               1.0E-10.  The choice of `function_precision' can be
+               quite complicated for badly scaled problems.  The
+               default value is machine precision raised to the 0.9
+               power; this is appropriate for most simple functions
+               that are computed with full accuracy.  However, when the
+               accuracy of the computed function values is known to be
+               significantly worse than full precision, then
+               `function_precision' should be large enough that `npsol'
+               will not attempt to distinguish between function values
+               that differ by less than the error inherent in the
+               calculation.
+
+         `hessian'
+               This option must be either `"yes"' or `"no"'.  (The
+               default is `"no"').  This option controls the contents
+               of the `R' matrix in STATE.  The user should set
+               `hessian' to `"yes"' if the `state' table returned is to
+               be used for a subsequent warm start.
+
+         `infinite_bound_size'
+               If this value is greater than zero, it defines the
+               "infinite" bound in the definition of the problem
+               constraints.  Any upper bound greater than or equal to
+               this value will be regarded as positive infinity.  Any
+               lower bound less than or equal to the negative of this
+               value will be regarded as negative infinity.  The
+               default value is 1.0E10.
+
+         `infinite_step_size'
+               This value specifies the magnitude of the change in
+               variables that is treated as a step to an unbounded
+               solution.  If the change in any variable during an
+               iteration would exceed the value of
+               `infinite_step_size', the objective function is
+               considered to be unbounded below in the feasible region.
+               The default is the greater of `infinite_bound_size' and
+               1.0E10.
+
+         `iteration_limit'
+               This value specifies the maximum number of major
+               iterations allowed before termination.
+
+         `linear_feasibility_tolerance'
+         `nonlinear_feasibility_tolerance'
+               These values define the maximum acceptable absolute
+               violations in linear and nonlinear constraints at a
+               "feasible" point.  A constraint is considered satisfied
+               if its violation does not exceed this value.  The
+               default value for both options is the square root of
+               machine precision.
+
+               On entry to `npsol', an iterative procedure is executed
+               in order to find a point that satisfies the linear
+               constraints and bounds on the variables to within
+               `linear_feasibility_tolerance'.  All subsequent iterates
+               will satisfy the linear constraints to within the same
+               tolerance, unless this value is comparable to the finite
+               difference interval.
+
+               For nonlinear constraints,
+               `nonlinear_feasibility_tolerance' defines the largest
+               constraint violation that is acceptable at an optimal
+               point.  Since nonlinear constraints are generally not
+               satisfied until the final iterate, this value acts as a
+               partial termination criterion for the iterative sequence.
+
+               These tolerances should reflect the precision of the
+               corresponding constraints.  for example, if the
+               variables and the coefficients in the linear constraints
+               are of order unity, and the latter are correct to about
+               6 decimal digits, it would be appropriate to specify
+               `linear_feasibility_tolerance' as 1.0E-6.
+
+         `linesearch_tolerance'
+               This value controls the accuracy with which a step taken
+               during each iteration approximates a minimum of the
+               merit function along the search direction.  The smaller
+               the value, the more accurate the line search.  The
+               default value is 0.9; it requests an inaccurate search
+               that is appropriate for most problems, particularly
+               those with any nonlinear constraints.
+
+               If there are non nonlinear constraints, a more accurate
+               search may be appropriate when it is desirable to reduce
+               the number of major iterations--for example, if the
+               objective function is cheap to evaluate or if the
+               gradients are not specified.
+
+         `list'
+               If this flag is given, all of the options and their
+               values are printed.
+
+         `print_level'
+               This value controls the amount of printed output
+               produced by the major iterations of `npsol'.  The levels
+               are as follows:
+
+              `0'
+                    No output.  This is the default.
+
+              `1'
+                    The final solution only.
+
+              `5'
+                    One line of output for each major iteration, but no
+                    final solution.
+
+              `10'
+                    The final solution and one line of output for each
+                    iteration.
+
+              `20'
+                    At each major iteration, the objective function,
+                    the Euclidean norm of the nonlinear constraint
+                    violations, the value of the nonlinear constraints,
+                    the values of the linear constraints, and the
+                    current values of the variables.
+
+         `minor_iteration_limit'
+               This value specifies the maximum number of iterations
+               for the optimality phase of each QP subproblem.
+
+         `minor_print_level'
+               This value controls the amount of printout produced by
+               the minor iterations of `npsol'.  The levels are as
+               follows:
+
+              `0'
+                    No output.  This is the default.
+
+              `1'
+                    The final QP solution.
+
+              `5'
+                    One line of output for each minor iteration, but no
+                    final QP solution.
+
+              `10'
+                    The final QP solution and one line of output for
+                    each minor iteration.
+
+              `20'
+                    At each minor iteration, the current estimates of
+                    the QP multipliers, the current estimate of the QP
+                    search direction, the QP constraint values, and the
+                    status of each QP constraint.
+
+         `optimality_tolerance'
+               This value specifies the accuracy to which the user
+               wishes the final iterate to approximate a solution of
+               the problem.  Broadly speaking, it indicates the number
+               of correct figures desired in the objective function at
+               the solution.  For example, if `optimality_tolerance' is
+               1.0E-6 and `npsol' terminates successfully, the final
+               value of the objective function should have
+               approximately 6 correct figures.  The `npsol' function
+               will terminate successfully if the iterative sequence is
+               judged to have converged and the final point satisfies
+               the first-order optimality conditions.
+
+         `verify_level'
+               This value refers to finite-difference checks on the
+               gradients computed by the user function `objgrd' and
+               `congrd'.  It may take on one of the following values:
+
+              `-1'
+                    No checks are made.
+
+              `0'
+                    Perform only a very inexpensive check, involving
+                    one call to the objective function and one call to
+                    the constraint function.
+
+              `1'
+                    Perform a reliable but expensive check on the
+                    objective gradients.
+
+              `2'
+                    Perform a reliable but expensive check on the
+                    constraint gradients.
+
+              `3'
+                    Perform reliable but expensive checks on both the
+                    objective and the constraint gradients.
+
+               These checks are recommended whenever a new function
+               routine is being developed.
+
+          The STATE argument is used only when the NPSOL "warm_start"
+          option is requested.  It may be obtained from the return of a
+          previous call to `npsol'.  Its members are:
+
+         `ISTATE'
+               A vector describing the status of the constraints.
+
+         `CLAMDA'
+               The Lagrange multiplier estimates for the nonlinear
+               constraints.
+
+         `R'
+               The factored Hessian of the Lagrangian function.
+
+          The `npsol' function returns a table containing the following
+          members:
+
+         `objective'
+               The value of the objective function at the final iterate.
+
+         `solution'
+               The solution vector (or final estimate) for the problem.
+
+         `inform'
+               The INFORM value (success/error indicator) returned by
+               NPSOL.  The possibilities are:
+
+              `0'
+                    The iterates have converged to a point that
+                    satisfies the first-order optimality conditions to
+                    the accuracy requested by the optional parameter
+                    `optimality_tolerance', i.e., the projected
+                    gradient and active constraint residuals are
+                    negligible.  (Success.)
+
+              `1'
+                    The final iterate satisfies the first-order
+                    optimality conditions to the accuracy requested,
+                    but the sequence of iterates has not yet converged.
+                    NPSOL was terminated because no further improvement
+                    could be made in the merit function.  (Probable
+                    success.)
+
+              `2'
+                    No feasible point could be found for the linear
+                    constraints and bounds.  The problem has no
+                    feasible solution.
+
+              `3'
+                    No feasible point could be found for the nonlinear
+                    constraints.  The problem may have no feasible
+                    solution.
+
+              `4'
+                    The limiting number of iterations, determined by
+                    the optional parameter `major_iteration_limit', has
+                    been reached.
+
+              `6'
+                    The current point does not satisfy the first-order
+                    optimality conditions, and no improved point for
+                    the merit function could be found during the final
+                    line search.
+
+              `7'
+                    The user-provided derivatives of the objective
+                    function and/or nonlinear constraints appear to be
+                    incorrect.
+
+              `9'
+                    An input parameter is invalid.
+
+         `iter'
+               The number of major iterations performed.
+
+         `state'
+               The `state' table described above.
+
+
+File: algae.info,  Node: plot,  Next: replot,  Prev: npsol,  Up: Special Tools
+
+ - Function: plot ( ... )
+     The `plot', `splot', `replot', and `unplot' functions provide an
+     interface to the gnuplot program for plotting data.  Use `plot'
+     for plotting lines in two or three dimensions; `splot' is for
+     plotting surfaces in three dimensions.
+
+     To use these plotting functions effectively, you will probably
+     need some familiarity with the gnuplot commands.  For example, to
+     add a title to an existing plot, you'd type something like
+     `replot("set title 'Good Stuff'")'.  Read the gnuplot manual or
+     its on-line help for more information.
+
+     The `plot' function accepts as many as three arguments.  If either
+     or both of the first two arguments are (or can be converted to)
+     character vectors, then their elements are sent, each on a separate
+     line, to gnuplot as commands.  For example, `plot("set term X11")'
+     causes gnuplot to generate X11 output.  Even commands that request
+     information from gnuplot, like `plot("show term")' are acceptable
+     (although you might temporarily lose sight of Algae's prompt).
+     Don't use the "exit" or "quit" commands of gnuplot--they cause
+     gnuplot to exit without Algae knowing about it.
+
+     If more than one argument is given to `plot' and the last one is an
+     integer scalar, then it is taken to be an identifier for the plot
+     process.  This allows you to have more than one plot open at a
+     time.  If no identifier is given, then the active plot is killed
+     and replaced by a new one with the same identifier.  The "active"
+     plot is the one last referenced, or 1 if there are no plots open.
+     The `replot' function may be used to modify an open plot.
+
+     Any other arguments given to `plot' are taken to be data to be
+     plotted.  Vectors are plotted using their element values as
+     ordinates and their labels for the abscissae.  Matrices with 2
+     columns are plotted using the second column for ordinates and the
+     first column for abscissae.  A matrix with 3 columns is plotted as
+     a curve in three dimensions, with the third column specifying the
+     ordinates.  Surface plots are obtained using the `splot' function.
+
+     If the data given to `plot' is a vector, but has no labels, then
+     the element indices are used instead of the labels.
+
+     Multiple curves may be shown on the same plot, either by giving
+     `plot' two data arguments or (better yet) supplying the data in a
+     table.  When data is given in a table (even if it contains only one
+     member), the member name is used in the plot legend.  Otherwise,
+     `plot' uses the names "y_1" and "y_2".
+
+     If the data is given in a table, any members that are tables
+     themselves are given to gnuplot in a single data file.  This means
+     that the same line and point type is used.  For example, if `x'
+     and `y' are vectors to be plotted, then `plot({x;y})' plots the
+     two, each with a different line and point type and described by
+     name in the legend.  On the other hand, `plot({z={x;y}})' plots
+     them with the same line and point type and names the combination
+     "z" in the legend.
+
+     If `plot' is called with no arguments, it returns a vector of the
+     open plot identifiers.  This vector is sorted from most to least
+     recently referenced, so the "active" plot is first.
+
+     Here's an example that simulates the Van der Pol system and plots
+     the results:
+
+          xdot = function( t; x ) {
+              return x[1]*(1-x[2]^2)-x[2], x[1];
+          }
+          x = ode4( xdot; 0; 20; 0,.25 );
+          plot( "set data style lines"; { x1=x[1;]; x2=x[2;] } );
+
+     See also `splot', `replot', and `unplot'.
+
+
+File: algae.info,  Node: replot,  Next: splot,  Prev: plot,  Up: Special Tools
+
+ - Function: replot ( ... )
+     The `replot' function is used to modify or redisplay plots created
+     with either the `plot' or `splot' functions.  It takes at most 2
+     arguments.  If the first argument has character type, it is passed
+     to gnuplot as commands.
+
+     The last argument is the optional plot identifier.  If not given,
+     the active plot is used by default.
+
+     See also `plot', `splot', and `unplot'.
+
+
+File: algae.info,  Node: splot,  Next: umin,  Prev: replot,  Up: Special Tools
+
+ - Function: splot ( ... )
+     The `splot' function is used to plot surfaces in three dimensions.
+     Except for the form of the data, its input is identical to that of
+     the `plot' function.  The data is specifed as a matrix of
+     ordinates.  The labels of the matrix, or the corresponding indices
+     if the labels don't exist, are used for the abscissae.
+
+     See also `plot', `replot', and `unplot'.
+
+
+File: algae.info,  Node: umin,  Next: unplot,  Prev: splot,  Up: Special Tools
+
+ - Function: umin ( objective; start; options )
+     The `umin' function performs unconstrained minimization using the
+     Nelder-Mead direct search method.  It does not have the features or
+     sophistication of `npsol', but it works well for some
+     cases--particularly when the objective surface is not smooth.
+
+     The OBJECTIVE argument is a function that takes one or two
+     arguments and returns the value of the objective at that point.
+     The first argument is a vector of design variables.  The second
+     argument, which is optional, is passed unchanged from the PARAMS
+     member of the OPTIONS argument to `umin' itself.
+
+     The START argument is an integer or real vector that specifies the
+     starting point.
+
+     The OPTIONS augument may be either NULL or a table containing
+     convergence and other specifications.  The meaningful options are:
+
+    `bound'
+          The minimum value permitted for the objective function.  The
+          default is -1e32.
+
+    `display'
+          A function called at each "successful" iteration with the
+          current design point as its only argument.  This may be used,
+          for example, to plot the design as it changes.
+
+    `evals'
+          The maximum number of objective function evaluations
+          permitted.  The default value is 1000.
+
+    `iter'
+          The maximum number of iterations permitted.  The default
+          value is 100.
+
+    `params'
+          The value of this member is passed as the second argument to
+          the objective function.
+
+    `right'
+          If this member exists, then the initial simplex has right
+          angles.  By default, the initial simplex has sides of equal
+          length.
+
+    `size'
+          The initial size of the simplex.  By default, this is the
+          greater of 1 and the infinity norm of the starting vector.
+
+    `tol'
+          The relative size of the simplex, below which the iteration
+          is taken to have converged.  The tolerance is 1e-6 by default.
+
+    `verbose'
+          If this member exists, then information is printed at each
+          "successful" iteration.
+
+     The return value from `umin' is a table with the following members:
+
+    `evals'
+          The number of objective function evaluations.
+
+    `inform'
+          A return code specifying success or failure:
+
+         `0'
+               success
+
+         `1'
+               failure, objective bound reached
+
+         `2'
+               failure, function evaluation limit exceeded
+
+         `3'
+               failure, iteration limit exceeded
+
+    `iter'
+          The number of iterations performed.
+
+    `msg'
+          A message corresponding to the inform code.
+
+    `obj'
+          The final objective value.
+
+    `sol'
+          The final design point.
+
+     This code is based on `nmsmax', a MATLAB function by Nick Higham.
+
+     See also `npsol'.
+
+
+File: algae.info,  Node: unplot,  Prev: umin,  Up: Special Tools
+
+ - Function: unplot ( id )
+     The `unplot' function is used to terminate plots created with the
+     `plot' or `splot' functions.  The integer scalar or vector
+     argument ID specifies the identifiers of the plots to be
+     terminated.  If no ID is given, the active plot is terminated.
+     You can terminate all open plots with `unplot(plot())'.
+
+     See also `plot', `replot', and `splot'.
+
+
+File: algae.info,  Node: Miscellaneous,  Prev: Special Tools,  Up: Standard Functions
+
+Miscellaneous
+=============
+
+* Menu:
+
+* all::         test all elements
+* atof::        convert string to number
+* char::        vector to character string
+* class::	entity class
+* equal::	test for equality
+* members::	members of a table
+* info::        documentation browsing system
+* prof::        summarize profiler output
+* show::	show entity information
+* split::       split string into fields
+* string::      convert to character type
+* substr::      return a substring
+* test::	truth test
+* time::        user time
+* tolower::     convert strings to lower case
+* toupper::     convert strings to upper case
+* what::	list functions
+* who::		list variables
+
+
+File: algae.info,  Node: all,  Next: atof,  Prev: Miscellaneous,  Up: Miscellaneous
+
+ - Function: all ( x )
+     The `all' function evaluates the "truth" of its argument X in the
+     same way that the function `test' does, except that vectors and
+     matrices are "true" only if all of their elements are "true".  For
+     example, `all(1,0)' returns 0 while `test(1,0)' returns 1.  If X
+     has no elements, `all' returns 0.
+
+     See also `test' and `equal'.
+
+
+File: algae.info,  Node: atof,  Next: char,  Prev: all,  Up: Miscellaneous
+
+ - Function: atof ( s )
+     The `atof' function converts character strings to real numbers.
+     The argument S may be a scalar, vector, or matrix.  The function
+     reads only up to the first unrecognized character of each string,
+     and ignores anything that remains.  If the first character of a
+     string is unrecognized, then the value is taken to be zero.
+
+
+File: algae.info,  Node: char,  Next: class,  Prev: atof,  Up: Miscellaneous
+
+ - Function: char ( v )
+     The `char' function converts the vector V into a character string;
+     each element of V contributes a single character according to its
+     ASCII value.  For example, `char(65,66,67)' returns the string
+     `"ABC"'.
+
+     If an element of V is less than 0 or greater than 255, then it
+     will "wrap" (modulo 256).  Thus `char(65)' and `char(65+256)' both
+     return the string `"A"'.
+
+     Algae's character strings are terminated with a NUL (0) character.
+     For the `char' function, that means that if an element of V is
+     zero (or a multiple of 256) then the string is terminated at that
+     point.  For example, `char(65,0,66)' yields the string `"A"'.
+
+
+File: algae.info,  Node: class,  Next: equal,  Prev: char,  Up: Miscellaneous
+
+ - Function: class ( x )
+     The `class' function returns a character string (such as "scalar"
+     or "table") that describes the class of X.
+
+
+File: algae.info,  Node: equal,  Next: members,  Prev: class,  Up: Miscellaneous
+
+ - Function: equal ( a; b )
+     This function tests A and B for equality.  For vectors and
+     matrices, it returns true (1) only if every pair of corresponding
+     elements is equal, and false (0) otherwise.  For all other
+     classes, this function returns the same value as the expression
+     `a==b' would.
+
+     See also `test'.
+
+
+File: algae.info,  Node: members,  Next: info,  Prev: equal,  Up: Miscellaneous
+
+ - Function: members ( e )
+     This function returns a vector containing the names of the members
+     of E.
+
+
+File: algae.info,  Node: info,  Next: prof,  Prev: members,  Up: Miscellaneous
+
+ - Function: info ( topic )
+     This function starts up an interactive browser for Algae's
+     documentation.  The optional argument TOPIC (a character scalar)
+     takes you directly to that topic.  For example, `info("sort")'
+     takes you directly to the description of the `sort' function.
+
+     If possible, `info' uses an X-based html browser (like netscape or
+     mosaic).  Otherwise, a character-based html browser (like lynx)
+     will be tried.  As a final resort, the GNU Info browser is called.
+
+     The names of the available browsers are assigned by the startup
+     code (*note Startup Files::) as members `xhtml', `html', and
+     `info' of the global table `$programs'.  To prevent Algae from
+     using a particular browser, simply set the appropriate member of
+     `$programs' to a zero-length string.  If you prefer to use Info,
+     for example, you could simply put the line
+
+          $programs.xhtml = $programs.html = "";
+
+     in your `.algae' file.
+

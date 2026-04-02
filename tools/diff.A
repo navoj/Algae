@@ -1,0 +1,21 @@
+
+# This function computes the "difference" of a vector.  If vector `v'
+# has `n' elements, then this function returns the vector
+#
+#     v[2]-v[1], v[3]-v[2], ..., v[n]-v[n-1]
+#
+# The return vector has one fewer element than `v'.  If `v' has
+# labels, then the return vector has the labels `v.eid[seq(n-1)]'.
+
+diff = function (x)
+{
+  x = vector (x);
+
+  if (x.ne < 2)
+  {
+    message ("run time error: Fewer than 2 elements for difference.");
+    exception ();
+  }
+
+  return unlabel (x[2:x.ne]) - x[1:x.ne-1];
+};

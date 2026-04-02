@@ -1,0 +1,20 @@
+
+# This function writes all non-NULL global variables to a file.  This
+# can be used, for example, to save an Algae session that you wish to
+# start again later.  (See the `load' function.)
+
+save = function( file )
+{
+    local( r; t; name );
+
+    t = $$;
+    r = {};
+    for ( name in members( t ) )
+    {
+        if ( t.(name) == NULL ) { r.(name) = NULL; }
+    }
+    t -= r;
+
+    return put( t; file );
+
+};

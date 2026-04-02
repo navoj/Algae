@@ -1,0 +1,9 @@
+
+# Write a message to stderr.
+
+message = strip( function( fmt; a2; a3; a4; a5; a6; a7; a8; a9; a10 )
+{
+    fprintf( "/dev/stderr"; "%s: %s: line %d: "; $program; file(); line() );
+    fprintf( "/dev/stderr"; fmt; a2; a3; a4; a5; a6; a7; a8; a9; a10 );
+    fprintf( "/dev/stderr"; "\n" );
+} );

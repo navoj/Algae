@@ -1,0 +1,33 @@
+
+# This file tests Algae's self handling.
+
+printf( "Starting the self test...\n" );
+
+assert = function( t ) {
+    if ( !test(t) ) {
+        printf( "...failed.\a\n" );
+        exception();
+    }
+};
+
+fact = function (n)
+{
+  if ( n <= 1 )
+    {
+      return 1.0;
+    else
+      return n * self (n-1);
+    }
+};
+
+f = fact;
+fact = "";
+assert (f(4) == 24);
+
+f = function () { return self.x; };
+f.x = "foo";
+assert (f() == "foo");
+
+f = function () { while (0) { self(); } };
+
+printf( "...passed.\n" );

@@ -1,0 +1,293 @@
+
+printf( "Starting the npsol test...\n" );
+
+assert = strip (function (t)
+{
+  if (!test(t))
+  {
+    message ("...failed.\a");
+    exception ();
+  }
+});
+
+#  This code attempts to find the polygon with largest area among all
+#  polygons with N sides and diameter no greater than one.  For N odd
+#  the answer is a regular polygon, but that's not the case when N is
+#  even.  (For quadrilaterals, though, the regular figure has the same
+#  area as the non-regular solution.)
+
+#  More information, and some optimization program benchmarks, may be
+#  found at http://www-unix.mcs.anl.gov/~more/cops/bcops/polygon.html.
+
+#  I stuck this here mainly because I thought it was cool, the npsol
+#  performance seemed to compare pretty well with the benchmarked
+#  codes, and because I'm a packrat.
+
+#  The design variables are stored in a vector as pairs of distance
+#  and angle.  The final vertex is taken at the origin.
+
+dv2r = function (dv)
+{
+  dv = vector (dv);
+  return dv [1:dv.ne:2];
+};
+
+dv2theta = function (dv)
+{
+  dv = vector (dv);
+  return dv [2:dv.ne:2];
+};
+
+objf = function (dv)
+{
+  local (r; theta; r1; r2);
+
+  r = dv2r (dv);
+  theta = dv2theta (dv);
+
+  r1 = r[1:r.ne-1];
+  r2 = r[2:r.ne];
+
+  return - 0.5 * sum (r1 @ r2 @ sin (diff (theta)));
+};
+
+objgrd = function (dv)
+{
+  local (r; theta; r1; r2; dt; st; ct; n; g);
+
+  dv = vector (dv);
+  r = dv2r (dv);
+  theta = dv2theta (dv);
+
+  r1 = r[1:r.ne-1];
+  r2 = r[2:r.ne];
+  dt = diff (theta);
+  st = sin (dt);
+  ct = cos (dt);
+
+  n = dv.ne;
+  g = fill (n; 0.0);
+  g[1:n-3:2] = r2 @ st;
+  g[3:n:2] += r1 @ st;
+  g[2:n-2:2] = - r1 @ r2 @ ct;
+  g[4:n:2] += r1 @ r2 @ ct;
+
+  return -g/2;
+};
+
+conf = function (dv)
+{
+  local (r; theta; n; nc; i; j; k; c);
+
+  r = dv2r (dv);
+  n = r.ne;
+  theta = dv2theta (dv);
+
+  nc = n*(n-1)/2 + (n-1);
+  c = fill (nc; 0.0);
+
+  k = 0;
+  for (i in seq(n-1))
+  {
+    for (j in i+1:n)
+    {
+      c[k+=1] = 1.0 - r[i]^2 - r[j]^2 + 2.0*r[i]*r[j]*cos(theta[j]-theta[i]);
+    }
+  }
+
+  for (i in seq(n-1))
+  {
+    c[k+=1] = theta[i+1] - theta[i];
+  }
+
+  return c;
+};
+
+congrd = function (dv)
+{
+  local (r; theta; n; nc; i; j; k; c);
+
+  r = dv2r (dv);
+  n = r.ne;
+  theta = dv2theta (dv);
+
+  nc = n*(n-1)/2 + (n-1);
+  c = fill (nc,dv.ne; 0.0);
+
+  k = 0;
+  for (i in seq(n-1))
+  {
+    for (j in i+1:n)
+    {
+      k += 1;
+      c[k;2*i-1] = 2.0 * (r[j]*cos(theta[j]-theta[i]) - r[i]);
+      c[k;2*j-1] = 2.0 * (r[i]*cos(theta[j]-theta[i]) - r[j]);
+      c[k;2*i] = 2.0*r[i]*r[j]*sin(theta[j]-theta[i]);
+      c[k;2*j] = -2.0*r[i]*r[j]*sin(theta[j]-theta[i]);
+    }
+  }
+
+  for (i in seq(n-1))
+  {
+    k += 1;
+    c[k;2*i] = -1.0;
+    c[k;2*(i+1)] = 1.0;
+  }
+
+  return c;
+};
+
+crd = function (dv)
+{
+  local (r; theta);
+
+  r = dv2r (dv);
+  theta = dv2theta (dv);
+
+  return 0.0, label (r@sin(theta); r@cos(theta)), 0.0;
+};
+
+sides = function (dv)
+{
+  local (s; n);
+
+  dv = vector (dv);
+  n = dv.ne;
+  s = fill (n,2; 0.0);
+
+  s [1:n; 1] = 0.0;
+  s [1:n:2; 2] = 1.0;
+  s [2:n:2; 2] = acos (-1);
+
+  return s;
+};
+
+bounds = function (dv)
+{
+  local (b; n);
+
+  n = conf(dv).ne;
+  b = fill (n,2; 0.0);
+
+  b [;1] = 0.0;
+  b [;2] = 1e10;
+
+  return b;
+};
+
+start = function (n)
+{
+  local (i; pi; z; s);
+
+  i = sqrt (-1);
+  pi = acos (-1);
+
+  z = (exp (i*(2*pi*seq(n)/n-pi/2)) + i) / 2;
+
+  s = fill (2*n; 0.0);
+  s [1:2*n:2] = abs (z);
+  s [2:2*n:2] = atan2 (imag (z); real (z));
+
+  return s[1:s.ne-2];
+};
+
+go = function (n)
+{
+  local (s);
+
+  n = vector (n);
+  if (n.ne == 1)
+  {
+    s = start (n[1]);
+  elseif (n.ne%2)
+    message ("start vector must have even length");
+    exception ();
+  elseif (n.ne >= 4)
+    s = n;
+  else
+    message ("start vector too short");
+    exception ();
+  }
+  
+  return npsol ({objf; objgrd}; s;
+		{side_constraints = sides(s);
+		 nonlinear_constraints = {values = {conf; congrd};
+					  bounds = bounds(s);
+					 }};
+		{derivative_level = 3; verify_level = -1});
+};
+
+nudge = function (n)
+{
+  local (i; pi; z; s);
+
+  i = sqrt (-1);
+  pi = acos (-1);
+
+  z = (exp (i*(2*pi*sort(rand(n))-pi/2)) + i) / 2;
+
+  s = fill (2*n; 0.0);
+  s [1:2*n:2] = abs (z);
+  s [2:2*n:2] = atan2 (imag (z); real (z));
+
+  return s[1:s.ne-2];
+};
+
+tries = function (n; N)
+{
+  local (i; r; rr; v);
+
+  r = go (n);
+  v = r.objective;
+
+  for (i in 1:N)
+  {
+    rr = go (nudge (n));
+    if (rr.objective < v)
+    {
+      r = rr;
+      v = r.objective;
+    }
+  }
+
+  return r;
+};
+
+poly = function (n)
+{
+  local (r);
+  r = tries (n; 5);
+  plot (crd (adjust (r.solution)); crd (start (50)); 1);
+  return -r.objective;
+};
+
+adjust = function (dv)
+{
+  dv[2:dv.ne:2] += (acos(1-2*min(dv[1],1)^2)/2 - dv[2] +
+		    acos(-1)-acos(1-2*min(dv[dv.ne-1],1)^2)/2 - dv[dv.ne]) / 2;
+  return dv;
+};
+
+
+if (npsol)
+{
+
+    npsol_test_fn = function( x )
+    {
+	local( x1; x2 );
+	x1 = scalar( x[1] ); x2 = scalar( x[2] );
+	return x1^4 - 4*x1*x2 + x2^4;
+    };
+
+    N = npsol( npsol_test_fn; 10,10; {}; { deriv = 0 } );
+
+    assert (norm( N.solution - (1,1) ) < 1e-5);
+
+    assert (abs (tries(5; 10).objective + 0.6571638901) < 1e-7);
+
+    printf ("...passed.\n");
+
+else
+
+    printf ("...skipped.\n");
+}

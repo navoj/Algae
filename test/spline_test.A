@@ -1,0 +1,23 @@
+
+# Test the spline function.
+
+printf( "Starting the spline test...\n" );
+
+assert = function( t ) {
+    if ( !test(t) ) {
+        printf( "...failed.\a\n" );
+        exception();
+    }
+};
+
+pi = acos (-1);
+x = 0 : 2*pi : 0.1;
+y = label (sin (x); x);
+s = spline (y);
+u = 1.1, 2.2, 3.3;
+Y = spline (s; u);
+
+assert (norm (Y - spline (y; u)) < 1e-12);
+assert (norm (unlabel (Y) - y [string (u)]) < 1e-12);
+
+printf( "...passed.\n" );

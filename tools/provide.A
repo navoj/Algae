@@ -1,0 +1,10 @@
+
+# Announce that FEATURE is a feature of the current Algae session.
+
+if ( $features == NULL ) { $features = fill( 0; "" ); }
+
+provide = function( feature )
+{
+  $features = set( $features, feature );
+  return feature;
+};

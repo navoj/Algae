@@ -1,0 +1,90 @@
+/* @configure_input@ */
+
+/*
+   fortran.h -- Macros for FORTRAN subroutine and common block names.
+
+   Copyright (C) 1994-2002  K. Scott Hunziker.
+   Copyright (C) 1990-1994  The Boeing Company.
+
+   See the file COPYING for license, warranty, and permission details.
+*/
+
+/* $Id: fortran.h.in,v 1.4 2002/10/01 01:21:48 ksh Exp $ */
+
+#ifndef FORTRAN_H
+#define FORTRAN_H	1
+
+#if !NO_FORTRAN_DEFS
+#define BAREL	barel@FTN_SUFFIX@
+#define CFFTB	cfftb@FTN_SUFFIX@
+#define CFFTF	cfftf@FTN_SUFFIX@
+#define CFFTI	cffti@FTN_SUFFIX@
+#define CGSTRN	cgstrn@FTN_SUFFIX@
+#define DGECO	dgeco@FTN_SUFFIX@
+#define DGEDI	dgedi@FTN_SUFFIX@
+#define DGESL	dgesl@FTN_SUFFIX@
+#define DGSADD	dgsadd@FTN_SUFFIX@
+#define DGSMUL	dgsmul@FTN_SUFFIX@
+#define DGSSUB	dgssub@FTN_SUFFIX@
+#define DGSTRN	dgstrn@FTN_SUFFIX@
+#define DOFLAB	doflab@FTN_SUFFIX@
+#define DPSFAC	dpsfac@FTN_SUFFIX@
+#define DPSSOL	dpssol@FTN_SUFFIX@
+#define DVERK	dverk@FTN_SUFFIX@
+#define DSVDC	dsvdc@FTN_SUFFIX@
+#define DYNEND	dynend@FTN_SUFFIX@
+#define DYNIOC	dynioc@FTN_SUFFIX@
+#define DYNIOH	dynioh@FTN_SUFFIX@
+#define DYNION	dynion@FTN_SUFFIX@
+#define ETIME_FUNCTION	etime@FTN_SUFFIX@
+#define EXPVEC	expvec@FTN_SUFFIX@
+#define EZGVAL	ezgval@FTN_SUFFIX@
+#define EZGAVV	ezgavv@FTN_SUFFIX@
+#define GENJAC	genjac@FTN_SUFFIX@
+#define GETENT	getent@FTN_SUFFIX@
+#define GETSUM	getsum@FTN_SUFFIX@
+#define GPSKCA	gpskca@FTN_SUFFIX@
+#define IAC8CA	iac8ca@FTN_SUFFIX@
+#define IAC8CD	iac8cd@FTN_SUFFIX@
+#define IAC8CR	iac8cr@FTN_SUFFIX@
+#define IACOND	iacond@FTN_SUFFIX@
+#define IGSADD	igsadd@FTN_SUFFIX@
+#define IGSMUL	igsmul@FTN_SUFFIX@
+#define IGSSUB	igssub@FTN_SUFFIX@
+#define IGSTRN	igstrn@FTN_SUFFIX@
+#define INNUM	innum@FTN_SUFFIX@
+#define MASEL	masel@FTN_SUFFIX@
+#define MEGVAL	megval@FTN_SUFFIX@
+#define MOVALN	movaln@FTN_SUFFIX@
+#define NPSOL	npsol@FTN_SUFFIX@
+#define NPOPTE	npopte@FTN_SUFFIX@
+#define NPOPTN	npoptn@FTN_SUFFIX@
+#define PUTENT	putent@FTN_SUFFIX@
+#define PUTSUM	putsum@FTN_SUFFIX@
+#define RFFTB	rfftb@FTN_SUFFIX@
+#define RFFTF	rfftf@FTN_SUFFIX@
+#define RFFTI	rffti@FTN_SUFFIX@
+#define SGSTRN	sgstrn@FTN_SUFFIX@
+#define SORTZ4	sortz4@FTN_SUFFIX@
+#define TLRNC	tlrnc@FTN_SUFFIX@
+#define WRTMAT	wrtmat@FTN_SUFFIX@
+#define XGSADD	xgsadd@FTN_SUFFIX@
+#define XGSMUL	xgsmul@FTN_SUFFIX@
+#define XGSTRN	xgstrn@FTN_SUFFIX@
+#define XPSFAC	xpsfac@FTN_SUFFIX@
+#define ZGECO	zgeco@FTN_SUFFIX@
+#define ZGEDI	zgedi@FTN_SUFFIX@
+#define ZGESL	zgesl@FTN_SUFFIX@
+#define ZGSADD	zgsadd@FTN_SUFFIX@
+#define ZGSMUL	zgsmul@FTN_SUFFIX@
+#define ZGSSUB	zgssub@FTN_SUFFIX@
+#define ZGSTRN	zgstrn@FTN_SUFFIX@
+#define ZSVDC	zsvdc@FTN_SUFFIX@
+#endif
+
+extern void PROTO(GPSKCA, (int *n, int *degree, int *rstart, int *connec,
+                           int *optpro, int *wrklen, int *permut, int *work,
+                           int *bandwd, double *profil, int *error, int *space,
+                           int *adjcnt));
+
+#endif				/* FORTRAN_H */

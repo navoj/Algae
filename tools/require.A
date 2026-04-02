@@ -1,0 +1,19 @@
+
+# If the feature FEATURE has not been provided, source it from FILE.
+# If FILE is NULL, use the name of FEATURE.
+
+require = function( feature; file )
+{
+  if ( file == NULL ) { file = feature; }
+
+  if ( !test( feature == $features ) )
+  {
+    if ( src( file ) != 0 | !test( feature == $features ) )
+    {
+      message( "run time error: Required feature \"%s\" was not provided.";
+               feature );
+      exception();
+    }
+  }
+  return feature;
+};

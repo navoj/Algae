@@ -1,0 +1,94 @@
+
+# This function returns a path list.  The argument `env', if it isn't
+# NULL, gives the name of an environment variable containing a
+# colon-separated list of paths.  The `def' argument gives a default
+# value, in case `env' isn't given or doesn't exist.
+
+get_path = function (env; def)
+{
+  local (p);
+
+  if (env != NULL) { p = getenv (env); }
+  if (p == NULL)
+  {
+    if (def == NULL)
+    {
+      p = "";
+    else
+      p = def;
+    }
+  }
+
+  return split (p; ":");
+};
+
+# This function executes a file of Algae code named `fn'.  If `fn'
+# specifies a pipe (that is, its first character is "!"), then this is
+# just the same as calling `source'.  Otherwise, the function first
+# tries `fn' with ".A" appended, then just `fn' by itself.  Unless
+# `fn' contains an absolute path, the directories specified by the
+# global variable `$src_path' (a character vector) are searched.
+
+src = function (fn)
+{
+  return source (search_path (fn; ".A",""; $src_path));
+};
+
+# This function searches for a file in the directories named in `path'.
+# The file name begins with the string given by `fn', with one of the
+# suffices given by `suffices'.
+
+search_path = function (fn; suffices; path)
+{
+  local (p; tries; name; dfn; f);
+
+  dfn = dice (fn+"  ");		# a trick to avoid some tests
+  if (dfn.ne < 3)
+  {
+    message ("run time error: Invalid file name (\"\").");
+    exception ();
+  }
+  f = dfn[1];
+
+  # No changes if it's a pipe.
+
+  if (f != "!")
+  {
+    if (f == "/" | (f == "~" & dfn[2] == "/") |		# absolute path
+        f == "." & (dfn[2] == "/" | dfn[2] == "." & dfn[3] == "/"))
+    {
+      tries = fn + suffices;
+
+    elseif (path)					# search directories
+
+      path = vector (path);
+      suffices = vector (suffices);
+      tries = fill (path.ne*suffices.ne;
+                    fill (suffices.ne,path.ne; path)' +
+                    fill (path.ne,suffices.ne; "/" + fn + suffices));
+    }
+
+    name = "";
+    if (tries)
+    {
+      for (p in tries)
+      {
+        dfn = dice (p+"  ");
+        if (dfn[1] == "~" & dfn[2] == "/")
+        {
+          p = string (getenv ("HOME")) + sum (dfn[2:dfn.ne-2]);
+        }
+	if (!system ("[ -f " + p + " ]")) { name = p; break; }
+      }
+    }
+
+    if (!name)
+    {
+      message ("run time error: Cannot locate file \"%s\"."; fn);
+      exception ();
+    }
+    fn = name;
+  }
+
+  return fn;
+};

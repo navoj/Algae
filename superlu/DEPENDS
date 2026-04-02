@@ -1,0 +1,65 @@
+colamd.o : colamd.h ../config.h
+dcolumn_bmod.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dcolumn_dfs.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dcomplex.o : util.h ../config.h dcomplex.h
+dcopy_to_ucol.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dgscon.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dgsequ.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dgsrfs.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dgssv.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dgssvx.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dgstrf.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dgstrs.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dlacon.o : Cnames.h ../config.h
+dlangs.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dlaqgs.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dmemory.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dpanel_bmod.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dpanel_dfs.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dpivotgrowth.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dpivotL.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dpruneL.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dreadhb.o : dsp_defs.h Cnames.h ../config.h supermatrix.h
+dsnode_bmod.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dsnode_dfs.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dsp_blas2.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dsp_blas3.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dutil.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+dzsum1.o : ../config.h dcomplex.h
+get_perm_c.o : util.h colamd.h Cnames.h ssp_defs.h ../config.h supermatrix.h
+izmax1.o : ../config.h dcomplex.h
+lsame.o : ../config.h
+memory.o : util.h ../config.h
+mmd.o : ../config.h
+relax_snode.o : util.h ../config.h
+sp_coletree.o : util.h ../config.h
+sp_ienv.o : ../config.h
+sp_preorder.o : util.h Cnames.h ssp_defs.h ../config.h supermatrix.h
+superlu_timer.o : ../config.h
+util.o : util.h dsp_defs.h Cnames.h ../config.h supermatrix.h
+xerbla.o : ../config.h
+zcolumn_bmod.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zcolumn_dfs.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zcopy_to_ucol.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zgscon.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zgsequ.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zgsrfs.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zgssv.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zgssvx.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zgstrf.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zgstrs.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zlacon.o : Cnames.h ../config.h dcomplex.h
+zlangs.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zlaqgs.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zmemory.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zpanel_bmod.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zpanel_dfs.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zpivotgrowth.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zpivotL.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zpruneL.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zreadhb.o : Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zsnode_bmod.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zsnode_dfs.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zsp_blas2.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zsp_blas3.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h
+zutil.o : util.h Cnames.h zsp_defs.h ../config.h dcomplex.h supermatrix.h

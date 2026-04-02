@@ -1,0 +1,27 @@
+.TH atags 1 "July 7, 1994" "Version 0.1"
+.SH NAME
+atags \- build Emacs TAGS file for Algae source files
+.SH SYNOPSIS
+.B atags
+.I "filename \&..."
+.SH DESCRIPTION
+.I atags
+makes a TAGS file for Emacs from the specified Algae source files.  This
+TAGS file gives the locations of function definitions in a group of files,
+and allows Emacs to jump to a given function definition, search and
+replace through all of the files, etc.
+.PP
+If the positions recorded in the TAGS file become a little bit wrong
+(due to some editing in the file that the tag definition is in), the
+only consequence is a slight delay in finding the tag.  A TAGS table
+is updated in the same way it was made in the first place.  It is not
+necessary to do this very often.
+.SH DEFICIENCIES / BUGS
+.LP
+.I atags
+doesn't know much about Algae syntax, and is easily fooled.
+.LP
+The TAGS file written by
+.I atags
+takes advantage of the fact that Emacs now ignores the offset values
+that are supposed to follow each file name.

@@ -1,0 +1,24 @@
+
+# This test computes a matrix exponential from a truncated series
+# expansion.
+
+a = symmetric( fill( 100,100; 1:10000 )/1000000 );
+
+for ( k in 1:8 ) { # Do it a few times to get the run times up.
+
+    ap = a;
+    ea = diag( fill( 100; 1 ) );
+
+    for ( i in 1:20 ) {
+        ea += ap;
+        ap = ap * a / (i+1);
+    }
+
+    x = ea * ( 1:100 );
+
+    if ( norm( ( x[2:100]-x[1:99] ) - 1.34472 ) > 1e-4 ) {
+        fprintf( "/dev/stderr"; "algae: error: Wrong answer in \"mult\"." );
+        exception();
+    }
+}
+

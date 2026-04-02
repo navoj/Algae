@@ -1,0 +1,339 @@
+
+# This function performs unconstrained minimization using the
+# Nelder-Mead direct search method.  It does not have the features or
+# sophistication of npsol, but it works well for some cases --
+# particularly when the objective surface is not smooth.
+
+# The `objective' argument is a function that takes one or two
+# arguments and returns the value of the objective at that point.  The
+# first argument is a vector of design variables.  The second
+# argument, which is optional, is passed unchanged from the `params'
+# member of the `options' argument to `umin' itself.
+
+# The `start' argument is a vector that specifies the starting point.
+
+# The `options' augument may be either NULL or a table containing
+# convergence and other specifications.  The meaningful options are:
+
+#     bound	The minimum value permitted for the objective
+#     		function.  The default is -1e32.
+
+#     display  A function called at each "successful" iteration with
+#		the current design point as its only argument.  This
+#		may be used, for example, to plot the design as it
+#		changes.
+
+#     evals	The maximum number of objective function evaluations
+#     		permitted.  The default value is 1000.
+
+#     iter	The maximum number of iterations permitted.  The
+#		default value is 100.
+
+#     params	The value of this member is passed as the second
+#		argument to the objective function.
+
+#     right	If this member exists, then the initial simplex has
+#     		right angles.  By default, the initial simplex has
+#     		sides of equal length.
+
+#     size	The initial size of the simplex.  By default, this is
+#     		the greater of 1 and the infinity norm of the starting
+#     		vector.
+
+#     tol	The relative size of the simplex, below which the
+#     		iteration is taken to have converged.  The tolerance is
+#     		1e-6 by default.
+
+#     verbose	If this member exists, then information is printed at
+#     		each "successful" iteration.
+
+# The return value is a table with the following members:
+
+#     evals	The number of objective function evaluations.
+
+#     inform	A return code specifying success or failure:
+#		    0	success
+#		    1   failure, objective bound reached
+#		    2	failure, function evaluation limit exceeded
+#		    3	failure, iteration limit exceeded
+
+#     iter	The number of iterations performed.
+
+#     msg	A message corresponding to the inform code.
+
+#     obj	The final objective value.
+
+#     sol	The final design point.
+
+# This code is based on nmsmax, a MATLAB function by Nick Higham.
+
+# References:
+#  J.E. Dennis, Jr., and D.J. Woods, Optimization on microcomputers:
+#     The Nelder-Mead simplex algorithm, in New Computing Environments:
+#     Microcomputers in Large-Scale Computing, A. Wouk, ed., Society for
+#     Industrial and Applied Mathematics, Philadelphia, 1987, pp. 116-122.
+#  N.J. Higham, Optimization by direct search in matrix computations,
+#     Numerical Analysis Report No. 197, University of Manchester, UK, 1991;
+#     to appear in SIAM J. Matrix Anal. Appl, 14 (2), April 1993.
+
+umin = function( objective; start; options )
+{
+  local( x; x0; n; tol; trace; V; f; fmin_old; k; m; scale; alpha; j; nf );
+  local( how; beta; gamma; fmin; msg; v1; size_simplex; vbar; vr; vk );
+  local( fr; ve; fk; fe; vt; ft; vc; fc; iter; bound; right; inform; eps );
+  local( max_iter; display; fmt; evals; params; ip );
+
+  fmt = "iter %3d, %8s, evals = %4d, objective = %7.4g, change = %5.1f%%\n";
+  eps = 1e-16;
+
+  x = x0 = vector( start );
+  n = x.ne;
+
+  # Set up convergence parameters, etc.
+  if ( options == NULL ) { options = {}; }
+
+  # simplex size convergence criterion
+
+  if ( options.tol == NULL )
+  {
+    tol = 1e-6;
+  else
+    tol = real( scalar( options.tol ) );
+  }
+
+  # function evaluation limit
+
+  if ( options.evals == NULL )
+  {
+    evals = 1000;
+  else
+    evals = real( scalar( options.evals ) );
+  }
+
+  # iteration limit
+
+  if ( options.iter == NULL )
+  {
+    max_iter = 100;
+  else
+    max_iter = real( scalar( options.iter ) );
+  }
+
+  # function value limit
+
+  if ( options.bound == NULL )
+  {
+    bound = -1e32;
+  else
+    bound = real( scalar( options.bound ) );
+  }
+
+  # initial simplex size
+
+  if ( options.size == NULL )
+  {
+    scale = max( abs( x0 ), 1 );
+  else
+    scale = real( scalar( options.size ) );
+  }
+
+  # initial simplex type
+
+  if ( find( "right"; members( options ) ) ) { right = 1; }
+
+  # parameters
+
+  params = options.params;
+  ip = params != NULL;
+
+  # verbose flag
+
+  if ( find( "verbose"; members( options ) ) ) { trace = 1; }
+
+  V = zero( n,1 ), ident(n);
+  f = zero( n+1 );
+  V[;1] = x0;
+  if (ip) { f[1] = objective (x; params); else f[1] = objective (x); }
+  fmin_old = f[1];
+
+  # display function
+
+  display = options.display;
+
+  if ( trace ) { printf( fmt; 0; "start"; 1; f[1]; 0.0 ); }
+
+  k = 0;
+  m = 0;
+
+  # Set up initial simplex.
+
+  if ( right )
+  {
+    # Right-angled simplex based on co-ordinate axes.
+
+    alpha = scale * fill( n+1; 1.0 );
+    for ( j in 2:n+1 )
+    {
+      V[;j] = x0 + alpha[j] * V[;j];
+      x = V[;j];
+      if (ip) { f[j] = objective (x; params); else f[j] = objective (x); }
+    }
+
+  else
+
+    # Regular simplex - all edges have same length.
+    # Generated from construction given in reference [18, pp. 80-81] of [1].
+
+    alpha = scale / (n*sqrt(2)) * ( sqrt(n+1)-1+n, sqrt(n+1)-1 );
+    V[;2:n+1] = ( x0 + alpha[2]*fill( n; 1.0 ) )' * fill( 1,n; 1.0 );
+    for ( j in 2:n+1 )
+    {
+      V[j-1;j] = x0[j-1] + alpha[1];
+      x = V[;j];
+      if (ip) { f[j] = objective (x; params); else f[j] = objective (x); }
+    }
+  }
+
+  nf = n+1;
+  how = "initial";
+
+  j = isort( f );
+  f = f[j];
+  V = V[;j];
+
+  alpha = 1.0;
+  beta = 0.5;
+  gamma = 2.0;
+
+  while (1)
+  {
+    k = k+1;
+
+    fmin = f[1];
+    if ( fmin < fmin_old )
+    {
+      if ( trace )
+      {
+	printf( fmt; k; how; nf; fmin;
+		100*(fmin-fmin_old)/(abs(fmin_old)+eps) );
+      }
+      if ( display ) { display( x ); }
+    }
+    fmin_old = fmin;
+
+    v1 = V[;[1]];
+    size_simplex = norm(V[;2:n+1]-v1[;fill(n;1)];1) / max( 1, norm(v1;1) );
+
+    # Stopping Test 1 - f reached target value?
+
+    if ( fmin <= bound )
+    {
+      msg = "error: Objective bound reached.";
+      inform = 1;
+      break;
+    }
+
+    # Stopping Test 2 - too many f-evals?
+
+    if ( nf >= evals )
+    {
+      msg = "error: Function evaluation limit exceeded.";
+      inform = 2;
+      break;
+    }
+
+    # Iteration limit
+
+    if ( k >= max_iter )
+    {
+      msg = "error: Iteration limit exceeded.";
+      inform = 3;
+      break;
+    }
+
+    # Stopping Test 3 - converged?   This is test (4.3) in [1].
+
+    if ( size_simplex <= tol )
+    {
+      msg = "inform: Converged.";
+      inform = 0;
+      break;
+    }
+
+    #  One step of the Nelder-Mead simplex algorithm
+
+    vbar = sum(V[;1:n]')/n;  # Mean value
+    vr = (1 + alpha)*vbar - alpha*V[;n+1];
+    x = vr;
+    if (ip) { fr = objective (x; params); else fr = objective (x); }
+    nf += 1;
+    vk = vr;
+    fk = fr;
+    how = "reflect";
+    if ( fr < f[n] )
+    {
+      if ( fr < f[1] )
+      {
+        ve = gamma*vr + (1-gamma)*vbar;
+	x = ve;
+        if (ip) { fe = objective (x; params); else fe = objective (x); }
+	nf += 1;
+	if ( fe < f[1] )
+	{
+	  vk = ve;
+	  fk = fe;
+	  how = "expand";
+	}
+      }
+
+    else
+
+      vt = V[;n+1];
+      ft = f[n+1];
+      if ( fr < ft )
+      {
+        vt = vr;
+	ft = fr;
+      }
+      vc = beta*vt + (1-beta)*vbar;
+      x = vc;
+      if (ip) { fc = objective (x; params); else fc = objective (x); }
+      nf += 1;
+      if ( fc < f[n] )
+      {
+        vk = vc;
+	fk = fc;
+	how = "contract";
+
+      else
+
+        for ( j in 2:n )
+	{
+	  V[;j] = ( V[;1] + V[;j] ) / 2;
+	  x = V[;j];
+          if (ip) { f[j] = objective (x; params); else f[j] = objective (x); }
+	}
+	nf += n-1;
+	vk = ( V[;1] + V[;n+1] ) / 2;
+	x = vk;
+        if (ip) { fk = objective (x; params); else fk = objective (x); }
+	nf += 1;
+	how = "shrink";
+      }
+    }
+
+    V[;n+1] = vk;
+    f[n+1] = fk;
+    j = isort(f);
+    f = f[j];
+    V = V[;j];
+  }
+
+  # Finished.
+
+  if ( trace ) { printf(msg+"\n"); }
+  x = V[;1];
+
+  return { inform; sol=x; obj=fmin; iter=k; evals=nf; msg };
+
+};

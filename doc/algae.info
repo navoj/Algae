@@ -1,0 +1,257 @@
+This is algae.info, produced by makeinfo version 4.3 from algae.texinfo.
+
+INFO-DIR-SECTION Programming Languages
+START-INFO-DIR-ENTRY
+* algae: (algae).		Another Matrix Programming Language
+END-INFO-DIR-ENTRY
+
+
+Indirect:
+algae.info-1: 209
+algae.info-2: 49148
+algae.info-3: 98176
+algae.info-4: 146363
+algae.info-5: 196027
+algae.info-6: 243662
+algae.info-7: 292746
+
+Tag Table:
+(Indirect)
+Node: Top209
+Node: About Algae3270
+Node: Primer5318
+Node: Examples27178
+Node: Temperatures27683
+Node: Reading Numbers30352
+Node: Powers32361
+Node: Language35496
+Node: Entities36085
+Node: Variables37359
+Node: Variable Names37749
+Node: Evaluation38935
+Node: Scope40112
+Node: Predefined Variables42860
+Node: Operators45104
+Node: Call48057
+Node: Element49148
+Node: Member51314
+Node: Transpose52622
+Node: Power53523
+Node: Not54683
+Node: Negation55223
+Node: Multiplication55699
+Node: Addition57561
+Node: Relation58878
+Node: And59522
+Node: Or59874
+Node: Short And60224
+Node: Short Or61162
+Node: Generate61926
+Node: Append62912
+Node: Assign63391
+Node: Expressions65745
+Node: Statements66888
+Node: Functions67905
+Node: Data69665
+Node: Standard Functions76594
+Node: Basic Math77411
+Node: abs78432
+Node: acos78821
+Node: acosh79273
+Node: arg79866
+Node: asin80077
+Node: asinh80519
+Node: atan80856
+Node: atanh81270
+Node: atan281748
+Node: ceil82518
+Node: conj83007
+Node: cos83323
+Node: cosh83610
+Node: erf83925
+Node: erfc84486
+Node: exp84981
+Node: floor85278
+Node: gcd85762
+Node: imag86195
+Node: integer86523
+Node: lcm86776
+Node: log87098
+Node: log1087404
+Node: primef87725
+Node: primes88130
+Node: real88525
+Node: round88749
+Node: sin89369
+Node: sinh89600
+Node: sqrt89859
+Node: tan90205
+Node: tanh90441
+Node: Arrays90693
+Node: band92734
+Node: bdiag94092
+Node: btrans95796
+Node: circshift96818
+Node: combine97862
+Node: cram98176
+Node: dense99610
+Node: diag99805
+Node: dice100233
+Node: diff100616
+Node: exsparse101538
+Node: fill101996
+Node: find103046
+Node: first103797
+Node: form104059
+Node: full105120
+Node: gpskca105319
+Node: grep106795
+Node: hermitian107885
+Node: ident108322
+Node: imax108509
+Node: imin109290
+Node: isort110063
+Node: label110657
+Node: last111061
+Node: linspace111325
+Node: logspace112143
+Node: lose112946
+Node: magic113748
+Node: matrix114185
+Node: max114588
+Node: merge115110
+Node: min116143
+Node: mksparse116661
+Node: norm117983
+Node: pick118471
+Node: product118829
+Node: rand119352
+Node: randn119976
+Node: reverse120612
+Node: scalar120872
+Node: select121083
+Node: seq121346
+Node: shape121645
+Node: sign122275
+Node: sort122668
+Node: sparse123059
+Node: srand123223
+Node: sum123655
+Node: surprise124057
+Node: symmetric126170
+Node: tril126448
+Node: triu127002
+Node: unlabel127554
+Node: vector127870
+Node: zero128213
+Node: Sets128764
+Node: complement128976
+Node: intersection129970
+Node: set130619
+Node: union131555
+Node: Linear Algebra132353
+Node: backsub133097
+Node: chol134163
+Node: eig136578
+Node: equilibrate140898
+Node: factor143616
+Node: fft146363
+Node: filter149303
+Node: ifft149836
+Node: inv151576
+Node: iram153150
+Node: leastsq161458
+Node: mult162349
+Node: solve163474
+Node: ssi164107
+Node: svd164985
+Node: transform166525
+Node: Numerical Analysis167584
+Node: brent167995
+Node: monte168433
+Node: ode4170810
+Node: roots172164
+Node: spline172781
+Node: trapz173563
+Node: Basic I/O174230
+Node: close174813
+Node: digits175126
+Node: fread176216
+Node: fprintf178752
+Node: fwrite179925
+Node: message181015
+Node: print181418
+Node: printf182039
+Node: read182372
+Node: readnum182801
+Node: sprintf185650
+Node: tmp_file186072
+Node: Entity I/O187003
+Node: get187454
+Node: getdyn187938
+Node: getmat188337
+Node: load189737
+Node: put190201
+Node: putdyn190629
+Node: putmat191374
+Node: save192582
+Node: Execution193043
+Node: autosrc193936
+Node: builtin195079
+Node: cd196027
+Node: eval196439
+Node: exception198301
+Node: exec198587
+Node: exit199008
+Node: file199701
+Node: get_path199914
+Node: getenv200374
+Node: line200665
+Node: provide200847
+Node: require201635
+Node: search_path202672
+Node: source202999
+Node: sources203499
+Node: src204518
+Node: strip207382
+Node: system208126
+Node: Special Tools208500
+Node: npsol208835
+Node: plot231069
+Node: replot234848
+Node: splot235361
+Node: umin235857
+Node: unplot238839
+Node: Miscellaneous239307
+Node: all240060
+Node: atof240527
+Node: char240974
+Node: class241754
+Node: equal241980
+Node: members242403
+Node: info242597
+Node: prof243662
+Node: show246377
+Node: split246561
+Node: string247136
+Node: substr247541
+Node: test248091
+Node: time249189
+Node: tolower249480
+Node: toupper249817
+Node: what250154
+Node: who250361
+Node: Running Algae250697
+Node: Startup Files251203
+Node: Command Line252310
+Node: Errors257994
+Node: Prompt258437
+Node: Signals259528
+Node: Projects260474
+Node: Bugs262027
+Node: Reporting Bugs262794
+Node: Reported Bugs263958
+Node: Concept Index265928
+Node: Function Index292746
+
+End Tag Table

@@ -1,0 +1,22 @@
+
+# This function computes the inverse of a square matrix.  Are you
+# sure you want to use this?  It's usually much better to use `solve'.
+
+inv = function (M; options)
+{
+  local (x);
+
+  M = [ M ];
+  if (M.nr != M.nc)
+  {
+    message ("run time error: Matrix must be square to invert.");
+    exception ();
+  }
+
+  x = solve (M; ident (M.nr); options);
+
+  x.rid = M.cid;
+  x.cid = M.rid;
+
+  return x;
+};

@@ -1,0 +1,45 @@
+
+		      A SuperLU Subset for Algae
+		from SuperLU v. 2.0 (1 September 1999)
+		       with 3 June 2003 updates
+
+This directory contains a subset of the SuperLU package for solving
+sparse linear systems.  The principal developers of SuperLU are
+
+       James W. Demmel (Berkely)
+       John R. Gilbert (Xerox PARC)
+       Xiaoye S. Li (NERSC)
+
+See http://acts.nersc.gov/superlu/main.html for more information and
+to download the code.
+
+Rather than distributing this subset of their code, I would prefer to
+simply link Algae to a SuperLU library.  Unfortunately, the SuperLU
+code contains a few things that make that difficult.  For example, it
+has an error handling function compiled into it, but Algae needs to
+use its own.
+
+The subset here contains only the double precision routines.  What few
+changes I've made are described in the file README.changes.
+
+Below is the introduction to the README file distributed with SuperLU.
+
+----------------------------------------------------------------------
+
+		SuperLU (Version 2.0)
+		=====================
+
+SuperLU contains a set of subroutines to solve a sparse linear system 
+A*X=B. It uses Gaussian elimination with partial pivoting (GEPP). 
+The columns of A may be preordered before factorization; the 
+preordering for sparsity is completely separate from the factorization.
+
+SuperLU is implemented in ANSI C, and must be compiled with standard 
+ANSI C compilers. It provides functionality for both real and complex
+matrices, in both single and double precision. The file names for the 
+single-precision real version start with letter "s" (such as sgstrf.c);
+the file names for the double-precision real version start with letter "d"
+(such as dgstrf.c); the file names for the single-precision complex
+version start with letter "c" (such as cgstrf.c); the file names
+for the double-precision complex version start with letter "z" 
+(such as zgstrf.c).

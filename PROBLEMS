@@ -1,0 +1,271 @@
+
+Here are some problems that we've encountered with Algae on various
+systems. If you solve any of them (or have additional information),
+please let us know.
+
+GENERAL PROBLEMS
+
+One of the basic design decisions that we made with Algae was that
+exceptional conditions such as overflow, division by zero, and other
+range and domain errors should immediately stop execution.  Important
+too was that it be consistent across computer platforms.  Naively
+thinking at the time that most systems adhered to a small number of
+major standards (such as IEEE 754), I had no idea how difficult this
+consistent behavior would be to obtain.
+
+Algae is not designed to deal with non-finite (INF & NaN) floating
+point numbers -- instead it expects to catch the exceptional
+conditions that generate such numbers when they happen.  One of our
+challenges has been in dealing with the variety of responses we get
+from different math libraries.  For example, `log(0)' quietly returns
+-INF on some systems, sets `errno' on others, and raises a divide by
+zero exception on still others.
+
+Below are the exceptions that Algae is supposed to trap, and some of
+the problems I've encountered.  The tests referred to are those run by
+"test/trap_tests".  Algae's code to enable and handle these exceptions
+is implemented (or not) in the appropriate file in the "fpe"
+directory.  (I refer to this file as "fpe.c".)
+
+By the way, the file names in that directory are really lame, and I
+ought to fix that.  For example, "i586-unknown-linux.c" worked on a
+Linux 1.2 system, while "i686-pc-linux-gnu.c" is for a Linux 2.2
+system.  Whether it's an Intel 586 or 686 makes no difference at all.
+
+integer overflow
+----------------
+
+    Although many machines claim they can signal this, I've never seen
+    one that actually works.  That means you get stuff like
+
+        > 2000000000+2000000000
+		-294967296
+
+    I suspect that they'd take a performance hit if they really did
+    trap integer overflow, so they may be wise in not doing it.
+
+    Unfortunately, it's easier to encounter integer overflow than you
+    might think.  If you think your numbers might get large, use real
+    numbers instead of integers.  For constants, use a decimal point;
+    otherwise, use the function "real".
+
+floating point overflow
+-----------------------
+
+    If this isn't trapped, it probably just isn't implemented in
+    "fpe.c".  You'll wind up getting "inf" values in your results.
+    This is serious, though, because the Fortran sections of the code
+    will really mess up in that case.
+
+floating point divide by zero
+-----------------------------
+
+    I never dreamed that this one would be a problem.  If it isn't
+    trapped on your system, hopefully it just isn't implemented in
+    "fpe.c".  However, I read a man page on an HP 9000/715 that
+    claimed that floating point division by zero does not raise an
+    exception "as defined by the IEEE POSIX Standard".  That's not
+    right.  The DEC Alpha that I've used never signals divide by zero;
+    it signals overflow instead.
+
+range and domain errors
+-----------------------
+
+    The ANSI standard for C specifies that math library routines like
+    `exp' and `log' indicate range and domain errors (like `log(0)')
+    by setting the global variable `errno'.  Better yet, some systems
+    call the function matherr(3) on such errors.  It's pretty common,
+    though (when floating point exceptions are enabled), to actually
+    get a "divide by zero" or "overflow" error instead.  This warrants
+    a "sloppy" accusation by the "trap" tests.  The math library on
+    our Titan machine doesn't signal any errors at all!
+
+SYSTEM PROBLEMS
+
+Intel Itanium II
+----------------
+
+    The g77 compiler (version 3.3) seems to have a problem with the
+    LAPACK routine DLALN2 with -O2 optimization.  That's about all I
+    know, except that it seems to work fine with -O optimization.
+
+IBM RS/6000
+-----------
+
+    The "malloc" and "free" library routines are remarkably slow, at
+    least on an AIX 4.3 system I worked on.  As a test, I linked with
+    Doug Lea's dlmalloc package and saw times reduced by a factor of
+    10 for some cases.  This may be worth considering, but I haven't
+    really explored it enough to be able to recommend it.  It probably
+    isn't worth worrying about for most uses of Algae, but some of
+    Algae's timing tests do run in about half the time with dlmalloc.
+
+Alpha (HP, DEC, etc.)
+---------------------
+
+    On an older (OSF/1 V4.0) machine, I haven't had any luck getting
+    Algae to use the optimized BLAS routines in the DXML library.
+    (But I haven't tried very hard.)  The configure process tries to
+    use these by default.  The problem seems to be with the run-time
+    linker.  Instead, I just gave the "--without-blas" option to
+    configure and accept the inferior performance of the non-optimized
+    "reference" BLAS routines that are distributed with Algae.
+
+    An old DEC compiler that I've used (DEC OSF/1 AXP Compiler 3.11)
+    had a bug that prevents it from compiling "src/subtract.c"
+    correctly with optimization.  The symptom is failing the math
+    tests with a "memory fault".  If you have the same trouble, try
+    compiling with the -O1 option for that one file.  It seems to have
+    been fixed by v. 5.9 of that compiler.
+
+    Expect the trap tests to complain about sloppy range errors.  You
+    may also get a complaint about sloppy divide by zero handling --
+    the Alphas that I've used signal overflow when they should signal
+    divide by zero.
+
+Apollo
+------
+
+    Installing Algae on the poor old Apollo isn't too hard, but it's a
+    bit more work than on most machines.  Most of my experience is
+    with a DN3500 running DomainOS 10.3.5.  Here are a few things you
+    may run into:
+    
+      1.  The native `make' may have problems, getting part way through
+	  and then just quitting.  I had to compile the rest of it
+	  manually.  You might try getting GNU make.
+    
+      2.  On one machine, the C compiler made some bad mistakes.  I've
+          hacked in some workarounds that seem to take care of it.
+    
+      3.  I think you could probably get much better performace by
+	  compiling with the appropriate "-A" option.
+
+    Expect the trap tests to complain about sloppy range and domain
+    errors.
+
+HPUX
+----
+
+    I find HPUX very difficult to work with, and I avoid it if
+    possible.  If HP is trying to discourage software development on
+    their machines, then they're doing a great job.  For a while I
+    tried to maintain binaries compiled with c89, their ANSI C
+    compiler.  I finally gave that up, though, because the required
+    compiler options changed with every release.
+
+    The HPUX math libraries have some funny ideas when it comes to
+    range and domain errors.  For example, `log(0)' returns -INF (or
+    -1.798e+308 on some machines) but it should also set errno to
+    ERANGE.
+
+    Version 9.01 of HPUX appears to have had a major bug in cpp which
+    prevents it from compiling Algae.  You should either use gcc or
+    upgrade to a newer version of cpp.
+
+    Also expect the trap tests to complain about a variety of sloppy
+    error messages.
+
+Linux
+-----
+
+    Of all the operating systems that I've compiled Algae on, Linux
+    has given me the least trouble by far.  There were a few problems
+    with error handling in early versions of the math libraries,
+    but we're way past that now.
+    
+    You can expect the trap tests to complain about sloppy handling of
+    overflow and divide by zero.
+
+    I'm not sure what's going on (as of 31 August 2001), but I've had
+    problems with the LAPACK and BLAS packages distributed as RPM
+    files by Red Hat.  The symptoms involve raising a floating point
+    exception for no apparent reason.  If Algae is linked to these
+    libraries and it fails its tests (especially "eig_test"),
+    configure it instead with the "--without-blas" (and perhaps
+    "--without-lapack") flags.  This will cause Algae to use its own
+    code in their place.
+
+SGI
+---
+
+    Expect the trap tests to complain about sloppy range and domain
+    errors.
+
+Sun (sunos 4.1)
+---------------
+
+      1.  The Fortran libraries that `configure' sets in "src/Makefile"
+          may take some tweaking for your system.  For one thing,
+          "-lI77" is required on some systems but must be removed on
+          others.
+    
+      2.  Expect the trap tests to complain about sloppy range and
+          domain errors.
+
+Sun (Solaris 2.*)
+-----------------
+
+    The native C compiler gives dozens of lovely messages like
+    "semantics of < change in ANSI C".  You can ignore them.
+
+    The native `make' may have problems.  You should use GNU make.
+
+    Expect the trap tests to complain about sloppy range and domain
+    errors.
+
+Titan
+-----
+
+    The C compiler (release 4.2 beta) on our Titan 3000 has a bug that
+    prevents it from correctly compiling "src/dense.c",
+    "src/sparse.c", "src/parse.c", and "src/matio.c" with O2
+    optimization.  If you get them compiled and the resulting
+    executable passes its tests, then you're all set.  Otherwise,
+    compile those four files with O1 optimization.
+    
+    You can expect an enormous number of warning messages from both
+    the C and the Fortran compilers.  Some of these are for things
+    that we've been a bit sloppy about; many more are because the
+    compilers are way too picky.  Ignore them and hope for the best.
+    
+    I know it sounds stupid, but for exception handling to work
+    correctly, you must have the environment variable USE_DEFAULT_SIG
+    set to 1.
+
+    A bug (I'm guessing that it's in the Fortran compiler) prevents
+    using the execution profiler.  It appears to work, but the Fortran
+    routines tend to give wrong answers when interrupted.
+    
+    Although the Titan documentation claims that integer overflow can
+    be trapped, it doesn't work.
+    
+    Also, the math libraries do not follow the ANSI C standard with
+    regard to domain and range errors.  This means that the return
+    values may be "inf" or "NaN".  For example, `log(0)' returns
+    `-inf'.  This is a problem, because much of the code in Algae
+    can't accept "inf" or "NaN" numbers.  For example, the function
+    call `svd(log(0))' will never return.
+
+Ultrix
+------
+
+    Don't use execution profiling unless you want to see a serious
+    operating system bug in action.  (Well, maybe it's just Ultrix
+    4.2.  Try it at your own risk, though.)  This seems to have been
+    corrected in Ultrix 4.4, but an interesting thing happens: floating
+    point results are sometimes slightly different from run to run
+    when the profiler is active.
+
+    My version of the BLAS library supplied with Ultrix has a bad
+    IZAMAX, causing Algae to dump core in the "solve" test.  I just use
+    the BLAS library that comes with LAPACK.  I think this was also
+    corrected in Ultrix 4.4.
+
+    Expect the trap tests to complain sloppy range and domain errors.
+    Integer overflow trapping is said to work but doesn't.
+
+    I'm used to seeing sloppy handling in the math libraries, but our
+    ultrix versions have some flat-out bugs.  For example,
+    `atan2(1;0)' yields a "divide by zero" exception.  Again, this
+    seems to have been corrected in Ultrix 4.4.

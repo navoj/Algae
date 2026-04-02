@@ -1,0 +1,46 @@
+
+#  This function computes the roots of the polynomial having the
+#  coefficients given by the vector `c'.  If `c' has n+1 elements,
+#  the equation solved (for `x') is
+#
+#      c[1]*x^n + c[2]*x^(n-1) + ... + c[n]*x + c[n+1] = 0
+#
+#  A vector with zero elements is returned if this equation has
+#  no solution ("roots(1)", for example).  NULL is returned if it
+#  has an infinite number of solutions ("roots(0)", for example).
+#  Otherwise, the vector returned contains all of the solutions.
+
+roots = function( c ) 
+{
+    local( a; index; nz; r );
+
+    c = vector( c );			# convert to vector
+    index = find( 1; c != 0 );		# find nonzeros
+
+    if ( index.ne > 0 )
+    {
+	# strip leading and trailing zeros
+
+	nz = c.ne - index[index.ne];
+        c = c[ index[1] : index[index.ne] ];
+
+    else
+
+	# no nonzeros means no solution -- return NULL
+
+        return NULL;
+    }
+  
+    # Compute roots
+
+    if ( c.ne > 1 )
+    {
+        r = eig( [ -c[2:c.ne] / c[1];
+                   diag( fill( c.ne-2; 1 ) ),
+                   fill( c.ne-2; 0 )' ] ).values;
+    else
+        r = vector();
+    }
+  
+    return fill( nz; 0 ), r;
+};

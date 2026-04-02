@@ -1,0 +1,48 @@
+
+monte = function( f; limits; tol ) {
+
+    # This function uses the Monte Carlo method to integrate a
+    # function.  The function values are obtained by calling the
+    # function `f' with one vector argument.  The matrix `limits'
+    # describes the rectangular region over which the function is
+    # integrated.  It has two columns and as many rows as `f' has
+    # dimensions.  Each row specifies the extremes of the region for
+    # the corresponding dimension.  The `tol' argument specifies an
+    # error tolerance.  There is no limit to the number of points
+    # chosen; `monte' continues to pick points until its one standard
+    # deviation error estimate is less than `tol'.
+
+    local( n; x; t; i; k; g );
+    local( offset; width; shape );
+    local( F; F2; val; volume );
+
+    t = 2 * tol;
+    g = 100;
+    k = 1:g;
+
+    offset = vector( limits[;1] );
+    width = vector( limits[;2] ) - offset;
+    shape = limits.nr;
+
+    volume = 1.0;
+    for ( i in width ) {
+        volume = volume * i;
+    }
+
+    n = 0;
+    F = F2 = 0.0;
+
+    while ( t >= tol ) {
+        for ( i in k ) {
+            x = offset + width @ rand( shape );
+            val = f( x );
+            F += val;
+            F2 += val^2;
+        }
+        n += g;
+        t = sqrt( F2 - F^2/n ) / n;
+    }
+
+    return volume * F / n;
+
+};

@@ -1,0 +1,245 @@
+
+#---------------------------------------------------------------------
+# This file is a Makefile (or its template) for the src directory of
+# Algae.  It is run by the Makefile in the parent directory.
+#---------------------------------------------------------------------
+
+.SUFFIXES:
+.SUFFIXES: .c .f .o
+
+include ../VERSION
+
+srcdir = .
+
+
+INSTALL = /usr/bin/install -c
+INSTALL_PROGRAM = $(INSTALL)
+INSTALL_DATA = $(INSTALL) -m 644
+
+OPTIONAL_OBJS = 
+
+SHELL=/bin/sh
+
+# Tools
+
+CC	= gcc
+F77	= gfortran
+FC	= $(F77)
+LEX	= flex
+YACC	= bison -y
+AWK	= gawk
+M4	= m4
+RANLIB	= ranlib
+
+# Flags.
+
+CFLAGS   = -g -O2 -Wno-error=implicit-function-declaration -DHAVE_CONFIG_H -I.. 
+FFLAGS   = -g -O2
+LFLAGS   = -I
+YFLAGS   = -dvy
+LDFLAGS  =  -L/usr/local/lib -Wl,-export-dynamic -Wl,-rpath /usr/local/lib
+
+# Some bozos hardwire f77 options in their builtin make rules.  If
+# we're using a different Fortran compiler (say, if it's a script that
+# calls f2c), then you may need to use the following rule.
+
+#.f.o:
+#	$(FC) $(FFLAGS) -c $<
+
+# Libraries.
+
+LIBS	=  -L../arpack -larpack -L../superlu -lsuperlu  -llapack -lblas -lreadline -ltermcap -lf2c  -lgfortran -lm -lm -ldl
+
+# Source files.
+
+M4_SOURCES = assign.c.m4
+
+C_SOURCES = abs.c acos.c add.c append.c apply.c arpack.c asin.c atan.c \
+  band.c bdiag.c binop.c btrans.c cast.c children.c code.c conjugate.c \
+  cram.c cos.c cosh.c da.c datum.c dense.c diag.c divide.c dynio.c eig.c \
+  equil.c erf.c \
+  entity.c error.c exception.c execute.c exp.c factor.c fft.c file_io.c \
+  fill.c filter.c find.c for_loop.c form.c fread.c full.c function.c \
+  generate.c get.c getopt.c getopt1.c hash.c ifft.c imag.c init.c leastsq.c \
+  log.c logical.c lose.c main.c matio.c matrix.c max.c mem.c member.c \
+  message.c mod.c multiply.c negate.c norm.c not.c npsol.c ok.c partition.c \
+  pile.c pmem.c power.c print.c printf.c product.c profile.c put.c rand.c \
+  read.c real.c scalar.c sets.c sin.c sinh.c solve.c sort.c sparse.c \
+  sqrt.c subtract.c superlu.c \
+  svd.c symmetric.c table.c tan.c tanh.c test.c time.c \
+  transform.c transpose.c unop.c vector.c zero.c dlmalloc.c
+
+IN_SOURCES = bcs.h.in version.h.in rc0.h.in \
+  blas.h.in fortran.h.in lapack.h.in thin.h.in arpack.h.in
+
+H_SOURCES = abs.h acos.h add.h algae.h append.h apply.h asin.h assign.h \
+  atan.h band.h bdiag.h binop.h btrans.h builtin.h cast.h \
+  children.h code.h conjugate.h cram.h cos.h cosh.h datum.h \
+  dense.h diag.h divide.h dynio.h eig.h \
+  equil.h erf.h \
+  entity.h enum_strng.h error.h exception.h exp.h factor.h fft.h file_io.h \
+  fill.h filter.h find.h for_loop.h form.h fread.h full.h \
+  function.h generate.h get.h getopt.h ifft.h imag.h leastsq.h log.h \
+  logical.h lose.h main.h matio.h matrix.h matrix_st.h max.h mem.h member.h \
+  message.h mod.h multiply.h negate.h norm.h not.h npsol.h ok.h \
+  partition.h pile.h pmem.h power.h print.h printf.h product.h \
+  profile.h psr.h ptypes.h put.h rand.h read.h real.h scalar.h scalar_st.h \
+  sets.h sigint.h sin.h sinh.h solve.h sort.h sparse.h sqrt.h \
+  subtract.h superlu.h svd.h symmetric.h \
+  table.h table_st.h tan.h tanh.h test.h \
+  time.h transform.h transpose.h two_type.h unop.h vargs.h \
+  vector.h vector_st.h zero.h
+
+F_SOURCES = bcs.f bcs_sp.f blas.f gpskca.f cfft.f lapack.f thin.f iram.f
+
+# Special dependents.
+
+H_DIST = parse.h
+C_DIST = assign.c parse.c scan.c
+
+C_NOT_DIST =
+H_NOT_DIST = bcs.h blas.h fortran.h lapack.h thin.h version.h rc0.h arpack.h
+
+# Objects.
+
+OBJS = abs.o acos.o add.o append.o apply.o arpack.o asin.o assign.o atan.o \
+  band.o bdiag.o binop.o blas.o btrans.o cast.o cfft.o children.o \
+  code.o conjugate.o cram.o cos.o cosh.o da.o datum.o dense.o diag.o \
+  divide.o dynio.o eig.o entity.o error.o exception.o execute.o exp.o \
+  equil.o erf.o \
+  factor.o fft.o file_io.o fill.o filter.o find.o form.o for_loop.o \
+  fpe.o fread.o full.o function.o generate.o get.o getopt.o getopt1.o \
+  gpskca.o hash.o ifft.o imag.o init.o iram.o lapack.o leastsq.o log.o \
+  logical.o lose.o main.o matio.o matrix.o max.o mem.o member.o \
+  message.o mod.o multiply.o negate.o norm.o not.o npsol.o ok.o \
+  parse.o partition.o pile.o pmem.o power.o print.o printf.o product.o \
+  profile.o put.o rand.o read.o real.o scalar.o scan.o sets.o sin.o \
+  sinh.o solve.o sort.o sparse.o sqrt.o subtract.o superlu.o \
+  svd.o symmetric.o \
+  table.o tan.o tanh.o test.o thin.o time.o transform.o transpose.o \
+  unop.o vector.o zero.o dlmalloc.o
+
+OBJECTS = ${OBJS} ${OPTIONAL_OBJS}
+
+# ============================ Targets ============================
+
+all: algae
+.PHONY:	all
+
+# <<<< This section is deleted in the "binary" distribution.
+
+# dlmalloc needs FORTIFY_SOURCE disabled (custom allocator incompatible with glibc FORTIFY)
+dlmalloc.o: dlmalloc.c
+	$(CC) $(CFLAGS) -U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=0 -c $<
+
+# cfft.f uses Fortran type-punning (real array stores integer data) — legacy FFT code
+cfft.o: cfft.f
+	$(FC) $(FFLAGS) -fallow-argument-mismatch -c $<
+
+algae: $(OBJECTS) ../superlu/libsuperlu.a ../arpack/libarpack.a
+	$(CC) $(CFLAGS) $(LDFLAGS) -o algae $(OBJECTS) $(LIBS)
+
+Makefile: Makefile.in ../config.status
+	cd ..; ./config.status
+
+# >>>> End of deleted section.
+
+deps: $(C_DIST) $(C_NOT_DIST) $(H_DIST) $(H_NOT_DIST)
+	$(AWK) -f depends.awk -v config=../config.h \
+	  $(C_SOURCES) $(C_DIST) $(C_NOT_DIST) fpe.c > DEPENDS || \
+	  ( rm -f DEPENDS; false )
+.PHONY: deps
+
+parse.c parse.h: parse.y
+	@if test "$(YACC)" != "bison -y"; then \
+	  echo 'The bison(1) parser generator is required.'; \
+	  false; \
+	else \
+	  true; \
+	fi
+	$(YACC) $(YFLAGS) parse.y
+	mv y.tab.c parse.c
+	mv y.tab.h parse.h
+
+scan.c: scan.l algae.skel
+	$(LEX) $(LFLAGS) scan.l
+	mv lex.yy.c scan.c
+
+version.h: version.h.in ../VERSION
+	sed -e "s|VERSION_NUMBER|$(VERSION_NUMBER)|" \
+	    -e "s|VERSION_DATE|$(VERSION_DATE)|" \
+	  version.h.in > $@ || ( rm -f $@; false )
+
+rc0.h: rc0.h.in ../Makefile
+	sed -e "s|@RC0@|$(RC0)|" rc0.h.in > $@ || ( rm -f $@; false )
+
+
+assign.c: assign.c.m4
+	$(M4) assign.c.m4 > $@ || ( rm -f $@; false )
+
+tags:
+	etags $(C_SOURCES) $(H_SOURCES) $(F_SOURCES) $(IN_SOURCES) \
+	  $(M4_SOURCES) parse.y scan.l fpe.c
+.PHONY: tags
+
+# ========================== Distribution =========================
+
+# Files in the source distribution from this directory.
+DISTFILES = $(C_SOURCES) $(H_SOURCES) $(F_SOURCES) $(IN_SOURCES) \
+  $(M4_SOURCES) $(C_DIST) $(H_DIST) Makefile.in DEPENDS algae.skel \
+  depends.awk parse.y scan.l
+
+# Files included in the binary distribution from this directory.
+# Makefile isn't specified here because it's handled separately.
+BINDISTFILES = algae DEPENDS
+
+# <<<< This section is deleted in the "binary" distribution.
+
+dist: deps
+	for file in $(DISTFILES); do \
+	  ln $$file $(distdir) > /dev/null 2>&1 || cp $$file $(distdir); \
+	done
+.PHONY:	dist
+
+# >>>> End of deleted section.
+
+binaries: algae deps
+	for file in $(BINDISTFILES); do \
+	  ln $$file $(distdir) > /dev/null 2>&1 || cp $$file $(distdir); \
+	done
+	awk '/<<<</,/>>>>/ {next} {print}' Makefile > $(distdir)/Makefile
+.PHONY:	binaries
+
+# ========================== Cleaning Up ==========================
+
+.PHONY:	clean mostlyclean distclean maintainer-clean
+
+clean mostlyclean distclean maintainer-clean::
+	rm -f *.o core algae
+
+distclean maintainer-clean::
+	rm -f Makefile TAGS fpe.c $(C_NOT_DIST) $(H_NOT_DIST)
+
+maintainer-clean::
+	rm -f $(C_DIST) $(H_DIST)
+
+# ========================== Installation ==========================
+
+install: all
+	$(INSTALL_PROGRAM) algae $(bindir)/algae-$(VERSION_NUMBER)
+	rm -f $(bindir)/algae
+	ln -s $(bindir)/algae-$(VERSION_NUMBER) $(bindir)/algae
+.PHONY:	install
+
+uninstall:
+	rm -f $(bindir)/algae $(bindir)/algae-$(VERSION_NUMBER)
+.PHONY:	uninstall
+
+# ========================== Dependencies ==========================
+
+DEPENDS:
+	$(AWK) -f depends.awk \
+	  $(C_SOURCES) $(C_DIST) $(C_NOT_DIST) fpe.c > $@ || \
+	  ( rm -f $@; false )
+
+include DEPENDS

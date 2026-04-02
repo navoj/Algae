@@ -1,0 +1,80 @@
+
+# This Algae routine counts the number of "Euler constellations"
+# in the first `n' positive integers.  An "Euler constellation"
+# is an irredundant set of positive integers `a' through `h'
+# such that the sum of `a', `b', `c', and `d', the sum of the
+# squares of `a', `b', `c', and `d', and the sum of the cubes
+# of `a', `b', `c', and `d' are equal to the corresponding
+# sums for `e', `f', `g', and `h'.
+
+n = 12;
+
+printf( "Starting the Euler constellation test...\n" );
+
+check = function( a; b; c; d; e; f; g; h ) {
+    if ( a+b+c+d == e+f+g+h ) {
+        if ( a^2+b^2+c^2+d^2 == e^2+f^2+g^2+h^2 ) {
+            if ( a^3+b^3+c^3+d^3 == e^3+f^3+g^3+h^3 ) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+};
+
+cnt = 0;
+
+for ( a in 11:n ) {
+  for ( b in 7:a-1 ) {
+    for ( c in 6:b-1 ) {
+      for ( d in 5:c-1 ) {
+        for ( e in 4:d-1 ) {
+          for ( f in 3:e-1 ) {
+            for ( g in 2:f-1 ) {
+              for ( h in 1:g-1 ) {
+
+                if ( check( a; b; c; d;  e; f; g; h ) ) { cnt += 1; continue; }
+                if ( check( a; e; c; d;  b; f; g; h ) ) { cnt += 1; continue; }
+                if ( check( a; f; c; d;  e; b; g; h ) ) { cnt += 1; continue; }
+                if ( check( a; g; c; d;  e; f; b; h ) ) { cnt += 1; continue; }
+                if ( check( a; h; c; d;  e; f; g; b ) ) { cnt += 1; continue; }
+                if ( check( a; b; e; d;  c; f; g; h ) ) { cnt += 1; continue; }
+                if ( check( a; b; f; d;  e; c; g; h ) ) { cnt += 1; continue; }
+                if ( check( a; b; g; d;  e; f; c; h ) ) { cnt += 1; continue; }
+                if ( check( a; b; h; d;  e; f; g; c ) ) { cnt += 1; continue; }
+                if ( check( a; b; c; e;  d; f; g; h ) ) { cnt += 1; continue; }
+                if ( check( a; b; c; f;  e; d; g; h ) ) { cnt += 1; continue; }
+                if ( check( a; b; c; g;  e; f; d; h ) ) { cnt += 1; continue; }
+                if ( check( a; b; c; h;  e; f; g; d ) ) { cnt += 1; continue; }
+                if ( check( a; e; f; d;  b; c; g; h ) ) { cnt += 1; continue; }
+                if ( check( a; e; g; d;  b; f; c; h ) ) { cnt += 1; continue; }
+                if ( check( a; e; h; d;  b; f; g; c ) ) { cnt += 1; continue; }
+                if ( check( a; f; g; d;  e; b; c; h ) ) { cnt += 1; continue; }
+                if ( check( a; f; h; d;  e; b; g; c ) ) { cnt += 1; continue; }
+                if ( check( a; g; h; d;  e; f; b; c ) ) { cnt += 1; continue; }
+                if ( check( a; b; e; f;  c; d; g; h ) ) { cnt += 1; continue; }
+                if ( check( a; b; e; g;  c; f; d; h ) ) { cnt += 1; continue; }
+                if ( check( a; b; e; h;  c; f; g; d ) ) { cnt += 1; continue; }
+                if ( check( a; b; f; g;  e; c; d; h ) ) { cnt += 1; continue; }
+                if ( check( a; b; f; h;  e; c; g; d ) ) { cnt += 1; continue; }
+                if ( check( a; b; g; h;  e; f; c; d ) ) { cnt += 1; continue; }
+                if ( check( a; e; f; g;  e; f; g; h ) ) { cnt += 1; continue; }
+                if ( check( a; e; f; h;  e; f; g; h ) ) { cnt += 1; continue; }
+                if ( check( a; e; g; h;  e; f; g; h ) ) { cnt += 1; continue; }
+                if ( check( a; f; g; h;  e; f; g; h ) ) { cnt += 1; continue; }
+
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+if ( cnt == 1 ) {
+    printf( "...passed.\n" );
+else
+    printf( "...failed!\a\n" );
+    exception();
+}

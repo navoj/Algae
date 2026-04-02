@@ -1,0 +1,23 @@
+
+printf( "Starting the read test...\n" );
+
+assert = function( t ) {
+    if ( !t ) {
+        printf( "...failed.\a\n" );
+        exception();
+    }
+};
+
+f = "!echo 123 456 789";
+assert( readnum( NULL; f ) == 123 );
+assert( $read == 1 );
+assert( equal( readnum( 3; f ); 456, 789, 0 ) );
+assert( $read == 2 );
+close( f );
+
+f = "!echo '\n#9\n#8\n7\n#6\n5\n40e-1 and then 0.3e1\nand finally 2e0'";
+assert( equal( readnum( 3,2; f ); [ 7, 5; 4, 3; 2, 0 ] ) );
+assert( $read == 5 );
+close( f );
+
+printf( "...passed.\n" );
