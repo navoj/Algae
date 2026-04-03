@@ -51,7 +51,7 @@ if (getenv ("TERM") == "dumb") { $term_width = 79; }
 $directories = {
 
   info = "@info_dir@";
-  html = "@htmldir@";
+  html = "${docdir}";
   lib = "@lib_dir@";
 
 };

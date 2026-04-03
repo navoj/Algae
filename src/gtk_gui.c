@@ -19,16 +19,22 @@
  */
 
 #include <gtk/gtk.h>
+#include <glib-unix.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <pty.h>
+#include <termios.h>
+#include <sys/wait.h>
+#include <signal.h>
 
-/* Pipe file descriptors for communicating with algae process */
-static int pipe_to_algae[2];    /* GUI writes, algae reads */
-static int pipe_from_algae[2];  /* algae writes, GUI reads */
+/* PTY master file descriptor for communicating with algae process */
+static int pty_master_fd = -1;
 static GPid algae_pid = 0;
+static guint algae_read_source = 0;
 
 /* GUI widgets */
 static GtkWidget *window;
@@ -43,12 +49,9 @@ static char *cmd_history[MAX_HISTORY];
 static int history_count = 0;
 static int history_pos = -1;
 
-/* IO channel for reading algae output */
-static GIOChannel *algae_out_channel = NULL;
-
 static void append_text (const char *text, const char *tag_name);
 static void send_command (const char *cmd);
-static gboolean read_algae_output (GIOChannel *source, GIOCondition cond, gpointer data);
+static gboolean read_algae_output (gint fd, GIOCondition cond, gpointer data);
 static void start_algae_process (void);
 static void stop_algae_process (void);
 
@@ -78,101 +81,133 @@ append_text (const char *text, const char *tag_name)
 static void
 send_command (const char *cmd)
 {
-  if (algae_pid > 0)
+  if (algae_pid > 0 && pty_master_fd >= 0)
     {
-      write (pipe_to_algae[1], cmd, strlen (cmd));
-      write (pipe_to_algae[1], "\n", 1);
+      ssize_t n;
+      n = write (pty_master_fd, cmd, strlen (cmd));
+      if (n < 0)
+        g_printerr ("algae-gtk: write(cmd) failed: %s\n", strerror (errno));
+      n = write (pty_master_fd, "\n", 1);
+      if (n < 0)
+        g_printerr ("algae-gtk: write(newline) failed: %s\n", strerror (errno));
     }
 }
 
 static gboolean
-read_algae_output (GIOChannel *source, GIOCondition cond, gpointer data)
+read_algae_output (gint fd, GIOCondition cond, gpointer data)
 {
-  if (cond & (G_IO_IN | G_IO_PRI))
+  if (cond & G_IO_IN)
     {
       char buf[4096];
-      gsize bytes_read;
-      GError *err = NULL;
-      GIOStatus status;
+      ssize_t n;
 
-      status = g_io_channel_read_chars (source, buf, sizeof(buf) - 1,
-                                         &bytes_read, &err);
-      if (status == G_IO_STATUS_NORMAL && bytes_read > 0)
+      /* Read all available data in a loop */
+      while ((n = read (fd, buf, sizeof (buf) - 1)) > 0)
         {
-          buf[bytes_read] = '\0';
+          buf[n] = '\0';
           append_text (buf, "output");
         }
-      if (err) g_error_free (err);
-
-      if (status == G_IO_STATUS_EOF)
+      if (n == 0)
         {
+          /* EOF */
           append_text ("\n[Algae process ended]\n", "error");
           algae_pid = 0;
-          return FALSE;
+          pty_master_fd = -1;
+          algae_read_source = 0;
+          gtk_statusbar_push (GTK_STATUSBAR (statusbar), 0, "Algae stopped");
+          return G_SOURCE_REMOVE;
         }
+      /* n < 0 && errno == EAGAIN → no more data right now, keep watching */
     }
 
   if (cond & (G_IO_ERR | G_IO_HUP | G_IO_NVAL))
     {
+      /* Drain any remaining data before closing */
+      char buf[4096];
+      ssize_t n;
+      while ((n = read (fd, buf, sizeof (buf) - 1)) > 0)
+        {
+          buf[n] = '\0';
+          append_text (buf, "output");
+        }
       append_text ("\n[Connection to Algae lost]\n", "error");
       algae_pid = 0;
-      return FALSE;
+      pty_master_fd = -1;
+      algae_read_source = 0;
+      gtk_statusbar_push (GTK_STATUSBAR (statusbar), 0, "Algae stopped");
+      return G_SOURCE_REMOVE;
     }
 
-  return TRUE;
+  return G_SOURCE_CONTINUE;
+}
+
+static void
+child_exited_cb (GPid pid, gint status, gpointer data)
+{
+  g_printerr ("algae-gtk: child process exited (status %d)\n", status);
+  g_spawn_close_pid (pid);
+  if (algae_pid == pid)
+    {
+      algae_pid = 0;
+      gtk_statusbar_push (GTK_STATUSBAR (statusbar), 0, "Algae stopped");
+    }
 }
 
 static void
 start_algae_process (void)
 {
-  if (pipe (pipe_to_algae) < 0 || pipe (pipe_from_algae) < 0)
-    {
-      g_printerr ("Failed to create pipes: %s\n", strerror (errno));
-      return;
-    }
+  struct termios termp;
+  struct winsize winp;
 
-  algae_pid = fork ();
+  /* Configure the pseudo-terminal: raw mode, no echo, no signals */
+  memset (&termp, 0, sizeof (termp));
+  cfmakeraw (&termp);
+
+  /* Keep output post-processing so \n works naturally */
+  termp.c_oflag |= OPOST | ONLCR;
+
+  /* No echo — we show commands ourselves in the GUI */
+  termp.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
+
+  /* Set a reasonable window size */
+  memset (&winp, 0, sizeof (winp));
+  winp.ws_row = 40;
+  winp.ws_col = 120;
+
+  algae_pid = forkpty (&pty_master_fd, NULL, &termp, &winp);
   if (algae_pid < 0)
     {
-      g_printerr ("Failed to fork: %s\n", strerror (errno));
+      g_printerr ("algae-gtk: forkpty failed: %s\n", strerror (errno));
+      append_text ("Failed to start Algae process.\n", "error");
       return;
     }
 
   if (algae_pid == 0)
     {
-      /* Child: redirect stdin/stdout and exec algae */
-      close (pipe_to_algae[1]);
-      close (pipe_from_algae[0]);
-
-      dup2 (pipe_to_algae[0], STDIN_FILENO);
-      dup2 (pipe_from_algae[1], STDOUT_FILENO);
-      dup2 (pipe_from_algae[1], STDERR_FILENO);
-
-      close (pipe_to_algae[0]);
-      close (pipe_from_algae[1]);
-
-      execlp ("algae", "algae", "-r", "-n", NULL);
-
-      /* If exec fails, try local path */
-      execl ("./algae", "algae", "-r", "-n", NULL);
+      /* Child: exec algae.  The PTY is already stdin/stdout/stderr. */
+      execlp ("algae", "algae", "-r", "-n", "-i", (char *) NULL);
+      execl ("./algae", "algae", "-r", "-n", "-i", (char *) NULL);
       _exit (127);
     }
 
-  /* Parent */
-  close (pipe_to_algae[0]);
-  close (pipe_from_algae[1]);
+  /* Parent: set master fd non-blocking */
+  {
+    int flags = fcntl (pty_master_fd, F_GETFL, 0);
+    if (flags >= 0)
+      fcntl (pty_master_fd, F_SETFL, flags | O_NONBLOCK);
+  }
 
-  /* Set up non-blocking read from algae */
-  algae_out_channel = g_io_channel_unix_new (pipe_from_algae[0]);
-  g_io_channel_set_encoding (algae_out_channel, NULL, NULL);
-  g_io_channel_set_flags (algae_out_channel, G_IO_FLAG_NONBLOCK, NULL);
-  g_io_add_watch (algae_out_channel,
-                  G_IO_IN | G_IO_PRI | G_IO_ERR | G_IO_HUP,
-                  read_algae_output, NULL);
+  /* Watch for output on the PTY master */
+  algae_read_source = g_unix_fd_add (pty_master_fd,
+                                      G_IO_IN | G_IO_ERR | G_IO_HUP,
+                                      read_algae_output, NULL);
 
+  /* Watch for child exit */
+  g_child_watch_add (algae_pid, child_exited_cb, NULL);
+
+  g_printerr ("algae-gtk: Algae process started (pid %d, pty fd %d)\n",
+               (int) algae_pid, pty_master_fd);
   append_text ("Algae process started.\n", "info");
-
-  /* Update status bar */
   gtk_statusbar_push (GTK_STATUSBAR (statusbar), 0, "Connected to Algae");
 }
 
@@ -186,11 +221,15 @@ stop_algae_process (void)
       kill (algae_pid, SIGTERM);
       algae_pid = 0;
     }
-  if (algae_out_channel)
+  if (algae_read_source > 0)
     {
-      g_io_channel_shutdown (algae_out_channel, FALSE, NULL);
-      g_io_channel_unref (algae_out_channel);
-      algae_out_channel = NULL;
+      g_source_remove (algae_read_source);
+      algae_read_source = 0;
+    }
+  if (pty_master_fd >= 0)
+    {
+      close (pty_master_fd);
+      pty_master_fd = -1;
     }
 }
 

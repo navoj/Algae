@@ -184,6 +184,7 @@ bi_help (int n, ENTITY *name_arg)
           xfprintf (stdout, "  %s\n", builtin_help[i].help);
         }
       xfprintf (stdout, "\nUse help(\"name\") for details on a specific function.\n");
+      fflush (stdout);
       return NULL;
     }
 
@@ -286,6 +287,7 @@ bi_help (int n, ENTITY *name_arg)
     }
   END_EXCEPTION;
 
+  fflush (stdout);
   if (name_arg) delete_entity (name_arg);
   return NULL;
 }

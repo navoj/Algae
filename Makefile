@@ -175,7 +175,7 @@ algae.A: rc0
 	    -e "s|@sitedir@|$(sitedir)|" \
 	    -e "s|@lib_dir@|$(libdir)|" \
 	    -e "s|@info_dir@|$(infodir)|" \
-	    -e "s|@htmldir@|$(htmldir)|" rc0 > $@ || rm -f $@
+	    -e "s|${docdir}|$(htmldir)|" rc0 > $@ || rm -f $@
 
 # Run test cases.
 

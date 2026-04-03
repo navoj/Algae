@@ -51,7 +51,7 @@ if (getenv ("TERM") == "dumb") { $term_width = 79; }
 $directories = {
 
   info = "/home/jtrujil1/share/info";
-  html = "/home/jtrujil1/share/algae/4.3.6/html";
+  html = "${docdir}";
   lib = "/home/jtrujil1/lib";
 
 };

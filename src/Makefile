@@ -56,7 +56,7 @@ M4_SOURCES = assign.c.m4
 
 C_SOURCES = abs.c acos.c add.c append.c apply.c arpack.c asin.c atan.c \
   band.c bdiag.c binop.c btrans.c cast.c children.c code.c conjugate.c \
-  cram.c cos.c cosh.c da.c datum.c debug_algae.c dense.c diag.c divide.c dynio.c eig.c \
+  cram.c cos.c cosh.c da.c datum.c dense.c diag.c divide.c dynio.c eig.c \
   equil.c erf.c \
   entity.c error.c exception.c execute.c exp.c factor.c fft.c file_io.c \
   fill.c filter.c find.c for_loop.c form.c fread.c full.c function.c debug_algae.c \
@@ -144,7 +144,7 @@ GTK_CFLAGS = $(shell pkg-config --cflags gtk+-3.0 2>/dev/null)
 GTK_LIBS = $(shell pkg-config --libs gtk+-3.0 2>/dev/null)
 
 algae-gtk: gtk_gui.c algae
-	$(CC) $(GTK_CFLAGS) -o algae-gtk gtk_gui.c $(GTK_LIBS)
+	$(CC) $(GTK_CFLAGS) -o algae-gtk gtk_gui.c $(GTK_LIBS) -lutil
 
 Makefile: Makefile.in ../config.status
 	cd ..; ./config.status
@@ -232,14 +232,15 @@ maintainer-clean::
 
 # ========================== Installation ==========================
 
-install: all
+install: all algae-gtk
 	$(INSTALL_PROGRAM) algae $(bindir)/algae-$(VERSION_NUMBER)
 	rm -f $(bindir)/algae
 	ln -s $(bindir)/algae-$(VERSION_NUMBER) $(bindir)/algae
+	$(INSTALL_PROGRAM) algae-gtk $(bindir)/algae-gtk
 .PHONY:	install
 
 uninstall:
-	rm -f $(bindir)/algae $(bindir)/algae-$(VERSION_NUMBER)
+	rm -f $(bindir)/algae $(bindir)/algae-$(VERSION_NUMBER) $(bindir)/algae-gtk
 .PHONY:	uninstall
 
 # ========================== Dependencies ==========================

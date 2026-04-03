@@ -59,8 +59,8 @@ C_SOURCES = abs.c acos.c add.c append.c apply.c arpack.c asin.c atan.c \
   cram.c cos.c cosh.c da.c datum.c dense.c diag.c divide.c dynio.c eig.c \
   equil.c erf.c \
   entity.c error.c exception.c execute.c exp.c factor.c fft.c file_io.c \
-  fill.c filter.c find.c for_loop.c form.c fread.c full.c function.c \
-  generate.c get.c getopt.c getopt1.c hash.c ifft.c imag.c init.c leastsq.c \
+  fill.c filter.c find.c for_loop.c form.c fread.c full.c function.c debug_algae.c \
+  generate.c get.c getopt.c getopt1.c hash.c help.c ifft.c imag.c init.c leastsq.c \
   log.c logical.c lose.c main.c matio.c matrix.c max.c mem.c member.c \
   message.c mod.c multiply.c negate.c norm.c not.c npsol.c ok.c partition.c \
   pile.c pmem.c power.c print.c printf.c product.c profile.c put.c rand.c \
@@ -74,12 +74,12 @@ IN_SOURCES = bcs.h.in version.h.in rc0.h.in \
 
 H_SOURCES = abs.h acos.h add.h algae.h append.h apply.h asin.h assign.h \
   atan.h band.h bdiag.h binop.h btrans.h builtin.h cast.h \
-  children.h code.h conjugate.h cram.h cos.h cosh.h datum.h \
+  children.h code.h conjugate.h cram.h cos.h cosh.h datum.h debug_algae.h \
   dense.h diag.h divide.h dynio.h eig.h \
   equil.h erf.h \
   entity.h enum_strng.h error.h exception.h exp.h factor.h fft.h file_io.h \
   fill.h filter.h find.h for_loop.h form.h fread.h full.h \
-  function.h generate.h get.h getopt.h ifft.h imag.h leastsq.h log.h \
+  function.h generate.h get.h getopt.h help.h ifft.h imag.h leastsq.h log.h \
   logical.h lose.h main.h matio.h matrix.h matrix_st.h max.h mem.h member.h \
   message.h mod.h multiply.h negate.h norm.h not.h npsol.h ok.h \
   partition.h pile.h pmem.h power.h print.h printf.h product.h \
@@ -104,12 +104,12 @@ H_NOT_DIST = bcs.h blas.h fortran.h lapack.h thin.h version.h rc0.h arpack.h
 
 OBJS = abs.o acos.o add.o append.o apply.o arpack.o asin.o assign.o atan.o \
   band.o bdiag.o binop.o blas.o btrans.o cast.o cfft.o children.o \
-  code.o conjugate.o cram.o cos.o cosh.o da.o datum.o dense.o diag.o \
+  code.o conjugate.o cram.o cos.o cosh.o da.o datum.o debug_algae.o dense.o diag.o \
   divide.o dynio.o eig.o entity.o error.o exception.o execute.o exp.o \
   equil.o erf.o \
   factor.o fft.o file_io.o fill.o filter.o find.o form.o for_loop.o \
   fpe.o fread.o full.o function.o generate.o get.o getopt.o getopt1.o \
-  gpskca.o hash.o ifft.o imag.o init.o iram.o lapack.o leastsq.o log.o \
+  gpskca.o hash.o help.o ifft.o imag.o init.o iram.o lapack.o leastsq.o log.o \
   logical.o lose.o main.o matio.o matrix.o max.o mem.o member.o \
   message.o mod.o multiply.o negate.o norm.o not.o npsol.o ok.o \
   parse.o partition.o pile.o pmem.o power.o print.o printf.o product.o \
@@ -138,6 +138,13 @@ cfft.o: cfft.f
 
 algae: $(OBJECTS) ../superlu/libsuperlu.a ../arpack/libarpack.a
 	$(CC) $(CFLAGS) $(LDFLAGS) -o algae $(OBJECTS) $(LIBS)
+
+# GTK+ interface (optional -- requires GTK3)
+GTK_CFLAGS = $(shell pkg-config --cflags gtk+-3.0 2>/dev/null)
+GTK_LIBS = $(shell pkg-config --libs gtk+-3.0 2>/dev/null)
+
+algae-gtk: gtk_gui.c algae
+	$(CC) $(GTK_CFLAGS) -o algae-gtk gtk_gui.c $(GTK_LIBS) -lutil
 
 Makefile: Makefile.in ../config.status
 	cd ..; ./config.status
@@ -225,14 +232,15 @@ maintainer-clean::
 
 # ========================== Installation ==========================
 
-install: all
+install: all algae-gtk
 	$(INSTALL_PROGRAM) algae $(bindir)/algae-$(VERSION_NUMBER)
 	rm -f $(bindir)/algae
 	ln -s $(bindir)/algae-$(VERSION_NUMBER) $(bindir)/algae
+	$(INSTALL_PROGRAM) algae-gtk $(bindir)/algae-gtk
 .PHONY:	install
 
 uninstall:
-	rm -f $(bindir)/algae $(bindir)/algae-$(VERSION_NUMBER)
+	rm -f $(bindir)/algae $(bindir)/algae-$(VERSION_NUMBER) $(bindir)/algae-gtk
 .PHONY:	uninstall
 
 # ========================== Dependencies ==========================

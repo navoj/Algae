@@ -8481,6 +8481,21 @@ esac
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for proper floating point exception handling" >&5
 printf %s "checking for proper floating point exception handling... " >&6; }
 fpe_success=no
+
+# Modern glibc systems provide feenableexcept(), and the Linux backend
+# in fpe/i686-pc-linux-gnu.c uses it directly.  The historical runtime
+# probe can fail with newer compiler optimizations even when trapping
+# support is present, so prefer this backend when available.
+if test "x$ac_cv_func_feenableexcept" = xyes; then
+  case "$host" in
+    *linux*)
+      f=fpe/i686-pc-linux-gnu.c
+      fpe_success=yes
+      ;;
+  esac
+fi
+
+if test $fpe_success = no; then
 for f in fpe/fpe.c fpe/*.c; do
   if test "$cross_compiling" = yes
 then :
@@ -8512,6 +8527,7 @@ esac
 fi
 
 done
+fi
 if test $fpe_success = no; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }

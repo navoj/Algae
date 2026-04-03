@@ -895,6 +895,21 @@ esac
 
 AC_MSG_CHECKING([for proper floating point exception handling])
 fpe_success=no
+
+# Modern glibc systems provide feenableexcept(), and the Linux backend
+# in fpe/i686-pc-linux-gnu.c uses it directly.  The historical AC_TRY_RUN
+# divide-by-zero probe can fail with newer compiler optimizations even when
+# trapping support is present, so prefer this backend when available.
+if test "x$ac_cv_func_feenableexcept" = xyes; then
+  case "$host" in
+    *linux*)
+      f=fpe/i686-pc-linux-gnu.c
+      fpe_success=yes
+      ;;
+  esac
+fi
+
+if test $fpe_success = no; then
 for f in fpe/fpe.c fpe/*.c; do
   AC_TRY_RUN([
 #define SKIP_LOCAL_INCLUDES 1
@@ -908,6 +923,7 @@ warn(s) char *s; { exit(1); }
 main() { enable_fpe_traps(); fprintf(stderr,"%g\n",r(z)); exit(1); }],
   [fpe_success=yes;break])
 done
+fi
 if test $fpe_success = no; then
   AC_MSG_RESULT(no)
   rm -f conftest*

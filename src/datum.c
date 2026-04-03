@@ -92,6 +92,7 @@ datum_print (register DATUM *p)
     default:
       wipeout ("datum_print");
     }
+  fflush (stdout);
 }
 
 DATUM *
